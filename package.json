@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "@octokit/rest": "^22.0.0",
+    "dotenv": "^17.2.0",
+    "jszip": "^3.10.1",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/jszip": "^3.4.0",
+    "@types/node": "^24.0.13",
+    "@types/node-fetch": "^2.6.12",
+    "tsx": "^4.20.3"
+  }
+}
