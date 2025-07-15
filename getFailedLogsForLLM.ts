@@ -39,7 +39,7 @@ async function main() {
   }
 
   fs.writeFileSync('llm_prompts.txt', prompts.join('\n\n---\n\n'));
-  console.log('✅ LLM 프롬프트 생성 완료 → llm_prompts.txt');
+  console.log('✅ LLM 프롬프트 생성 완료 → llm_prompts.txt')
 }
 
 

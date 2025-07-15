@@ -5,6 +5,9 @@
     "esModuleInterop": true,
     "strict": true,
     "moduleResolution": "node",
-    "types": ["node"]
-  }
+    "types": ["node", "vscode"],
+    "outDir": "out",
+    "rootDir": "src"
+  },
+  "exclude": ["getFailedLogsForLLM.ts"]
 }
