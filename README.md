@@ -4,18 +4,18 @@
 
 ## ✨ 주요 기능
 
-### ☑⃣ GitHub Actions Run 실패 로그 수집
+###  GitHub Actions Run 실패 로그 수집
 
 * `getRunList.ts` / `getRepoInfo.ts`를 통해 사용자 계정의 워크플로우 실행 정보를 가져옵니다.
 * `getFailedLogs.ts`를 통해 실패한 Run의 Job 로그를 다운로드하고 압축 해제합니다.
 
-### ☑⃣ 실패 로그 분석 결과 출력
+###  실패 로그 분석 결과 출력
 
 * `extractRelevantLog.ts`: 로그에서 에러 원인 관련 부분만 추출합니다.
 * `formatPrompt.ts`: GPT 분석에 적합한 형태로 포맷팅합니다.
 * `printToOutput.ts`: 결과를 VS Code Output 창에 출력합니다.
 
-### ☑⃣ VS Code 명령어로 실행 가능
+###  VS Code 명령어로 실행 가능
 
 * `Cmd + Shift + P` → `GitHub Actions 실패 로그 분석`
 * 결과는 Output 탭에 표시됩니다.
