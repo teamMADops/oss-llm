@@ -65,10 +65,10 @@ function activate(context) {
             return;
         }
         console.log(`[4] ✅ 선택된 Run ID: ${run_id}`);
-        const mode = await vscode.window.showQuickPick(['전체 로그', '마지막 20줄'], {
+        const mode = await vscode.window.showQuickPick(['전체 로그', '에러 메세지만'], {
             placeHolder: 'LLM 프롬프트에 포함할 로그 범위 선택'
         });
-        const logMode = mode === '전체 로그' ? 'all' : 'tail';
+        const logMode = mode === '전체 로그' ? 'all' : 'error';
         console.log(`[5] 📄 로그 추출 방식: ${logMode}`);
         const { failedSteps, prompts } = await (0, getFailedLogs_1.getFailedStepsAndPrompts)(octokit, repo.owner, repo.repo, run_id, logMode);
         console.log(`[6] 📛 실패한 Step 개수: ${failedSteps.length}`);

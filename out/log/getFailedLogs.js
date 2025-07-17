@@ -8,7 +8,7 @@ const jszip_1 = __importDefault(require("jszip"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const extractRelevantLog_1 = require("./extractRelevantLog");
 const formatPrompt_1 = require("./formatPrompt");
-async function getFailedStepsAndPrompts(octokit, owner, repo, run_id, logMode = 'tail') {
+async function getFailedStepsAndPrompts(octokit, owner, repo, run_id, logMode = 'all') {
     console.log(`[🐙] Octokit run_id 요청: ${run_id}`);
     const jobRes = await octokit.actions.listJobsForWorkflowRun({ owner, repo, run_id });
     const failedSteps = jobRes.data.jobs.flatMap(job => (job.steps ?? []).filter(s => s.conclusion === 'failure').map(s => s.name));
