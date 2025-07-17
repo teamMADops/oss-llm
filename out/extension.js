@@ -39,11 +39,18 @@ exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
 const rest_1 = require("@octokit/rest");
 const tokenManager_1 = require("./auth/tokenManager");
+const tokenManager_2 = require("./auth/tokenManager");
 const getRepoInfo_1 = require("./github/getRepoInfo");
 const getRunList_1 = require("./github/getRunList");
 const getFailedLogs_1 = require("./log/getFailedLogs");
 const printToOutput_1 = require("./output/printToOutput");
 function activate(context) {
+    // token 삭제하는 기능인데, 일단 테스트 해보고 뺄 수도? ////////
+    const deleteToken = vscode.commands.registerCommand('extension.deleteGitHubToken', async () => {
+        await (0, tokenManager_2.deleteGitHubToken)(context);
+    });
+    context.subscriptions.push(deleteToken);
+    //////////////////////////////////////////
     const disposable = vscode.commands.registerCommand('extension.analyzeGitHubActions', async () => {
         console.log('[1] 🔍 확장 실행됨');
         const repo = await (0, getRepoInfo_1.getRepoInfo)();

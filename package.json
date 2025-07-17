@@ -18,6 +18,10 @@
       {
         "command": "extension.analyzeGitHubActions",
         "title": "GitHub Actions 실패 로그 분석"
+      },
+      {
+      "command": "extension.deleteGitHubToken",
+      "title": "Delete GitHub Token"
       }
     ]
   },

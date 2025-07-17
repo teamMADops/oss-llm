@@ -2,12 +2,23 @@
 import * as vscode from 'vscode';
 import { Octokit } from '@octokit/rest';
 import { getGitHubToken } from './auth/tokenManager';
+import { deleteGitHubToken } from './auth/tokenManager';
 import { getRepoInfo } from './github/getRepoInfo';
 import { getRunIdFromQuickPick } from './github/getRunList';
 import { getFailedStepsAndPrompts } from './log/getFailedLogs';
 import { printToOutput } from './output/printToOutput';
 
 export function activate(context: vscode.ExtensionContext) {
+
+  // token 삭제하는 기능인데, 일단 테스트 해보고 뺄 수도? ////////
+  const deleteToken = vscode.commands.registerCommand('extension.deleteGitHubToken', async () => {
+      await deleteGitHubToken(context);
+  });
+
+  context.subscriptions.push(deleteToken);
+
+  //////////////////////////////////////////
+
   const disposable = vscode.commands.registerCommand('extension.analyzeGitHubActions', async () => {
     console.log('[1] 🔍 확장 실행됨');
     
@@ -24,6 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
       return;
     }
     console.log(`[3] 🔑 GitHub 토큰 확보됨 (길이: ${token.length})`);
+
 
     const octokit = new Octokit({ auth: token });
 
