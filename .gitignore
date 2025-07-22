@@ -3,3 +3,16 @@ node_modules/
 dist/
 .env
 llm_prompts.txt
+
+# Log
+logs
+*.log
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Custom for Gemini CLI
+GEMINI.md
+requirements.md
