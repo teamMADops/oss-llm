@@ -37,6 +37,8 @@ exports.activate = activate;
 exports.deactivate = deactivate;
 // src/extension.ts
 const vscode = __importStar(require("vscode"));
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 const rest_1 = require("@octokit/rest");
 const tokenManager_1 = require("./auth/tokenManager");
 const getRepoInfo_1 = require("./github/getRepoInfo");
@@ -78,6 +80,15 @@ function activate(context) {
         vscode.window.showInformationMessage(`✅ 분석 완료: ${failedSteps.length}개 실패 step`);
     });
     context.subscriptions.push(disposable);
+    const helloWorldCommand = vscode.commands.registerCommand('extension.helloWorld', () => {
+        const panel = vscode.window.createWebviewPanel('helloWorld', 'Hello World', vscode.ViewColumn.One, {});
+        panel.webview.html = getWebviewContent(context);
+    });
+    context.subscriptions.push(helloWorldCommand);
+    function getWebviewContent(context) {
+        const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'hello.html');
+        return fs.readFileSync(htmlPath, 'utf8');
+    }
 }
 function deactivate() {
     console.log('📴 GitHub Actions 확장 종료됨');
