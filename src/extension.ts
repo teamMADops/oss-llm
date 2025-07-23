@@ -1,5 +1,7 @@
 // src/extension.ts
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
 import { Octokit } from '@octokit/rest';
 import { getGitHubToken } from './auth/tokenManager';
 import { getRepoInfo } from './github/getRepoInfo';
@@ -56,6 +58,24 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   context.subscriptions.push(disposable);
+
+  const helloWorldCommand = vscode.commands.registerCommand('extension.helloWorld', () => {
+    const panel = vscode.window.createWebviewPanel(
+      'helloWorld',
+      'Hello World',
+      vscode.ViewColumn.One,
+      {}
+    );
+
+    panel.webview.html = getWebviewContent(context);
+  });
+
+  context.subscriptions.push(helloWorldCommand);
+
+  function getWebviewContent(context: vscode.ExtensionContext) {
+    const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'hello.html');
+    return fs.readFileSync(htmlPath, 'utf8');
+  }
 }
 
 export function deactivate() {
