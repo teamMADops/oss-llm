@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Actions Workflow Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #1e1e1e;
+            color: #cccccc;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 좌측 사이드바 */
+        .sidebar {
+            width: 250px;
+            background-color: #252526;
+            border-right: 1px solid #3e3e42;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid #3e3e42;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .workflow-list {
+            flex: 1;
+            padding: 10px 0;
+        }
+
+        .workflow-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .workflow-item:hover {
+            background-color: #2a2d2e;
+        }
+
+        .workflow-item.active {
+            background-color: #0e639c;
+        }
+
+        .workflow-icon {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        /* 메인 컨텐츠 영역 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e1e1e;
+        }
+
+        .main-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #3e3e42;
+            background-color: #2d2d30;
+        }
+
+        .main-header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .editor-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #cccccc;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: #3c3c3c;
+            border: 1px solid #5a5a5a;
+            border-radius: 3px;
+            color: #cccccc;
+            font-size: 13px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #007acc;
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        /* Jobs 섹션 */
+        .jobs-section {
+            border: 1px solid #3e3e42;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: #252526;
+        }
+
+        .job-item {
+            background-color: #2d2d30;
+            border: 1px solid #3e3e42;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .job-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .job-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #5a5a5a;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        /* Steps 테이블 */
+        .steps-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: #2d2d30;
+        }
+
+        .steps-table th,
+        .steps-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #3e3e42;
+            font-size: 12px;
+        }
+
+        .steps-table th {
+            background-color: #383838;
+            font-weight: 600;
+        }
+
+        /* 우측 패널 */
+        .right-panel {
+            width: 300px;
+            background-color: #252526;
+            border-left: 1px solid #3e3e42;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-section {
+            padding: 15px;
+            border-bottom: 1px solid #3e3e42;
+        }
+
+        .panel-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .quick-links {
+            list-style: none;
+        }
+
+        .quick-links li {
+            padding: 5px 0;
+        }
+
+        .quick-links a {
+            color: #569cd6;
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+        .quick-links a:hover {
+            text-decoration: underline;
+        }
+
+        .llm-prompt {
+            background-color: #2d2d30;
+            border: 1px solid #3e3e42;
+            border-radius: 3px;
+            padding: 10px;
+            min-height: 100px;
+            font-size: 12px;
+        }
+
+        .yaml-preview {
+            background-color: #1e1e1e;
+            border: 1px solid #3e3e42;
+            border-radius: 3px;
+            padding: 10px;
+            min-height: 200px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            overflow-y: auto;
+        }
+
+        .btn {
+            background-color: #0e639c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn:hover {
+            background-color: #1177bb;
+        }
+
+        .btn-secondary {
+            background-color: #5a5a5a;
+        }
+
+        .btn-secondary:hover {
+            background-color: #6a6a6a;
+        }
+
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        .toggle {
+            width: 40px;
+            height: 20px;
+            background-color: #5a5a5a;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .toggle.active {
+            background-color: #0e639c;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+
+        .toggle.active::after {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 좌측 사이드바 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                Workflows
+            </div>
+            <div class="workflow-list">
+                <div class="workflow-item active">
+                    <span class="workflow-icon">🏗️</span>
+                    <span>Build and Test</span>
+                </div>
+                <div class="workflow-item">
+                    <span class="workflow-icon">🚀</span>
+                    <span>Deploy to Production</span>
+                </div>
+                <div class="workflow-item">
+                    <span class="workflow-icon">🏷️</span>
+                    <span>Release</span>
+                </div>
+                <div class="workflow-item">
+                    <span class="workflow-icon">🌙</span>
+                    <span>Nightly Build</span>
+                </div>
+                <div class="workflow-item">
+                    <span class="workflow-icon">🔄</span>
+                    <span>CI/CD Pipeline</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="main-content">
+            <div class="main-header">
+                <h1>Workflow Editor</h1>
+            </div>
+            <div class="editor-content">
+                <!-- Trigger 섹션 -->
+                <div class="form-section">
+                    <h3>Trigger</h3>
+                    <div class="form-group">
+                        <label>Configure the events that trigger this workflow</label>
+                        <select class="form-control">
+                            <option>Push</option>
+                            <option>Pull Request</option>
+                            <option>Schedule</option>
+                            <option>Manual</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Event 섹션 -->
+                <div class="form-section">
+                    <h3>Event</h3>
+                    <div class="form-group">
+                        <select class="form-control">
+                            <option>Select...</option>
+                            <option>push</option>
+                            <option>pull_request</option>
+                            <option>schedule</option>
+                            <option>workflow_dispatch</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Branch 섹션 -->
+                <div class="form-section">
+                    <h3>Branch</h3>
+                    <div class="form-group">
+                        <select class="form-control">
+                            <option>Select...</option>
+                            <option>main</option>
+                            <option>develop</option>
+                            <option>feature/*</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Cron Expression -->
+                <div class="form-section">
+                    <h3>Cron Expression</h3>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Enter cron expression..." value="cronexpression">
+                    </div>
+                </div>
+
+                <!-- Jobs 섹션 -->
+                <div class="form-section">
+                    <h3>Jobs</h3>
+                    <div class="jobs-section">
+                        <div class="job-item">
+                            <div class="job-header">
+                                <div class="job-icon">
+                                    <span>👤</span>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600;">Job 1</div>
+                                    <div style="font-size: 11px; color: #888;">Drag and drop to reorder jobs</div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Job Name</label>
+                                <input type="text" class="form-control" placeholder="Enter job name..." value="jobname">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Runs On</label>
+                                <select class="form-control">
+                                    <option>Select...</option>
+                                    <option>ubuntu-latest</option>
+                                    <option>windows-latest</option>
+                                    <option>macos-latest</option>
+                                </select>
+                            </div>
+
+                            <!-- Environment Variables -->
+                            <div class="form-group">
+                                <label>Environment Variables</label>
+                                <table class="steps-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>ENV_VAR_1</td>
+                                            <td>value1</td>
+                                        </tr>
+                                        <tr>
+                                            <td>ENV_VAR_2</td>
+                                            <td>value2</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Steps 섹션 -->
+                <div class="form-section">
+                    <h3>Steps</h3>
+                    <table class="steps-table">
+                        <thead>
+                            <tr>
+                                <th>Step Name</th>
+                                <th>Action</th>
+                                <th>Inputs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Checkout Code</td>
+                                <td>actions/checkout@v3</td>
+                                <td>github-token</td>
+                            </tr>
+                            <tr>
+                                <td>Setup Node.js</td>
+                                <td>actions/setup-node@v3</td>
+                                <td>node-version: 18</td>
+                            </tr>
+                            <tr>
+                                <td>Run Tests</td>
+                                <td>npm run test</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Action 섹션 -->
+                <div class="form-section">
+                    <h3>Action</h3>
+                    <div class="form-group">
+                        <select class="form-control">
+                            <option>Select...</option>
+                            <option>actions/checkout</option>
+                            <option>actions/setup-node</option>
+                            <option>actions/upload-artifact</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Custom Script -->
+                <div class="form-section">
+                    <h3>Custom Script</h3>
+                    <div class="form-group">
+                        <textarea class="form-control" rows="4" placeholder="Enter custom script..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Timeout -->
+                <div class="form-section">
+                    <h3>Timeout</h3>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Enter timeout..." value="timeout-in">
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button class="btn">Save</button>
+                    <button class="btn btn-secondary" style="margin-left: 10px;">Discard</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 우측 패널 -->
+        <div class="right-panel">
+            <!-- Quick Links -->
+            <div class="panel-section">
+                <h3>Quick Links</h3>
+                <ul class="quick-links">
+                    <li><a href="#">Workflow Documentation →</a></li>
+                    <li><a href="#">CI/CD Best Practices →</a></li>
+                </ul>
+            </div>
+
+            <!-- LLM Prompt -->
+            <div class="panel-section">
+                <h3>LLM Prompt</h3>
+                <div class="llm-prompt"></div>
+                <button class="btn" style="margin-top: 10px;">Submit</button>
+            </div>
+
+            <!-- Settings -->
+            <div class="panel-section">
+                <h3>Settings</h3>
+                <div class="settings-toggle">
+                    <span>Theme</span>
+                    <span>System</span>
+                </div>
+                <div class="settings-toggle">
+                    <span>Notifications</span>
+                    <div class="toggle active"></div>
+                </div>
+            </div>
+
+            <!-- Live YAML Preview -->
+            <div class="panel-section" style="flex: 1;">
+                <h3>Live YAML Preview</h3>
+                <div class="yaml-preview">
+name: Build and Test
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    - run: npm install
+    - run: npm test
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // VS Code API 가져오기
+        const vscode = acquireVsCodeApi();
+
+        // 워크플로우 아이템 클릭 이벤트
+        document.querySelectorAll('.workflow-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.workflow-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 선택된 워크플로우에 따라 YAML 미리보기 업데이트
+                updateYamlPreview(this.textContent.trim());
+            });
+        });
+
+        // 토글 버튼 이벤트
+        document.querySelectorAll('.toggle').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+        });
+
+        // 폼 입력 시 YAML 미리보기 업데이트
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('input', function() {
+                generateYamlPreview();
+            });
+        });
+
+        // LLM Prompt 제출
+        document.querySelector('.panel-section .btn').addEventListener('click', function() {
+            const prompt = document.querySelector('.llm-prompt').textContent;
+            vscode.postMessage({
+                command: 'submitPrompt',
+                text: prompt || 'GitHub Actions workflow analysis request'
+            });
+        });
+
+        // Workflow 저장
+        document.querySelector('.btn').addEventListener('click', function() {
+            if (this.textContent === 'Save') {
+                vscode.postMessage({
+                    command: 'saveWorkflow',
+                    workflow: generateWorkflowData()
+                });
+            }
+        });
+
+        // YAML 미리보기 업데이트 함수
+        function updateYamlPreview(workflowName) {
+            const yamlPreview = document.querySelector('.yaml-preview');
+            const workflows = {
+                '🏗️ Build and Test': `name: Build and Test
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    - run: npm ci
+    - run: npm test
+    - run: npm run build`,
+                '🚀 Deploy to Production': `name: Deploy to Production
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - uses: actions/checkout@v3
+    - name: Deploy to server
+      run: |
+        echo "Deploying to production..."
+        # deployment scripts here`,
+                '🏷️ Release': `name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Create Release
+      uses: actions/create-release@v1
+      with:
+        tag_name: \${{ github.ref }}
+        release_name: Release \${{ github.ref }}`,
+                '🌙 Nightly Build': `name: Nightly Build
+on:
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run nightly tests
+      run: npm run test:nightly`,
+                '🔄 CI/CD Pipeline': `name: CI/CD Pipeline
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: npm ci
+    - run: npm test
+  
+  cd:
+    if: github.ref == 'refs/heads/main'
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "Deploying..."`
+            };
+            
+            yamlPreview.textContent = workflows[workflowName] || workflows['🏗️ Build and Test'];
+        }
+
+        // 동적 YAML 생성 함수
+        function generateYamlPreview() {
+            const trigger = document.querySelector('select.form-control').value;
+            const jobName = document.querySelector('input[placeholder="Enter job name..."]').value || 'job';
+            const runsOn = document.querySelector('select.form-control:nth-of-type(3)').value || 'ubuntu-latest';
+            
+            const yaml = `name: ${document.querySelector('.workflow-item.active').textContent.trim()}
+on: ${trigger.toLowerCase()}
+
+jobs:
+  ${jobName}:
+    runs-on: ${runsOn}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    - run: npm install
+    - run: npm test`;
+            
+            document.querySelector('.yaml-preview').textContent = yaml;
+        }
+
+        // 워크플로우 데이터 생성 함수
+        function generateWorkflowData() {
+            return {
+                name: document.querySelector('.workflow-item.active').textContent.trim(),
+                trigger: document.querySelector('select.form-control').value,
+                jobs: [{
+                    name: document.querySelector('input[placeholder="Enter job name..."]').value || 'job',
+                    runsOn: document.querySelector('select.form-control:nth-of-type(3)').value || 'ubuntu-latest'
+                }]
+            };
+        }
+
+        // 초기 YAML 미리보기 설정
+        updateYamlPreview('🏗️ Build and Test');
+    </script>
+</body>
+</html>
