@@ -1,5 +1,7 @@
 // src/extension.ts
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
 import { Octokit } from '@octokit/rest';
 import { getGitHubToken } from './auth/tokenManager';
 import { deleteGitHubToken } from './auth/tokenManager';
@@ -72,6 +74,78 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   context.subscriptions.push(disposable);
+
+  // 0. 웹뷰 개발 시작 전 테스트를 위한 Hello World 페이지
+  const helloWorldCommand = vscode.commands.registerCommand('extension.helloWorld', () => {
+    const panel = vscode.window.createWebviewPanel(
+      'helloWorld',
+      'Hello World',
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true
+      }
+    );
+
+    panel.webview.html = getWebviewContent(context);
+    
+    // Hello World webview 메시지 처리
+    panel.webview.onDidReceiveMessage(
+      message => {
+        switch (message.command) {
+          case 'showMessage':
+            vscode.window.showInformationMessage(message.text);
+            return;
+        }
+      },
+      undefined,
+      context.subscriptions
+    );
+  });
+
+  context.subscriptions.push(helloWorldCommand);
+
+  // 1. GitHub Actions Workflow Editor 명령어 : 임시 페이지 
+  const workflowEditorCommand = vscode.commands.registerCommand('extension.openWorkflowEditor', () => {
+    const panel = vscode.window.createWebviewPanel(
+      'workflowEditor',
+      'GitHub Actions Workflow Editor',
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true
+      }
+    );
+
+    panel.webview.html = getWorkflowEditorContent(context);
+    
+    // webview와 확장간 메시지 통신 설정
+    panel.webview.onDidReceiveMessage(
+      message => {
+        switch (message.command) {
+          case 'submitPrompt':
+            vscode.window.showInformationMessage(`LLM Prompt submitted: ${message.text}`);
+            return;
+          case 'saveWorkflow':
+            vscode.window.showInformationMessage('Workflow saved successfully!');
+            return;
+        }
+      },
+      undefined,
+      context.subscriptions
+    );
+  });
+
+  context.subscriptions.push(workflowEditorCommand);
+
+  function getWebviewContent(context: vscode.ExtensionContext) {
+    const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'hello.html');
+    return fs.readFileSync(htmlPath, 'utf8');
+  }
+
+  function getWorkflowEditorContent(context: vscode.ExtensionContext) {
+    const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor.html');
+    return fs.readFileSync(htmlPath, 'utf8');
+  }
 }
 
 export function deactivate() {
