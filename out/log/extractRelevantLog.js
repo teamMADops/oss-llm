@@ -8,7 +8,7 @@ function extractRelevantLog(text, mode = 'tail') {
         console.log('[📄] 전체 로그 사용');
         return text;
     }
-    const sliced = lines.slice(-20).join('\n');
-    console.log(`[📄] 마지막 20줄 추출 (${lines.length}줄 중)`);
-    return sliced;
+    const errorLines = lines.filter(line => line.toLowerCase().includes('error') || line.includes('##[error]'));
+    console.log(`[📄] 에러 메시지 추출 (${errorLines.length}줄)`);
+    return errorLines.join('\n');
 }

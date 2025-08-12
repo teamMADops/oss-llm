@@ -41,11 +41,18 @@ const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const rest_1 = require("@octokit/rest");
 const tokenManager_1 = require("./auth/tokenManager");
+const tokenManager_2 = require("./auth/tokenManager");
 const getRepoInfo_1 = require("./github/getRepoInfo");
 const getRunList_1 = require("./github/getRunList");
 const getFailedLogs_1 = require("./log/getFailedLogs");
 const printToOutput_1 = require("./output/printToOutput");
 function activate(context) {
+    // token 삭제하는 기능인데, 일단 테스트 해보고 뺄 수도? ////////
+    const deleteToken = vscode.commands.registerCommand('extension.deleteGitHubToken', async () => {
+        await (0, tokenManager_2.deleteGitHubToken)(context);
+    });
+    context.subscriptions.push(deleteToken);
+    //////////////////////////////////////////
     const disposable = vscode.commands.registerCommand('extension.analyzeGitHubActions', async () => {
         console.log('[1] 🔍 확장 실행됨');
         const repo = await (0, getRepoInfo_1.getRepoInfo)();
@@ -67,10 +74,10 @@ function activate(context) {
             return;
         }
         console.log(`[4] ✅ 선택된 Run ID: ${run_id}`);
-        const mode = await vscode.window.showQuickPick(['전체 로그', '마지막 20줄'], {
+        const mode = await vscode.window.showQuickPick(['전체 로그', '에러 메세지만'], {
             placeHolder: 'LLM 프롬프트에 포함할 로그 범위 선택'
         });
-        const logMode = mode === '전체 로그' ? 'all' : 'tail';
+        const logMode = mode === '전체 로그' ? 'all' : 'error';
         console.log(`[5] 📄 로그 추출 방식: ${logMode}`);
         const { failedSteps, prompts } = await (0, getFailedLogs_1.getFailedStepsAndPrompts)(octokit, repo.owner, repo.repo, run_id, logMode);
         console.log(`[6] 📛 실패한 Step 개수: ${failedSteps.length}`);
