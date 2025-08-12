@@ -10,7 +10,7 @@ export async function getFailedStepsAndPrompts(
   owner: string,
   repo: string,
   run_id: number,
-  logMode: 'all' | 'tail' = 'tail'
+  logMode: 'all' | 'error'= 'all'
 ): Promise<{ failedSteps: string[]; prompts: string[] }> {
   console.log(`[🐙] Octokit run_id 요청: ${run_id}`);
   const jobRes = await octokit.actions.listJobsForWorkflowRun({ owner, repo, run_id });

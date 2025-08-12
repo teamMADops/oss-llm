@@ -4,12 +4,23 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Octokit } from '@octokit/rest';
 import { getGitHubToken } from './auth/tokenManager';
+import { deleteGitHubToken } from './auth/tokenManager';
 import { getRepoInfo } from './github/getRepoInfo';
 import { getRunIdFromQuickPick } from './github/getRunList';
 import { getFailedStepsAndPrompts } from './log/getFailedLogs';
 import { printToOutput } from './output/printToOutput';
 
 export function activate(context: vscode.ExtensionContext) {
+
+  // token 삭제하는 기능인데, 일단 테스트 해보고 뺄 수도? ////////
+  const deleteToken = vscode.commands.registerCommand('extension.deleteGitHubToken', async () => {
+      await deleteGitHubToken(context);
+  });
+
+  context.subscriptions.push(deleteToken);
+
+  //////////////////////////////////////////
+
   const disposable = vscode.commands.registerCommand('extension.analyzeGitHubActions', async () => {
     console.log('[1] 🔍 확장 실행됨');
     
@@ -27,6 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
     console.log(`[3] 🔑 GitHub 토큰 확보됨 (길이: ${token.length})`);
 
+
     const octokit = new Octokit({ auth: token });
 
     const run_id = await getRunIdFromQuickPick(octokit, repo.owner, repo.repo);
@@ -36,10 +48,13 @@ export function activate(context: vscode.ExtensionContext) {
     }
     console.log(`[4] ✅ 선택된 Run ID: ${run_id}`);
 
-    const mode = await vscode.window.showQuickPick(['전체 로그', '마지막 20줄'], {
+    const mode = await vscode.window.showQuickPick(['전체 로그', '에러 메세지만'], {
       placeHolder: 'LLM 프롬프트에 포함할 로그 범위 선택'
     });
-    const logMode = mode === '전체 로그' ? 'all' : 'tail';
+
+    
+    const logMode = mode === '전체 로그' ? 'all' : 'error';
+    
     console.log(`[5] 📄 로그 추출 방식: ${logMode}`);
 
     const { failedSteps, prompts } = await getFailedStepsAndPrompts(
@@ -49,6 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
       run_id,
       logMode
     );
+
     console.log(`[6] 📛 실패한 Step 개수: ${failedSteps.length}`);
     console.log(`[7] ✨ 프롬프트 생성 완료 (${prompts.length}개)`);
 
