@@ -39,10 +39,9 @@ exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
-const rest_1 = require("@octokit/rest");
 const tokenManager_1 = require("./auth/tokenManager");
-const tokenManager_2 = require("./auth/tokenManager");
 const getRepoInfo_1 = require("./github/getRepoInfo");
+const githubSession_1 = require("./auth/githubSession");
 const getRunList_1 = require("./github/getRunList");
 const getFailedLogs_1 = require("./log/getFailedLogs");
 const printToOutput_1 = require("./output/printToOutput");
@@ -70,19 +69,18 @@ function activate(context) {
             return;
         }
         console.log(`[2] ✅ 레포: ${repo.owner}/${repo.repo}`);
-        const token = await (0, tokenManager_1.getGitHubToken)(context);
-        if (!token) {
-            vscode.window.showErrorMessage('GitHub 토큰이 필요합니다.');
+        //github auto auth-login
+        const octokit = await (0, githubSession_1.getOctokitViaVSCodeAuth)();
+        if (!octokit) {
+            vscode.window.showErrorMessage('GitHub 로그인에 실패했습니다.');
             return;
         }
-        console.log(`[3] 🔑 GitHub 토큰 확보됨 (길이: ${token.length})`);
-        const octokit = new rest_1.Octokit({ auth: token });
+        console.log('[3] 🔑 VS Code GitHub 세션 확보');
         const run_id = await (0, getRunList_1.getRunIdFromQuickPick)(octokit, repo.owner, repo.repo);
         if (!run_id) {
             vscode.window.showInformationMessage('선택된 워크플로우 실행이 없습니다.');
             return;
         }
-        console.log(`[4] ✅ 선택된 Run ID: ${run_id}`);
         const mode = await vscode.window.showQuickPick(['전체 로그', '에러 메세지만'], {
             placeHolder: 'LLM 프롬프트에 포함할 로그 범위 선택'
         });
@@ -98,7 +96,7 @@ function activate(context) {
     context.subscriptions.push(disposable);
     // token 삭제하는 기능
     const deleteToken = vscode.commands.registerCommand('extension.deleteGitHubToken', async () => {
-        await (0, tokenManager_2.deleteGitHubToken)(context);
+        await (0, tokenManager_1.deleteGitHubToken)(context);
     });
     context.subscriptions.push(deleteToken);
     // 0. 웹뷰 개발 시작 전 테스트를 위한 Hello World 페이지
