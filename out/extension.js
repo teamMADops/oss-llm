@@ -36,22 +36,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
 exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
-const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const rest_1 = require("@octokit/rest");
 const tokenManager_1 = require("./auth/tokenManager");
-const tokenManager_2 = require("./auth/tokenManager");
 const getRepoInfo_1 = require("./github/getRepoInfo");
 const getRunList_1 = require("./github/getRunList");
 const getFailedLogs_1 = require("./log/getFailedLogs");
 const printToOutput_1 = require("./output/printToOutput");
 function activate(context) {
-    // token 삭제하는 기능인데, 일단 테스트 해보고 뺄 수도? ////////
+    // token 삭제하는 기능인데, 일단 테스트 해보고 뺄 수도? //
     const deleteToken = vscode.commands.registerCommand('extension.deleteGitHubToken', async () => {
-        await (0, tokenManager_2.deleteGitHubToken)(context);
+        await (0, tokenManager_1.deleteGitHubToken)(context);
     });
     context.subscriptions.push(deleteToken);
-    //////////////////////////////////////////
     const disposable = vscode.commands.registerCommand('extension.analyzeGitHubActions', async () => {
         console.log('[1] 🔍 확장 실행됨');
         const repo = await (0, getRepoInfo_1.getRepoInfo)();
@@ -62,7 +59,8 @@ function activate(context) {
         console.log(`[2] ✅ 리포지토리 감지됨: ${repo.owner}/${repo.repo}`);
         const token = await (0, tokenManager_1.getGitHubToken)(context);
         if (!token) {
-            vscode.window.showErrorMessage('GitHub 토큰이 필요합니다.');
+            // vscode.window.showErrorMessage('GitHub 토큰이 필요합니다.');
+            // 토큰 관리자가 이미 오류 메시지를 표시합니다.
             return;
         }
         console.log(`[3] 🔑 GitHub 토큰 확보됨 (길이: ${token.length})`);
@@ -86,59 +84,102 @@ function activate(context) {
         vscode.window.showInformationMessage(`✅ 분석 완료: ${failedSteps.length}개 실패 step`);
     });
     context.subscriptions.push(disposable);
-    // 0. 웹뷰 개발 시작 전 테스트를 위한 Hello World 페이지
-    const helloWorldCommand = vscode.commands.registerCommand('extension.helloWorld', () => {
-        const panel = vscode.window.createWebviewPanel('helloWorld', 'Hello World', vscode.ViewColumn.One, {
-            enableScripts: true
-        });
-        panel.webview.html = getWebviewContent(context);
-        // Hello World webview 메시지 처리
-        panel.webview.onDidReceiveMessage(message => {
-            switch (message.command) {
-                case 'showMessage':
-                    vscode.window.showInformationMessage(message.text);
-                    return;
-            }
-        }, undefined, context.subscriptions);
-    });
-    context.subscriptions.push(helloWorldCommand);
-    // 1. GitHub Actions Workflow Editor 명령어 : 임시 페이지 
-    const workflowEditorCommand = vscode.commands.registerCommand('extension.openWorkflowEditor', () => {
+    // GitHub Actions Workflow Editor 명령어 : 임시 페이지
+    const workflowEditorCommand = vscode.commands.registerCommand('extension.openWorkflowEditor', async () => {
         const panel = vscode.window.createWebviewPanel('workflowEditor', 'GitHub Actions Workflow Editor', vscode.ViewColumn.One, {
             enableScripts: true,
-            retainContextWhenHidden: true
+            retainContextWhenHidden: true,
+            localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'out', 'webview-build'))]
         });
         panel.webview.html = getWorkflowEditorContent(context, panel);
-        // webview와 확장간 메시지 통신 설정
-        panel.webview.onDidReceiveMessage(message => {
+        // GitHub API 도구 준비
+        const repo = await (0, getRepoInfo_1.getRepoInfo)();
+        if (!repo) {
+            panel.webview.postMessage({ command: 'error', payload: 'GitHub 리포지토리 정보를 찾을 수 없습니다.' });
+            return;
+        }
+        const token = await (0, tokenManager_1.getGitHubToken)(context);
+        if (!token) {
+            panel.webview.postMessage({ command: 'error', payload: 'GitHub 토큰을 찾을 수 없습니다. 설정 명령을 실행해주세요.' });
+            return;
+        }
+        const octokit = new rest_1.Octokit({ auth: token });
+        // 웹뷰로부터 메시지 처리
+        panel.webview.onDidReceiveMessage(async (message) => {
             switch (message.command) {
-                case 'submitPrompt':
-                    vscode.window.showInformationMessage(`LLM Prompt submitted: ${message.text}`);
+                case 'save':
+                    vscode.window.showInformationMessage(message.text);
                     return;
-                case 'saveWorkflow':
-                    vscode.window.showInformationMessage('Workflow saved successfully!');
+                case 'getRunList':
+                    try {
+                        const runs = await octokit.actions.listWorkflowRunsForRepo({ owner: repo.owner, repo: repo.repo });
+                        const runItems = runs.data.workflow_runs
+                            .filter(run => run.status === 'completed') // 완료된 실행만 표시
+                            .map(run => ({
+                            id: run.id,
+                            name: run.name,
+                            status: run.status,
+                            conclusion: run.conclusion,
+                            event: run.event,
+                            updated_at: run.updated_at,
+                        }));
+                        panel.webview.postMessage({ command: 'showRunList', payload: runItems });
+                    }
+                    catch (e) {
+                        panel.webview.postMessage({ command: 'error', payload: `워크플로우 실행 목록을 가져오는 데 실패했습니다: ${e.message}` });
+                    }
+                    return;
+                case 'analyzeRun':
+                    try {
+                        const runId = message.payload.runId;
+                        if (!runId)
+                            return;
+                        panel.webview.postMessage({ command: 'showLoading', payload: { runId } });
+                        const { failedSteps, prompts } = await (0, getFailedLogs_1.getFailedStepsAndPrompts)(octokit, repo.owner, repo.repo, runId, 'error' // 웹뷰에서는 항상 'error' 모드 사용
+                        );
+                        panel.webview.postMessage({
+                            command: 'showAnalysisResult',
+                            payload: { runId, failedSteps, prompts }
+                        });
+                    }
+                    catch (e) {
+                        panel.webview.postMessage({ command: 'error', payload: `실행 분석에 실패했습니다: ${e.message}` });
+                    }
                     return;
             }
         }, undefined, context.subscriptions);
     });
     context.subscriptions.push(workflowEditorCommand);
-    function getWebviewContent(context) {
-        const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'hello.html');
-        return fs.readFileSync(htmlPath, 'utf8');
+}
+function getWorkflowEditorContent(context, panel) {
+    const buildPath = path.join(context.extensionPath, 'out', 'webview-build');
+    const scriptPath = path.join(buildPath, 'assets', 'index.js');
+    const stylePath = path.join(buildPath, 'assets', 'index.css');
+    const scriptUri = panel.webview.asWebviewUri(vscode.Uri.file(scriptPath));
+    const styleUri = panel.webview.asWebviewUri(vscode.Uri.file(stylePath));
+    const nonce = getNonce();
+    return `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource}; script-src 'nonce-${nonce}';">
+      <title>GitHub Actions Workflow Editor</title>
+      <link rel="stylesheet" type="text/css" href="${styleUri}">
+    </head>
+    <body>
+      <div id="root"></div>
+      <script nonce="${nonce}" src="${scriptUri}"></script>
+    </body>
+    </html>`;
+}
+function getNonce() {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
-    function getWorkflowEditorContent(context, panel) {
-        const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor', 'workflow_editor.html');
-        let htmlContent = fs.readFileSync(htmlPath, 'utf8');
-        // Common CSS
-        const commonCssPath = path.join(context.extensionPath, 'src', 'webview', 'common', 'common.css');
-        const commonCssUri = panel.webview.asWebviewUri(vscode.Uri.file(commonCssPath));
-        htmlContent = htmlContent.replace('href="../common/common.css"', `href="${commonCssUri}"`);
-        // Page-specific CSS
-        const pageCssPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor', 'workflow_editor.css');
-        const pageCssUri = panel.webview.asWebviewUri(vscode.Uri.file(pageCssPath));
-        htmlContent = htmlContent.replace('href="workflow_editor.css"', `href="${pageCssUri}"`);
-        return htmlContent;
-    }
+    return text;
 }
 function deactivate() {
     console.log('📴 GitHub Actions 확장 종료됨');
