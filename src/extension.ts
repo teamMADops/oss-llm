@@ -4,42 +4,54 @@ import * as path from 'path';
 import { Octokit } from '@octokit/rest';
 import { getGitHubToken } from './auth/tokenManager';
 import { deleteGitHubToken } from './auth/tokenManager';
-import { getRepoInfo } from './github/getRepoInfo';
+import { getSavedRepo, promptAndSaveRepo,deleteSavedRepo, type RepoRef} from './github/getRepoInfo';
+
 import { getRunIdFromQuickPick } from './github/getRunList';
 import { getFailedStepsAndPrompts } from './log/getFailedLogs';
 import { printToOutput } from './output/printToOutput';
 
 export function activate(context: vscode.ExtensionContext) {
 
-  // token 삭제하는 기능인데, 일단 테스트 해보고 뺄 수도? ////////
-  const deleteToken = vscode.commands.registerCommand('extension.deleteGitHubToken', async () => {
-      await deleteGitHubToken(context);
+  // 레포 등록/수정
+  const cmdSetRepo = vscode.commands.registerCommand('extension.setRepository', async () => {
+    await promptAndSaveRepo(context);
   });
 
-  context.subscriptions.push(deleteToken);
+  // 레포 삭제
+  const cmdClearRepo = vscode.commands.registerCommand('extension.clearRepository', async () => {
+    await deleteSavedRepo(context);
+  });
 
-  //////////////////////////////////////////
+  // 레포 보기(선택)
+  const cmdShowRepo = vscode.commands.registerCommand('extension.showRepository', async () => {
+    const cur = getSavedRepo(context);
+    vscode.window.showInformationMessage(`현재 레포: ${cur ? cur.owner + '/' + cur.repo : '(none)'}`);
+  });
 
-  const disposable = vscode.commands.registerCommand('extension.analyzeGitHubActions', async () => {
+  context.subscriptions.push(cmdSetRepo, cmdClearRepo, cmdShowRepo);
+
+  const disposable = vscode.commands.registerCommand
+  ('extension.analyzeGitHubActions', 
+    async (repoArg?: RepoRef) => {
     console.log('[1] 🔍 확장 실행됨');
+
     
-    const repo = await getRepoInfo();
+    // 우선순위: 명령 인자 > 저장된 레포
+    const repo = repoArg ?? getSavedRepo(context);
     if (!repo) {
-      vscode.window.showErrorMessage('GitHub 리포지토리 정보를 찾을 수 없습니다.');
+      vscode.window.showWarningMessage('저장된 레포가 없습니다. 먼저 레포를 등록하세요.');
       return;
     }
-    console.log(`[2] ✅ 리포지토리 감지됨: ${repo.owner}/${repo.repo}`);
+    console.log(`[2] ✅ 레포: ${repo.owner}/${repo.repo}`);
 
     const token = await getGitHubToken(context);
     if (!token) {
-      vscode.window.showErrorMessage('GitHub 토큰이 필요합니다.');
+      vscode.window.showErrorMessage('GitHub 토큰이 필요합니다.') 
       return;
     }
     console.log(`[3] 🔑 GitHub 토큰 확보됨 (길이: ${token.length})`);
 
-
     const octokit = new Octokit({ auth: token });
-
     const run_id = await getRunIdFromQuickPick(octokit, repo.owner, repo.repo);
     if (!run_id) {
       vscode.window.showInformationMessage('선택된 워크플로우 실행이 없습니다.');
@@ -73,6 +85,13 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   context.subscriptions.push(disposable);
+
+  // token 삭제하는 기능
+  const deleteToken = vscode.commands.registerCommand('extension.deleteGitHubToken', async () => {
+      await deleteGitHubToken(context);
+  });
+
+  context.subscriptions.push(deleteToken);
 
   // 0. 웹뷰 개발 시작 전 테스트를 위한 Hello World 페이지
   const helloWorldCommand = vscode.commands.registerCommand('extension.helloWorld', () => {
