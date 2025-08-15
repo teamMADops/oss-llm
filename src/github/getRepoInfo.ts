@@ -11,7 +11,6 @@ export function formatRepo(ref: RepoRef | null | undefined) {
   return ref ? `${ref.owner}/${ref.repo}` : '(none)';
 }
 
-
 /** owner/repo 또는 GitHub URL(https/ssh, .git 유무) 파싱 */
 function parseOwnerRepo(input: string): RepoRef | null {
   if (!input) return null;

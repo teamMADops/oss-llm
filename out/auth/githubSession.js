@@ -33,27 +33,18 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGitHubToken = getGitHubToken;
-// src/auth/tokenManager.ts
+exports.getOctokitViaVSCodeAuth = getOctokitViaVSCodeAuth;
+// auth/githubSession.ts
 const vscode = __importStar(require("vscode"));
-const TOKEN_KEY = 'github_token';
-async function getGitHubToken(context) {
-    let token = context.workspaceState.get(TOKEN_KEY);
-    if (token) {
-        console.log('[🔐] 저장된 GitHub 토큰 사용');
-        return token;
-    }
-    console.log('[📝] GitHub 토큰 없음 → 사용자 입력 필요');
-    token = await vscode.window.showInputBox({
-        prompt: 'GitHub Personal Access Token을 입력하세요',
-        password: true,
-        ignoreFocusOut: true
-    });
-    if (token) {
-        await context.workspaceState.update(TOKEN_KEY, token);
-        console.log('[💾] GitHub 토큰 저장 완료 (workspaceState)');
-        return token;
-    }
-    console.log('[⛔] 사용자 입력 없음 → 토큰 불러오기 실패');
-    return undefined;
+const rest_1 = require("@octokit/rest");
+const GITHUB_PROVIDER = 'github';
+// 필요한 권한만 요청: private repo면 'repo', 워크플로 조회/로그엔 'workflow'
+const SCOPES = ['repo', 'workflow']; // org 리소스 읽음이 필요하면 'read:org' 추가
+async function getOctokitViaVSCodeAuth() {
+    // 없으면 로그인 UI 뜸 (브라우저 리디렉션)
+    const session = await vscode.authentication.getSession(GITHUB_PROVIDER, SCOPES, { createIfNone: true });
+    if (!session)
+        return null;
+    // VS Code가 발급/보관한 accessToken을 바로 사용
+    return new rest_1.Octokit({ auth: session.accessToken });
 }
