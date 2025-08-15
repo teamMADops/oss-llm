@@ -35,7 +35,6 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
 exports.deactivate = deactivate;
-// src/extension.ts
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
@@ -109,7 +108,7 @@ function activate(context) {
             enableScripts: true,
             retainContextWhenHidden: true
         });
-        panel.webview.html = getWorkflowEditorContent(context);
+        panel.webview.html = getWorkflowEditorContent(context, panel);
         // webview와 확장간 메시지 통신 설정
         panel.webview.onDidReceiveMessage(message => {
             switch (message.command) {
@@ -127,9 +126,18 @@ function activate(context) {
         const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'hello.html');
         return fs.readFileSync(htmlPath, 'utf8');
     }
-    function getWorkflowEditorContent(context) {
-        const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor.html');
-        return fs.readFileSync(htmlPath, 'utf8');
+    function getWorkflowEditorContent(context, panel) {
+        const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor', 'workflow_editor.html');
+        let htmlContent = fs.readFileSync(htmlPath, 'utf8');
+        // Common CSS
+        const commonCssPath = path.join(context.extensionPath, 'src', 'webview', 'common', 'common.css');
+        const commonCssUri = panel.webview.asWebviewUri(vscode.Uri.file(commonCssPath));
+        htmlContent = htmlContent.replace('href="../common/common.css"', `href="${commonCssUri}"`);
+        // Page-specific CSS
+        const pageCssPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor', 'workflow_editor.css');
+        const pageCssUri = panel.webview.asWebviewUri(vscode.Uri.file(pageCssPath));
+        htmlContent = htmlContent.replace('href="workflow_editor.css"', `href="${pageCssUri}"`);
+        return htmlContent;
     }
 }
 function deactivate() {
