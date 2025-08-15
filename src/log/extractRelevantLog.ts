@@ -1,15 +1,19 @@
 // src/log/extractRelevantLog.ts
 
-export function extractRelevantLog(text: string, mode: 'all' | 'tail' = 'tail'): string {
+export function extractRelevantLog(text: string, mode: 'all' | 'tail' | 'error' = 'tail'): string {
   const lines = text.split('\n');
 
   if (mode === 'all') {
     console.log('[📄] 전체 로그 사용');
     return text;
   }
+  
 
-  const sliced = lines.slice(-20).join('\n');
-  console.log(`[📄] 마지막 20줄 추출 (${lines.length}줄 중)`);
+  const errorLines = lines.filter(line => 
+    line.toLowerCase().includes('error') || line.includes('##[error]')
+  );
 
-  return sliced;
+  console.log(`[📄] 에러 메시지 추출 (${errorLines.length}줄)`);
+
+  return errorLines.join('\n');
 }
