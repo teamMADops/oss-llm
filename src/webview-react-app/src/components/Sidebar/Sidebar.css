@@ -1,1 +1,338 @@
-/* 왼쪽 사이드바 컴포넌트 스타일 */
+/* 좌측 Actions 사이드바 */
+.editor-sidebar {
+  position: relative;
+  width: 25%;
+  min-width: 280px;
+  max-width: 400px;
+  height: 100%;
+  background: var(--color-background);
+  border-right: 1px solid #30363d;
+  transition: transform 0.3s ease; /* transform으로 이동 */
+  overflow: hidden;
+  flex-shrink: 0;
+  /* 사이드바 내부 스크롤만 허용 */
+  overscrollBehavior: contain;
+  /* 화면 움직임 방지 */
+  touchAction: pan-y;
+  transform: translateZ(0);
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.editor-sidebar.collapsed {
+  /* 크기는 유지하되 왼쪽으로 이동 */
+  width: 25%;
+  min-width: 280px;
+  max-width: 400px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  overflow: hidden;
+  transform: translateX(-100%); /* 왼쪽으로 완전히 이동 */
+}
+
+.sidebar-header {
+  position: relative;
+  padding: 20px 20px 0;
+  border-bottom: 1px solid #30363d;
+  min-height: 100px;
+  flex-shrink: 0; /* 헤더는 고정 */
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: opacity 0.3s ease; /* 부드러운 투명도 전환 */
+}
+
+.editor-sidebar.collapsed .sidebar-header {
+  opacity: 0;
+}
+
+.sidebar-title {
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24pt;
+  line-height: 60px;
+  color: var(--color-white);
+  margin: 0;
+  transition: opacity 0.3s ease; /* 부드러운 투명도 전환 */
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-sidebar.collapsed .sidebar-title {
+  opacity: 0;
+}
+
+.sidebar-toggle-btn {
+  position: absolute;
+  top: 34px;
+  right: 20px;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.editor-sidebar.collapsed .sidebar-toggle-btn {
+  opacity: 0;
+}
+
+.sidebar-toggle-btn:hover {
+  background: #30363d;
+  border-color: #58a6ff;
+}
+
+.sidebar-toggle-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: #c9d1d9;
+  transition: transform 0.3s ease;
+}
+
+.editor-sidebar.collapsed .sidebar-toggle-btn svg {
+  transform: rotate(180deg);
+}
+
+.actions-list {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Actions 리스트만 스크롤 */
+  overscrollBehavior: contain;
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+  transition: opacity 0.3s ease; /* 부드러운 투명도 전환 */
+}
+
+.editor-sidebar.collapsed .actions-list {
+  opacity: 0;
+}
+
+.action-item {
+  position: relative;
+  width: 100%;
+  min-height: 40px;
+  margin: 8px 0;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 20px;
+  transition: none;
+  border: 1px solid transparent;
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.action-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #30363d;
+}
+
+.action-item.selected {
+  background: var(--color-white);
+  border-color: var(--color-accent);
+  border-radius: 20px;
+  transition: none;
+}
+
+.action-status-indicator {
+  width: 16px;
+  height: 16px;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.status-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.action-name {
+  flex: 1;
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12pt;
+  line-height: 29px;
+  color: var(--color-white);
+  margin-right: 12px;
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-item.selected .action-name {
+  color: var(--color-black);
+}
+
+.action-status {
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 14px;
+  text-align: center;
+  min-width: 50px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+/* Dropdown 메뉴 */
+.action-dropdown {
+  position: relative;
+  width: 100%;
+  /* 배경 사각형 제거 */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.dropdown-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: none;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 0;
+  /* 오른쪽으로 이동 */
+  padding-left: 36px;
+  /* 기본 상태에서는 투명 배경 */
+  background: transparent;
+  border: none;
+}
+
+.dropdown-item:hover {
+  /* hover 시에만 배경과 테두리 표시 */
+  background: var(--color-surface-hover);
+  border-radius: 8px;
+  margin: 0 8px;
+  padding-left: 28px;
+}
+
+/* 선택된 상태 - action-item과 동일한 스타일 */
+.dropdown-item.selected {
+  background: var(--color-white);
+  border: 1px solid var(--color-accent);
+  border-radius: 20px !important; /* 우선순위 강제 적용 */
+  color: var(--color-black);
+  /* 선택된 상태에서는 가로 크기 조정 */
+  margin: 0 8px;
+  padding-left: 24px;
+  transition: none;
+}
+
+.dropdown-item.selected:hover {
+  /* 선택된 상태에서 hover 시에도 동일한 스타일 유지 */
+  background: var(--color-white);
+  border-color: var(--color-accent);
+  border-radius: 20px !important; /* 우선순위 강제 적용 */
+}
+
+/* 선택된 상태의 first-child와 last-child도 border-radius 적용 */
+.dropdown-item.selected:first-child {
+  border-radius: 20px !important;
+}
+
+.dropdown-item.selected:last-child {
+  border-radius: 20px !important;
+}
+
+.dropdown-item:first-child {
+  border-radius: 20px;
+}
+
+.dropdown-item:last-child {
+  border-radius: 20px;
+}
+
+.dropdown-item:not(:last-child) {
+  border-bottom: none;
+}
+
+.dropdown-icon {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+  /* 아이콘 크기 조정 */
+  width: 16px;
+  height: 16px;
+}
+
+.dropdown-item:hover .dropdown-icon {
+  color: var(--color-text-primary);
+}
+
+/* 선택된 상태의 아이콘 색상 */
+.dropdown-item.selected .dropdown-icon {
+  filter: brightness(0); /* 검은색으로 변경 */
+}
+
+/* 사이드바가 닫혔을 때 화살표 표시 */
+.sidebar-collapsed-arrow {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 40px;
+  background: #58a6ff;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  /* 화살표만 튀어나오기 */
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-collapsed-arrow:hover {
+  background: #79c0ff;
+  width: 24px;
+}
+
+.editor-sidebar.collapsed ~ .sidebar-collapsed-arrow {
+  display: flex;
+}
+
+.sidebar-collapsed-arrow svg {
+  width: 12px;
+  height: 12px;
+  fill: white;
+}

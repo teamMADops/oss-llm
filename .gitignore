@@ -5,6 +5,15 @@ dist/
 llm_prompts.txt
 package-lock.json
 
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
 # Log
 logs
 *.log

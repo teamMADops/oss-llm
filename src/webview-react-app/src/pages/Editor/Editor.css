@@ -1,1 +1,560 @@
-/* Editor 페이지 스타일 */
+/* Editor 페이지 스타일 - 완전 반응형, 섹션별 스크롤, 가로 스크롤 차단 */
+
+.editor-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: #0d1117;
+  display: flex;
+  font-family: var(--font-family-base);
+  overflow: hidden;
+  /* 전체 스크롤 완전 차단 */
+  overscrollBehavior: none;
+  -webkit-overflow-scrolling: touch;
+  /* 화면 움직임 방지 */
+  touchAction: none;
+  userSelect: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  /* 추가 안정화 */
+  transform: translateZ(0);
+  backfaceVisibility: hidden;
+  perspective: 1000px;
+  /* 가로 스크롤 완전 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* 사이드바가 닫혔을 때 화살표 */
+.sidebar-collapsed-arrow {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 40px;
+  background: #58a6ff;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  /* 화살표만 튀어나오기 */
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-collapsed-arrow:hover {
+  background: #79c0ff;
+  width: 24px;
+}
+
+.editor-sidebar.collapsed ~ .sidebar-collapsed-arrow {
+  display: flex;
+}
+
+.sidebar-collapsed-arrow svg {
+  width: 12px;
+  height: 12px;
+  fill: white;
+}
+
+/* 중앙 Build 섹션 */
+.editor-main {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  padding: 20px;
+  transition: margin-left 0.3s ease; /* 왼쪽 여백 애니메이션 */
+  overflow: hidden; /* 메인 섹션 자체는 스크롤 없음 */
+  min-width: 0; /* flexbox에서 축소 허용 */
+  display: flex;
+  flex-direction: column;
+  /* 화면 움직임 방지 */
+  transform: translateZ(0);
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* 사이드바가 접혔을 때 메인 콘텐츠 왼쪽으로 이동 */
+.editor-sidebar.collapsed ~ .editor-main {
+  margin-left: -25%; /* 사이드바 너비만큼 왼쪽으로 이동 */
+}
+
+.main-header {
+  padding: 0;
+  margin-bottom: 20px;
+  flex-shrink: 0; /* 헤더는 고정 */
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.main-title {
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 38px;
+  color: #ffffff;
+  margin: 0;
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflow-structure {
+  padding: 0;
+  margin-top: 20px;
+  flex: 1;
+  overflow-y: auto; /* 워크플로우 구조만 스크롤 */
+  overflow-x: hidden; /* 가로 스크롤 차단 */
+  overscrollBehavior: contain;
+  -webkit-overflow-scrolling: touch;
+  /* 화면 움직임 방지 */
+  touchAction: pan-y;
+  transform: translateZ(0);
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* 메인 패널 Workflow Editor 스타일 */
+.workflow-editor {
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.workflow-section {
+  margin-bottom: 24px;
+  background: #161b22; /* 사이드바와 동일한 배경 */
+  border-radius: 8px;
+  border: 1px solid #30363d; /* 사이드바와 동일한 테두리 */
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #21262d; /* 사이드바 헤더와 동일한 배경 */
+  border-bottom: 1px solid #30363d;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f0f6fc; /* 사이드바와 동일한 텍스트 색상 */
+  margin: 0;
+}
+
+.section-content {
+  padding: 20px;
+}
+
+/* Workflow Name Input */
+.workflow-name-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #0d1117; /* 사이드바와 동일한 입력 배경 */
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #f0f6fc;
+  font-size: 14px;
+  font-family: var(--font-family-base);
+  transition: border-color 0.2s ease;
+}
+
+.workflow-name-input:focus {
+  outline: none;
+  border-color: #58a6ff; /* 사이드바와 동일한 포커스 색상 */
+}
+
+.workflow-name-input::placeholder {
+  color: #8b949e;
+}
+
+/* Trigger Items */
+.trigger-item {
+  margin-bottom: 16px;
+  background: #0d1117; /* 사이드바와 동일한 아이템 배경 */
+  border-radius: 6px;
+  border: 1px solid #30363d;
+  overflow: hidden;
+}
+
+.trigger-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  background: #161b22; /* 사이드바와 동일한 헤더 배경 */
+}
+
+.trigger-header:hover {
+  background: #21262d; /* 사이드바와 동일한 호버 배경 */
+}
+
+.trigger-checkbox {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+.trigger-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #58a6ff; /* 사이드바와 동일한 체크박스 색상 */
+}
+
+.trigger-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #f0f6fc; /* 사이드바와 동일한 텍스트 색상 */
+}
+
+.dropdown-arrow {
+  font-size: 12px;
+  color: #8b949e; /* 사이드바와 동일한 화살표 색상 */
+  transition: transform 0.2s ease;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* Trigger Details */
+.trigger-details {
+  padding: 20px;
+  background: #0d1117;
+  border-top: 1px solid #30363d;
+}
+
+.field-group {
+  margin-bottom: 16px;
+}
+
+.field-group:last-child {
+  margin-bottom: 0;
+}
+
+.field-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #8b949e; /* 사이드바와 동일한 라벨 색상 */
+  margin-bottom: 8px;
+}
+
+.field-group input,
+.field-group select {
+  width: 100%;
+  padding: 10px 12px;
+  background: #161b22; /* 사이드바와 동일한 입력 배경 */
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #f0f6fc;
+  font-size: 13px;
+  font-family: var(--font-family-base);
+  transition: border-color 0.2s ease;
+}
+
+.field-group input:focus,
+.field-group select:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.field-group select[multiple] {
+  height: auto;
+  min-height: 80px;
+}
+
+/* Job Items */
+.job-item {
+  margin-bottom: 16px;
+  background: #0d1117;
+  border-radius: 6px;
+  border: 1px solid #30363d;
+  overflow: hidden;
+}
+
+.job-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  background: #161b22;
+}
+
+.job-header:hover {
+  background: #21262d;
+}
+
+.job-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.job-details {
+  padding: 20px;
+  background: #0d1117;
+  border-top: 1px solid #30363d;
+}
+
+/* Step Items */
+.step-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: #161b22;
+  border-radius: 4px;
+  border: 1px solid #30363d;
+}
+
+.step-item:last-child {
+  margin-bottom: 0;
+}
+
+.step-item input {
+  flex: 1;
+  padding: 8px 10px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #f0f6fc;
+  font-size: 12px;
+  font-family: var(--font-family-base);
+}
+
+.step-item input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+/* Buttons */
+.add-job-btn,
+.add-step-btn {
+  padding: 8px 16px;
+  background: #238636; /* 사이드바와 동일한 버튼 색상 */
+  border: 1px solid #238636;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-job-btn:hover,
+.add-step-btn:hover {
+  background: #2ea043;
+  border-color: #2ea043;
+}
+
+.add-step-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.workflow-item {
+  margin-bottom: 15px;
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.item-header {
+  width: 100%;
+  min-height: 40px;
+  background: #161b22;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  margin-bottom: 8px;
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.item-name {
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 19px;
+  color: #ffffff;
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-content {
+  width: 100%;
+  min-height: 80px;
+  background: #21262d;
+  border-radius: 0 0 8px 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.content-text {
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 17px;
+  color: #ffffff;
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 우측 YAML 미리보기 - YamlViewer 컴포넌트가 담당 */
+.yaml-viewer {
+  width: 25%; /* 사이드바가 열려있을 때: 작게 */
+  min-width: 300px;
+  max-width: 600px; /* 최대 너비 제한 */
+  flex-shrink: 0;
+  /* 외부 크기 변경 애니메이션 제거 - 즉시 변경 */
+  resize: horizontal; /* 가로 크기 조절 가능 */
+  overflow: hidden; /* 크기 조절 시 내용 넘침 방지 */
+}
+
+/* 사이드바가 접혔을 때 YAML 뷰어 너비 확장 */
+.editor-sidebar.collapsed ~ .yaml-viewer {
+  width: 50%; /* 사이드바가 접혔을 때: 반반 */
+  min-width: 400px;
+  max-width: 800px; /* 최대 너비 증가 */
+}
+
+
+/* 공통 스타일 */
+.editor-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #8b949e;
+  font-size: 1.125rem;
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 스크롤바 스타일링 - 섹션별로만 적용 */
+.actions-list::-webkit-scrollbar,
+.workflow-structure::-webkit-scrollbar {
+  width: 8px;
+}
+
+.actions-list::-webkit-scrollbar-track,
+.workflow-structure::-webkit-scrollbar-track {
+  background: #21262d;
+  border-radius: 4px;
+}
+
+.actions-list::-webkit-scrollbar-thumb,
+.workflow-structure::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+.actions-list::-webkit-scrollbar-thumb:hover,
+.workflow-structure::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* 작은 화면에서 스크롤바 숨기기 */
+@media (max-width: 768px) {
+  .actions-list::-webkit-scrollbar,
+  .workflow-structure::-webkit-scrollbar {
+    width: 4px;
+  }
+}
+
+/* 반응형 디자인을 위한 미디어 쿼리 */
+@media (max-width: 1200px) {
+  .editor-sidebar {
+    width: 30%;
+    min-width: 250px;
+  }
+  
+  .yaml-viewer {
+    width: 25%; /* 사이드바가 열려있을 때: 작게 */
+    min-width: 250px;
+    max-width: 500px; /* 중간 화면에서 최대 너비 조정 */
+  }
+  
+  .editor-sidebar.collapsed ~ .yaml-viewer {
+    width: 50%; /* 사이드바가 접혔을 때: 반반 */
+    min-width: 350px;
+    max-width: 700px; /* 중간 화면에서 최대 너비 조정 */
+  }
+}
+
+@media (max-width: 768px) {
+  .editor-container {
+    flex-direction: column;
+  }
+  
+  .editor-sidebar {
+    width: 100%;
+    height: auto;
+    min-height: 200px;
+    position: relative;
+  }
+  
+  .editor-main {
+    height: auto;
+    min-height: 300px;
+  }
+  
+  .yaml-viewer {
+    width: 100%;
+    height: 300px;
+    margin-top: 20px;
+    min-width: auto; /* 모바일에서는 min-width 제거 */
+  }
+  
+  /* 모바일에서는 사이드바 접힘 상태 무시 */
+  .editor-sidebar.collapsed ~ .yaml-viewer {
+    width: 100%;
+    min-width: auto;
+  }
+
+}
