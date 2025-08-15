@@ -8,30 +8,40 @@
     "vscode": "^1.101.0"
   },
   "main": "./out/extension.js",
-  "scripts": {
-    "watch": "tsc -w",
-    "build": "tsc",
-    "lint": "eslint . --ext ts"
-  },
   "contributes": {
     "commands": [
-      {
-        "command": "extension.analyzeGitHubActions",
-        "title": "GitHub Actions 실패 로그 분석"
+          
+      { "command": "extension.setRepository", 
+        "title": "GitHub Actions: 레포 저장/수정"
+      },
+      { "command": "extension.clearRepository", 
+        "title": "GitHub Actions: 저장된 레포 삭제" 
+      },
+      { "command": "extension.showRepository", 
+        "title": "GitHub Actions: 현재 레포 보기" 
       },
       {
-        "command": "extension.deleteGitHubToken",
-        "title": "Delete GitHub Token"
+        "command": "extension.analyzeGitHubActions",
+        "title": "GitHub Actions: 실패 Step 분석 및 LLM 프롬프트 생성"
       },
       {
         "command": "extension.helloWorld",
-        "title": "Hello World"
+        "title": "Dev: Hello World Webview 열기"
       },
       {
         "command": "extension.openWorkflowEditor",
-        "title": "GitHub Actions Workflow Editor"
+        "title": "GitHub Actions: Workflow 에디터 열기"
+      },
+      {
+        "command": "extension.deleteGitHubToken",
+        "title": "GitHub Actions: 저장된 GitHub 토큰 삭제"
       }
     ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.0",

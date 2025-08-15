@@ -17,3 +17,7 @@ logs
 # Custom for Gemini CLI
 GEMINI.md
 requirements.md
+
+#package
+package-lock.json
+

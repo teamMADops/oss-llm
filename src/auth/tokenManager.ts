@@ -1,6 +1,5 @@
 // src/auth/tokenManager.ts
 import * as vscode from 'vscode';
-
 const TOKEN_KEY = 'github_token';
 
 export async function getGitHubToken(context: vscode.ExtensionContext): Promise<string | undefined> {
