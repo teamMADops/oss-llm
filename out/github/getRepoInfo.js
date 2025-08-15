@@ -1,4 +1,6 @@
 "use strict";
+// src/github/getRepoInfo.ts
+// 사용자, repo 이름 가져오기
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -37,7 +39,6 @@ exports.formatRepo = formatRepo;
 exports.getSavedRepo = getSavedRepo;
 exports.promptAndSaveRepo = promptAndSaveRepo;
 exports.deleteSavedRepo = deleteSavedRepo;
-// src/github/getRepoInfo.ts
 const vscode = __importStar(require("vscode"));
 /** 전역 저장 키 */
 const KEY = 'gh_actions_analyzer.fixed_repo';

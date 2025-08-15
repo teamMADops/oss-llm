@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -8,6 +41,8 @@ const jszip_1 = __importDefault(require("jszip"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const extractRelevantLog_1 = require("./extractRelevantLog");
 const formatPrompt_1 = require("./formatPrompt");
+// txt 파일 생성을 위해!
+const fs = __importStar(require("fs"));
 async function getFailedStepsAndPrompts(octokit, owner, repo, run_id, logMode = 'all') {
     console.log(`[🐙] Octokit run_id 요청: ${run_id}`);
     const jobRes = await octokit.actions.listJobsForWorkflowRun({ owner, repo, run_id });
@@ -22,8 +57,10 @@ async function getFailedStepsAndPrompts(octokit, owner, repo, run_id, logMode = 
     for (const filename of Object.keys(zip.files)) {
         const content = await zip.files[filename].async('string');
         const snippet = (0, extractRelevantLog_1.extractRelevantLog)(content, logMode);
-        prompts.push((0, formatPrompt_1.formatPrompt)(filename, snippet));
+        prompts.push((0, formatPrompt_1.formatPrompt)(filename, snippet)); // formatPrompt.ts 에서 프롬프트 초안 수정하기 
     }
+    // 일단 txt 파일 생성하는 코드 써놓음
+    fs.writeFileSync('llm_prompts.txt', prompts.join('\n\n---\n\n'));
     console.log(`[🧠] 프롬프트 ${prompts.length}개 생성 완료`);
     return { failedSteps, prompts };
 }

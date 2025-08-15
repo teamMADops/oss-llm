@@ -1,4 +1,7 @@
 // src/github/getRepoInfo.ts
+// 사용자, repo 이름 가져오기
+
+
 import * as vscode from 'vscode';
 
 export type RepoRef = { owner: string; repo: string };
