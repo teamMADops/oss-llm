@@ -10,15 +10,17 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-          
-      { "command": "extension.setRepository", 
+      {
+        "command": "extension.setRepository",
         "title": "GitHub Actions: 레포 저장/수정"
       },
-      { "command": "extension.clearRepository", 
-        "title": "GitHub Actions: 저장된 레포 삭제" 
+      {
+        "command": "extension.clearRepository",
+        "title": "GitHub Actions: 저장된 레포 삭제"
       },
-      { "command": "extension.showRepository", 
-        "title": "GitHub Actions: 현재 레포 보기" 
+      {
+        "command": "extension.showRepository",
+        "title": "GitHub Actions: 현재 레포 보기"
       },
       {
         "command": "extension.analyzeGitHubActions",
