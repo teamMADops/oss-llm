@@ -3,6 +3,7 @@ node_modules/
 dist/
 .env
 llm_prompts.txt
+package-lock.json
 
 # Log
 logs

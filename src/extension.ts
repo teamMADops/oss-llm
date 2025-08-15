@@ -1,4 +1,3 @@
-// src/extension.ts
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -116,7 +115,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
     );
 
-    panel.webview.html = getWorkflowEditorContent(context);
+    panel.webview.html = getWorkflowEditorContent(context, panel);
     
     // webview와 확장간 메시지 통신 설정
     panel.webview.onDidReceiveMessage(
@@ -142,9 +141,21 @@ export function activate(context: vscode.ExtensionContext) {
     return fs.readFileSync(htmlPath, 'utf8');
   }
 
-  function getWorkflowEditorContent(context: vscode.ExtensionContext) {
-    const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor.html');
-    return fs.readFileSync(htmlPath, 'utf8');
+  function getWorkflowEditorContent(context: vscode.ExtensionContext, panel: vscode.WebviewPanel): string {
+    const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor', 'workflow_editor.html');
+    let htmlContent = fs.readFileSync(htmlPath, 'utf8');
+
+    // Common CSS
+    const commonCssPath = path.join(context.extensionPath, 'src', 'webview', 'common', 'common.css');
+    const commonCssUri = panel.webview.asWebviewUri(vscode.Uri.file(commonCssPath));
+    htmlContent = htmlContent.replace('href="../common/common.css"', `href="${commonCssUri}"`);
+
+    // Page-specific CSS
+    const pageCssPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor', 'workflow_editor.css');
+    const pageCssUri = panel.webview.asWebviewUri(vscode.Uri.file(pageCssPath));
+    htmlContent = htmlContent.replace('href="workflow_editor.css"', `href="${pageCssUri}"`);
+
+    return htmlContent;
   }
 }
 
