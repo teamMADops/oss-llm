@@ -1,11 +1,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Octokit } from '@octokit/rest';
-import { getGitHubToken } from './auth/tokenManager';
-import { deleteGitHubToken } from './auth/tokenManager';
 import { getSavedRepo, promptAndSaveRepo,deleteSavedRepo, type RepoRef} from './github/getRepoInfo';
-
+import { getOctokitViaVSCodeAuth } from './auth/githubSession';
 import { getRunIdFromQuickPick } from './github/getRunList';
 import { getFailedStepsAndPrompts } from './log/getFailedLogs';
 import { printToOutput } from './output/printToOutput';
@@ -35,7 +32,6 @@ export function activate(context: vscode.ExtensionContext) {
     async (repoArg?: RepoRef) => {
     console.log('[1] 🔍 확장 실행됨');
 
-    
     // 우선순위: 명령 인자 > 저장된 레포
     const repo = repoArg ?? getSavedRepo(context);
     if (!repo) {
@@ -43,26 +39,24 @@ export function activate(context: vscode.ExtensionContext) {
       return;
     }
     console.log(`[2] ✅ 레포: ${repo.owner}/${repo.repo}`);
-
-    const token = await getGitHubToken(context);
-    if (!token) {
-      vscode.window.showErrorMessage('GitHub 토큰이 필요합니다.') 
-      return;
+    
+    //github auto auth-login
+    const octokit = await getOctokitViaVSCodeAuth();
+    if (!octokit) {
+    vscode.window.showErrorMessage('GitHub 로그인에 실패했습니다.');
+    return;
     }
-    console.log(`[3] 🔑 GitHub 토큰 확보됨 (길이: ${token.length})`);
+    console.log('[3] 🔑 VS Code GitHub 세션 확보');
 
-    const octokit = new Octokit({ auth: token });
     const run_id = await getRunIdFromQuickPick(octokit, repo.owner, repo.repo);
     if (!run_id) {
       vscode.window.showInformationMessage('선택된 워크플로우 실행이 없습니다.');
       return;
     }
-    console.log(`[4] ✅ 선택된 Run ID: ${run_id}`);
 
     const mode = await vscode.window.showQuickPick(['전체 로그', '에러 메세지만'], {
       placeHolder: 'LLM 프롬프트에 포함할 로그 범위 선택'
     });
-
     
     const logMode = mode === '전체 로그' ? 'all' : 'error';
     
