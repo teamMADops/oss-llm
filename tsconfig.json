@@ -9,5 +9,5 @@
     "outDir": "out",
     "rootDir": "src"
   },
-  "exclude": ["getFailedLogsForLLM.ts"]
+  "exclude": ["src/getFailedLogsForLLM.ts"]
 }
