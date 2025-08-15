@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "publisher": "angkmfirefoxygal",
   "engines": {
-    "vscode": "^1.101.0"
+    "vscode": "^1.80.0"
   },
   "main": "./out/extension.js",
   "scripts": {
@@ -34,17 +34,18 @@
     ]
   },
   "dependencies": {
-    "@octokit/rest": "^22.0.0",
+    "@octokit/rest": "^20.0.0",
     "dotenv": "^17.2.0",
     "jszip": "^3.10.1",
-    "node-fetch": "^3.3.2",
+    "node-fetch": "^2.7.0",
     "openai": "^5.10.1",
     "simple-git": "^3.28.0"
   },
   "devDependencies": {
     "@types/jszip": "^3.4.0",
     "@types/node": "^20.19.9",
-    "@types/vscode": "^1.101.0",
+    "@types/node-fetch": "^2.6.13",
+    "@types/vscode": "^1.80.0",
     "@vscode/test-electron": "^2.4.2",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.3",
