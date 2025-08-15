@@ -80,13 +80,6 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(disposable);
 
-  // token 삭제하는 기능
-  const deleteToken = vscode.commands.registerCommand('extension.deleteGitHubToken', async () => {
-      await deleteGitHubToken(context);
-  });
-
-  context.subscriptions.push(deleteToken);
-
   // 0. 웹뷰 개발 시작 전 테스트를 위한 Hello World 페이지
   const helloWorldCommand = vscode.commands.registerCommand('extension.helloWorld', () => {
     const panel = vscode.window.createWebviewPanel(
