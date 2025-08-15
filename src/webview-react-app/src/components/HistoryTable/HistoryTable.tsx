@@ -1,0 +1,1 @@
+// History Table 컴포넌트
