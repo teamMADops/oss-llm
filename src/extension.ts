@@ -85,35 +85,6 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(disposable);
 
-  // 0. 웹뷰 개발 시작 전 테스트를 위한 Hello World 페이지
-  const helloWorldCommand = vscode.commands.registerCommand('extension.helloWorld', () => {
-    const panel = vscode.window.createWebviewPanel(
-      'helloWorld',
-      'Hello World',
-      vscode.ViewColumn.One,
-      {
-        enableScripts: true
-      }
-    );
-
-    panel.webview.html = getWebviewContent(context);
-    
-    // Hello World webview 메시지 처리
-    panel.webview.onDidReceiveMessage(
-      message => {
-        switch (message.command) {
-          case 'showMessage':
-            vscode.window.showInformationMessage(message.text);
-            return;
-        }
-      },
-      undefined,
-      context.subscriptions
-    );
-  });
-
-  context.subscriptions.push(helloWorldCommand);
-
   // 1. GitHub Actions Workflow Editor 명령어 : 임시 페이지 
   const workflowEditorCommand = vscode.commands.registerCommand('extension.openWorkflowEditor', () => {
     const panel = vscode.window.createWebviewPanel(
