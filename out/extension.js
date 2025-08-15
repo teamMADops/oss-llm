@@ -38,7 +38,6 @@ exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
-const tokenManager_1 = require("./auth/tokenManager");
 const getRepoInfo_1 = require("./github/getRepoInfo");
 const githubSession_1 = require("./auth/githubSession");
 const getRunList_1 = require("./github/getRunList");
@@ -93,11 +92,6 @@ function activate(context) {
         vscode.window.showInformationMessage(`✅ 분석 완료: ${failedSteps.length}개 실패 step`);
     });
     context.subscriptions.push(disposable);
-    // token 삭제하는 기능
-    const deleteToken = vscode.commands.registerCommand('extension.deleteGitHubToken', async () => {
-        await (0, tokenManager_1.deleteGitHubToken)(context);
-    });
-    context.subscriptions.push(deleteToken);
     // 0. 웹뷰 개발 시작 전 테스트를 위한 Hello World 페이지
     const helloWorldCommand = vscode.commands.registerCommand('extension.helloWorld', () => {
         const panel = vscode.window.createWebviewPanel('helloWorld', 'Hello World', vscode.ViewColumn.One, {
