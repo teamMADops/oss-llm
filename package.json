@@ -23,6 +23,10 @@
         "title": "GitHub Actions: 현재 레포 보기"
       },
       {
+        "command" : "extension.openActionsPanel",
+        "title": "OSS: Open Actions Panel" 
+      },
+      {
         "command": "extension.analyzeGitHubActions",
         "title": "GitHub Actions: 실패 Step 분석 및 LLM 프롬프트 생성"
       },

@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { getSavedRepo, promptAndSaveRepo,deleteSavedRepo, type RepoRef} from './github/getRepoInfo';
 import { getOctokitViaVSCodeAuth } from './auth/githubSession';
+import { registerOpenActionsPanel } from './commands/openActionsPanel';
 import { getRunIdFromQuickPick } from './github/getRunList';
 import { getFailedStepsAndPrompts } from './log/getFailedLogs';
 import { printToOutput } from './output/printToOutput';
@@ -27,6 +28,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(cmdSetRepo, cmdClearRepo, cmdShowRepo);
 
+  // github action panel 띄우기!
+  registerOpenActionsPanel(context);
+
+  // 실패한 action llm 분석
   const disposable = vscode.commands.registerCommand
   ('extension.analyzeGitHubActions', 
     async (repoArg?: RepoRef) => {

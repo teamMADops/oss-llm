@@ -40,6 +40,7 @@ const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const getRepoInfo_1 = require("./github/getRepoInfo");
 const githubSession_1 = require("./auth/githubSession");
+const openActionsPanel_1 = require("./commands/openActionsPanel");
 const getRunList_1 = require("./github/getRunList");
 const getFailedLogs_1 = require("./log/getFailedLogs");
 const printToOutput_1 = require("./output/printToOutput");
@@ -58,6 +59,9 @@ function activate(context) {
         vscode.window.showInformationMessage(`현재 레포: ${cur ? cur.owner + '/' + cur.repo : '(none)'}`);
     });
     context.subscriptions.push(cmdSetRepo, cmdClearRepo, cmdShowRepo);
+    // github action panel 띄우기!
+    (0, openActionsPanel_1.registerOpenActionsPanel)(context);
+    // 실패한 action llm 분석
     const disposable = vscode.commands.registerCommand('extension.analyzeGitHubActions', async (repoArg) => {
         console.log('[1] 🔍 확장 실행됨');
         // 우선순위: 명령 인자 > 저장된 레포
