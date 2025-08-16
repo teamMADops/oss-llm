@@ -10,6 +10,7 @@ function App() {
   const [page, setPage] = useState('dashboard'); // Default page
   const [actions, setActions] = useState<Action[]>([]);
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Mock data for now, will be replaced by API calls
   const mockActions: Action[] = useMemo(() => [
@@ -36,7 +37,6 @@ function App() {
         setSelectedActionId(mockActions[0].id);
     }
 
-
     return () => {
       window.removeEventListener('message', handleMessage);
     };
@@ -50,6 +50,10 @@ function App() {
 
   const handleSelectPage = (pageName: string) => {
     setPage(pageName);
+  };
+
+  const handleSidebarToggle = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
   };
 
   const renderPage = () => {
@@ -66,15 +70,17 @@ function App() {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <div className="app-container">
       <Sidebar
         actions={actions}
         selectedActionId={selectedActionId}
         activePage={page}
+        sidebarCollapsed={sidebarCollapsed}
         onSelectAction={handleSelectAction}
         onSelectPage={handleSelectPage}
+        onSidebarToggle={handleSidebarToggle}
       />
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div className="main-content">
         {renderPage()}
       </div>
     </div>
