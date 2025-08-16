@@ -9,16 +9,26 @@
   },
   "main": "./out/extension.js",
   "contributes": {
+    "title": "OSS Actions",
+      "properties": {
+        "oss.serverBase": {
+          "type": "string",
+          "default": "http://localhost:4310",
+          "description": "백엔드 API 베이스 URL (예: https://api.yourdomain.com)"
+        }
+      },
     "commands": [
-          
-      { "command": "extension.setRepository", 
+      {
+        "command": "extension.setRepository",
         "title": "GitHub Actions: 레포 저장/수정"
       },
-      { "command": "extension.clearRepository", 
-        "title": "GitHub Actions: 저장된 레포 삭제" 
+      {
+        "command": "extension.clearRepository",
+        "title": "GitHub Actions: 저장된 레포 삭제"
       },
-      { "command": "extension.showRepository", 
-        "title": "GitHub Actions: 현재 레포 보기" 
+      {
+        "command": "extension.showRepository",
+        "title": "GitHub Actions: 현재 레포 보기"
       },
       {
         "command": "extension.analyzeGitHubActions",
@@ -37,12 +47,19 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    
+    "server:start": "tsx server/index.ts",
+    "server:dev": "tsx watch server/index.ts",
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+    "eventsource": "^4.0.0",
     "express": "^5.1.0",
     "jszip": "^3.10.1",
     "node-fetch": "^2.7.0",
@@ -53,6 +70,7 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
+    "@types/eventsource": "^1.1.15",
     "@types/express": "^5.0.3",
     "@types/jszip": "^3.4.0",
     "@types/node": "^20.19.11",

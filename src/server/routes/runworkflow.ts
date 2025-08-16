@@ -4,7 +4,7 @@ import { pushEvent } from "../sse";
 import { v4 as uuid } from "uuid";
 import { makeOctokit } from "../../github/client";
 import { dispatchWorkflow, pollUntilDone } from "../../github/runs";
-import { getFailedStepsAndPrompts } from "../../github/logs";
+import { getFailedStepsAndPrompts } from "../../log/getFailedLogs";
 import { analyzePrompts } from "../../llm/analyze";
 
 const router = Router();
@@ -15,6 +15,7 @@ const router = Router();
  * res : { correlationId, runId, runUrl, started:true }
  * SSE : queued → in_progress(여러번) → [log_ready → llm_result] → completed|error
  */
+
 router.post("/", async (req, res) => {
   const parsed = RunWorkflowSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues });

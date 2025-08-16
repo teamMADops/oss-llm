@@ -6,7 +6,7 @@ const sse_1 = require("../sse");
 const uuid_1 = require("uuid");
 const client_1 = require("../../github/client");
 const runs_1 = require("../../github/runs");
-const logs_1 = require("../../github/logs");
+const getFailedLogs_1 = require("../../log/getFailedLogs");
 const analyze_1 = require("../../llm/analyze");
 const router = (0, express_1.Router)();
 /**
@@ -35,7 +35,7 @@ router.post("/", async (req, res) => {
         }
         // 실패 → 로그 분석
         (0, sse_1.pushEvent)(correlationId, "log_ready", { message: "Downloading & analyzing failure logs...", runId });
-        const { prompts } = await (0, logs_1.getFailedStepsAndPrompts)(octokit, owner, name, runId, "error");
+        const { prompts } = await (0, getFailedLogs_1.getFailedStepsAndPrompts)(octokit, owner, name, runId, "error");
         const llm = await (0, analyze_1.analyzePrompts)(prompts);
         (0, sse_1.pushEvent)(correlationId, "llm_result", llm);
         (0, sse_1.pushEvent)(correlationId, "completed", { message: "Analysis done ✅", runId });
