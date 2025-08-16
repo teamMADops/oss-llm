@@ -1,94 +1,68 @@
-/* Pretendard 폰트 import */
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+/* Pretendard Variable 폰트 import */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css');
 
+/* 전역 CSS 리셋 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* CSS 변수 정의 */
 :root {
-  /* Base Colors - GitHub Actions Theme */
-  --color-background: #0D1117;
-  --color-surface: #161B22;
-  --color-surface-hover: #1C2128;
-  --color-surface-secondary: #21262D;
-  --color-border: #30363D;
-  --color-border-muted: #21262D;
-  --color-border-subtle: #484F58;
+  /* 색상 */
+  --color-background: #0F1A24;
+  --color-surface: #161b22;
+  --color-surface-secondary: #21262d;
+  --color-surface-hover: #30363d;
+  --color-border: #30363d;
+  --color-border-subtle: #21262d;
+  --color-text-primary: #f0f6fc;
+  --color-text-secondary: #8b949e;
+  --color-accent: #58a6ff;
+  --color-accent-hover: #79c0ff;
+  --color-accent-emphasis: #1f6feb;
+  --color-white: #DBE8F2;
+  --color-black: #0F1A24;
   
-  /* Text Colors */
-  --color-text-primary: #F0F6FC;
-  --color-text-secondary: #8B949E;
-  --color-text-muted: #656D76;
-  --color-text-placeholder: #484F58;
-  --color-white: #FFFFFF;
-  --color-black: #000000;
-
-  /* Status Colors */
-  --color-success: #238636;
-  --color-success-hover: #2EA043;
-  --color-success-emphasis: #2DA44E;
-  --color-danger: #DA3633;
-  --color-danger-hover: #F85149;
-  --color-danger-emphasis: #F85149;
-  --color-warning: #D29922;
-  --color-warning-hover: #E6A30A;
-  --color-warning-emphasis: #FB8500;
-  
-  /* Interactive Colors */
-  --color-accent: #58A6FF;
-  --color-accent-hover: #79C0FF;
-  --color-accent-emphasis: #1F6FEB;
-  --color-neutral: #6E7681;
-  --color-neutral-hover: #8B949E;
-  
-  /* Special Colors */
-  --color-running: #FB8500;
-  --color-pending: #D29922;
-  --color-cancelled: #8B949E;
-  
-  /* Fonts */
-  --font-family-base: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+  /* Pretendard Variable 폰트 - 모든 서체 */
+  --font-family-base: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
   --font-family-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   
-  /* Font Sizes */
-  --font-size-large-title: 24px;
-  --font-size-title: 20px;
-  --font-size-subtitle: 16px;
-  --font-size-body: 14px;
-  --font-size-caption: 12px;
-  --font-size-small: 11px;
+  /* Pretendard Variable 폰트 굵기 (직접 숫자 사용) */
+  /* Thin: 100, Extra Light: 200, Light: 300, Regular: 400 */
+  /* Medium: 500, Semi Bold: 600, Bold: 700, Extra Bold: 800, Black: 900 */
   
-  /* Font Weights */
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-
-  /* Borders */
-  --border-radius: 6px;
-  --border-radius-small: 3px;
-  --border-radius-large: 8px;
-  --border-width: 1px;
-  --border-color: var(--color-border);
-
-  /* Spacing */
-  --spacing-xs: 2px;
-  --spacing-small: 4px;
-  --spacing-medium: 8px;
-  --spacing-large: 16px;
-  --spacing-xlarge: 24px;
-  --spacing-xxlarge: 32px;
-
-  /* Layout */
-  --sidebar-width: 240px;
-  --header-height: 48px;
-  --content-max-width: 1200px;
-
-  /* Shadows */
-  --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  --box-shadow-large: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --box-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  /* 전환 효과 */
+  --transition-fast: 0.15s ease;
+  --transition-medium: 0.3s ease;
+  --transition-slow: 0.5s ease;
   
-  /* Transitions */
-  --transition-fast: 0.1s ease;
-  --transition-medium: 0.2s ease;
-  --transition-slow: 0.3s ease;
+  /* Editor specific variables */
+  --bg-primary: var(--color-background);
+  --bg-secondary: var(--color-surface);
+  --bg-tertiary: var(--color-surface-secondary);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --accent-color: var(--color-accent);
+  --accent-hover: var(--color-accent-hover);
+  --accent-active: var(--color-accent-emphasis);
+  --accent-bg: rgba(88, 166, 255, 0.1);
 }
 
 body {
