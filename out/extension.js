@@ -35,43 +35,50 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
 exports.deactivate = deactivate;
-// src/extension.ts
 const vscode = __importStar(require("vscode"));
-const rest_1 = require("@octokit/rest");
-const tokenManager_1 = require("./auth/tokenManager");
-const tokenManager_2 = require("./auth/tokenManager");
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 const getRepoInfo_1 = require("./github/getRepoInfo");
+const githubSession_1 = require("./auth/githubSession");
 const getRunList_1 = require("./github/getRunList");
 const getFailedLogs_1 = require("./log/getFailedLogs");
 const printToOutput_1 = require("./output/printToOutput");
 function activate(context) {
-    // token 삭제하는 기능인데, 일단 테스트 해보고 뺄 수도? ////////
-    const deleteToken = vscode.commands.registerCommand('extension.deleteGitHubToken', async () => {
-        await (0, tokenManager_2.deleteGitHubToken)(context);
+    // 레포 등록/수정
+    const cmdSetRepo = vscode.commands.registerCommand('extension.setRepository', async () => {
+        await (0, getRepoInfo_1.promptAndSaveRepo)(context);
     });
-    context.subscriptions.push(deleteToken);
-    //////////////////////////////////////////
-    const disposable = vscode.commands.registerCommand('extension.analyzeGitHubActions', async () => {
+    // 레포 삭제
+    const cmdClearRepo = vscode.commands.registerCommand('extension.clearRepository', async () => {
+        await (0, getRepoInfo_1.deleteSavedRepo)(context);
+    });
+    // 레포 보기(선택)
+    const cmdShowRepo = vscode.commands.registerCommand('extension.showRepository', async () => {
+        const cur = (0, getRepoInfo_1.getSavedRepo)(context);
+        vscode.window.showInformationMessage(`현재 레포: ${cur ? cur.owner + '/' + cur.repo : '(none)'}`);
+    });
+    context.subscriptions.push(cmdSetRepo, cmdClearRepo, cmdShowRepo);
+    const disposable = vscode.commands.registerCommand('extension.analyzeGitHubActions', async (repoArg) => {
         console.log('[1] 🔍 확장 실행됨');
-        const repo = await (0, getRepoInfo_1.getRepoInfo)();
+        // 우선순위: 명령 인자 > 저장된 레포
+        const repo = repoArg ?? (0, getRepoInfo_1.getSavedRepo)(context);
         if (!repo) {
-            vscode.window.showErrorMessage('GitHub 리포지토리 정보를 찾을 수 없습니다.');
+            vscode.window.showWarningMessage('저장된 레포가 없습니다. 먼저 레포를 등록하세요.');
             return;
         }
-        console.log(`[2] ✅ 리포지토리 감지됨: ${repo.owner}/${repo.repo}`);
-        const token = await (0, tokenManager_1.getGitHubToken)(context);
-        if (!token) {
-            vscode.window.showErrorMessage('GitHub 토큰이 필요합니다.');
+        console.log(`[2] ✅ 레포: ${repo.owner}/${repo.repo}`);
+        //github auto auth-login
+        const octokit = await (0, githubSession_1.getOctokitViaVSCodeAuth)();
+        if (!octokit) {
+            vscode.window.showErrorMessage('GitHub 로그인에 실패했습니다.');
             return;
         }
-        console.log(`[3] 🔑 GitHub 토큰 확보됨 (길이: ${token.length})`);
-        const octokit = new rest_1.Octokit({ auth: token });
+        console.log('[3] 🔑 VS Code GitHub 세션 확보');
         const run_id = await (0, getRunList_1.getRunIdFromQuickPick)(octokit, repo.owner, repo.repo);
         if (!run_id) {
             vscode.window.showInformationMessage('선택된 워크플로우 실행이 없습니다.');
             return;
         }
-        console.log(`[4] ✅ 선택된 Run ID: ${run_id}`);
         const mode = await vscode.window.showQuickPick(['전체 로그', '에러 메세지만'], {
             placeHolder: 'LLM 프롬프트에 포함할 로그 범위 선택'
         });
@@ -85,6 +92,59 @@ function activate(context) {
         vscode.window.showInformationMessage(`✅ 분석 완료: ${failedSteps.length}개 실패 step`);
     });
     context.subscriptions.push(disposable);
+    // 0. 웹뷰 개발 시작 전 테스트를 위한 Hello World 페이지
+    const helloWorldCommand = vscode.commands.registerCommand('extension.helloWorld', () => {
+        const panel = vscode.window.createWebviewPanel('helloWorld', 'Hello World', vscode.ViewColumn.One, {
+            enableScripts: true
+        });
+        panel.webview.html = getWebviewContent(context);
+        // Hello World webview 메시지 처리
+        panel.webview.onDidReceiveMessage(message => {
+            switch (message.command) {
+                case 'showMessage':
+                    vscode.window.showInformationMessage(message.text);
+                    return;
+            }
+        }, undefined, context.subscriptions);
+    });
+    context.subscriptions.push(helloWorldCommand);
+    // 1. GitHub Actions Workflow Editor 명령어 : 임시 페이지 
+    const workflowEditorCommand = vscode.commands.registerCommand('extension.openWorkflowEditor', () => {
+        const panel = vscode.window.createWebviewPanel('workflowEditor', 'GitHub Actions Workflow Editor', vscode.ViewColumn.One, {
+            enableScripts: true,
+            retainContextWhenHidden: true
+        });
+        panel.webview.html = getWorkflowEditorContent(context, panel);
+        // webview와 확장간 메시지 통신 설정
+        panel.webview.onDidReceiveMessage(message => {
+            switch (message.command) {
+                case 'submitPrompt':
+                    vscode.window.showInformationMessage(`LLM Prompt submitted: ${message.text}`);
+                    return;
+                case 'saveWorkflow':
+                    vscode.window.showInformationMessage('Workflow saved successfully!');
+                    return;
+            }
+        }, undefined, context.subscriptions);
+    });
+    context.subscriptions.push(workflowEditorCommand);
+    function getWebviewContent(context) {
+        const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'hello.html');
+        return fs.readFileSync(htmlPath, 'utf8');
+    }
+    function getWorkflowEditorContent(context, panel) {
+        const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor', 'workflow_editor.html');
+        let htmlContent = fs.readFileSync(htmlPath, 'utf8');
+        // Common CSS
+        const commonCssPath = path.join(context.extensionPath, 'src', 'webview', 'common', 'common.css');
+        const commonCssUri = panel.webview.asWebviewUri(vscode.Uri.file(commonCssPath));
+        htmlContent = htmlContent.replace('href="../common/common.css"', `href="${commonCssUri}"`);
+        // Page-specific CSS
+        const pageCssPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor', 'workflow_editor.css');
+        const pageCssUri = panel.webview.asWebviewUri(vscode.Uri.file(pageCssPath));
+        htmlContent = htmlContent.replace('href="workflow_editor.css"', `href="${pageCssUri}"`);
+        return htmlContent;
+    }
 }
 function deactivate() {
     console.log('📴 GitHub Actions 확장 종료됨');

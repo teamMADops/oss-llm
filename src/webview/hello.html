@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello World</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #1e1e1e;
+            color: #cccccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 40px;
+            background-color: #252526;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #569cd6;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            background-color: #0e639c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background-color: #1177bb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hello World!!</h1>
+        <p>VS Code 확장 개발을 위한 기본 webview 테스트</p>
+        <button class="btn" onclick="showMessage()">인사하기</button>
+    </div>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+        
+        function showMessage() {
+            vscode.postMessage({
+                command: 'showMessage',
+                text: 'Hello from webview!'
+            });
+        }
+    </script>
+</body>
+</html>

@@ -56,3 +56,4 @@ function formatPrompt(label: string, snippet: string): string {
 
 
 main();
+
