@@ -43,12 +43,87 @@ const getRepoInfo_1 = require("./github/getRepoInfo");
 const getRunList_1 = require("./github/getRunList");
 const getFailedLogs_1 = require("./log/getFailedLogs");
 const printToOutput_1 = require("./output/printToOutput");
+// Webview panel management - Keep track of panels to prevent duplicates
+const panels = {};
+/**
+ * Creates and shows a new webview panel, or reveals an existing one.
+ * Manages panel lifecycle and communication between the extension and the webview.
+ * @param context The extension context.
+ * @param page The page to display in the webview ('dashboard', 'editor', 'history').
+ */
+function createAndShowWebview(context, page) {
+    const column = vscode.window.activeTextEditor
+        ? vscode.window.activeTextEditor.viewColumn
+        : undefined;
+    const pageTitle = `MAD Ops: ${page.charAt(0).toUpperCase() + page.slice(1)}`;
+    // If we already have a panel for this page, show it.
+    if (panels[page]) {
+        panels[page].reveal(column);
+        // Also send a message to ensure the correct page is displayed, in case the user changed it.
+        panels[page].webview.postMessage({ command: 'changePage', page });
+        return;
+    }
+    // Otherwise, create a new panel.
+    const panel = vscode.window.createWebviewPanel(page, // This is the viewType, used internally to identify the panel type
+    pageTitle, // This is the title displayed to the user
+    column || vscode.ViewColumn.One, {
+        enableScripts: true,
+        retainContextWhenHidden: true, // Keep the state of the webview even when it's not visible
+        localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'out', 'webview-build'))]
+    });
+    panel.webview.html = getWebviewContent(context, panel);
+    // Handle messages from the webview
+    panel.webview.onDidReceiveMessage(async (message) => {
+        // All messages from the webview will be handled here.
+        // This is where the API layer described in structure.md is implemented on the extension side.
+        const repo = await (0, getRepoInfo_1.getRepoInfo)();
+        if (!repo) {
+            panel.webview.postMessage({ command: 'error', payload: 'GitHub 리포지토리 정보를 찾을 수 없습니다.' });
+            return;
+        }
+        const token = await (0, tokenManager_1.getGitHubToken)(context);
+        if (!token) {
+            panel.webview.postMessage({ command: 'error', payload: 'GitHub 토큰을 찾을 수 없습니다. 설정 명령을 실행해주세요.' });
+            return;
+        }
+        const octokit = new rest_1.Octokit({ auth: token });
+        switch (message.command) {
+            // These are placeholders for the API calls defined in structure.md
+            case 'getActions':
+                // TODO: Implement logic to get the list of workflow files (actions)
+                break;
+            case 'getLatestRun':
+                // TODO: Implement logic to get the latest run for a specific action
+                break;
+            case 'getRunHistory':
+                // TODO: Implement logic to get the run history for a specific action
+                break;
+            case 'getWorkflowFile':
+                // TODO: Implement logic to get the content of a workflow file
+                break;
+            case 'saveWorkflowFile':
+                // TODO: Implement logic to save the content of a workflow file
+                break;
+            case 'analyzeLog':
+                // TODO: Implement logic to analyze a log with an LLM
+                break;
+        }
+    }, undefined, context.subscriptions);
+    // Handle when the panel is closed
+    panel.onDidDispose(() => {
+        delete panels[page];
+    }, null, context.subscriptions);
+    // Store the panel and send the initial page message
+    panels[page] = panel;
+    panel.webview.postMessage({ command: 'changePage', page });
+}
 function activate(context) {
     // token 삭제하는 기능인데, 일단 테스트 해보고 뺄 수도? //
     const deleteToken = vscode.commands.registerCommand('extension.deleteGitHubToken', async () => {
         await (0, tokenManager_1.deleteGitHubToken)(context);
     });
     context.subscriptions.push(deleteToken);
+    // This is the original command that runs the analysis from the command palette.
     const disposable = vscode.commands.registerCommand('extension.analyzeGitHubActions', async () => {
         console.log('[1] 🔍 확장 실행됨');
         const repo = await (0, getRepoInfo_1.getRepoInfo)();
@@ -84,87 +159,27 @@ function activate(context) {
         vscode.window.showInformationMessage(`✅ 분석 완료: ${failedSteps.length}개 실패 step`);
     });
     context.subscriptions.push(disposable);
-    // GitHub Actions Workflow Editor 명령어 : 임시 페이지
-    const workflowEditorCommand = vscode.commands.registerCommand('extension.openWorkflowEditor', async () => {
-        const panel = vscode.window.createWebviewPanel('workflowEditor', 'GitHub Actions Workflow Editor', vscode.ViewColumn.One, {
-            enableScripts: true,
-            retainContextWhenHidden: true,
-            localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'out', 'webview-build'))]
-        });
-        panel.webview.html = getWorkflowEditorContent(context, panel);
-        // GitHub API 도구 준비
-        const repo = await (0, getRepoInfo_1.getRepoInfo)();
-        if (!repo) {
-            panel.webview.postMessage({ command: 'error', payload: 'GitHub 리포지토리 정보를 찾을 수 없습니다.' });
-            return;
-        }
-        const token = await (0, tokenManager_1.getGitHubToken)(context);
-        if (!token) {
-            panel.webview.postMessage({ command: 'error', payload: 'GitHub 토큰을 찾을 수 없습니다. 설정 명령을 실행해주세요.' });
-            return;
-        }
-        const octokit = new rest_1.Octokit({ auth: token });
-        // 웹뷰로부터 메시지 처리
-        panel.webview.onDidReceiveMessage(async (message) => {
-            switch (message.command) {
-                case 'save':
-                    vscode.window.showInformationMessage(message.text);
-                    return;
-                case 'getRunList':
-                    try {
-                        const runs = await octokit.actions.listWorkflowRunsForRepo({ owner: repo.owner, repo: repo.repo });
-                        const runItems = runs.data.workflow_runs
-                            .filter(run => run.status === 'completed') // 완료된 실행만 표시
-                            .map(run => ({
-                            id: run.id,
-                            name: run.name,
-                            status: run.status,
-                            conclusion: run.conclusion,
-                            event: run.event,
-                            updated_at: run.updated_at,
-                        }));
-                        panel.webview.postMessage({ command: 'showRunList', payload: runItems });
-                    }
-                    catch (e) {
-                        panel.webview.postMessage({ command: 'error', payload: `워크플로우 실행 목록을 가져오는 데 실패했습니다: ${e.message}` });
-                    }
-                    return;
-                case 'analyzeRun':
-                    try {
-                        const runId = message.payload.runId;
-                        if (!runId)
-                            return;
-                        panel.webview.postMessage({ command: 'showLoading', payload: { runId } });
-                        const { failedSteps, prompts } = await (0, getFailedLogs_1.getFailedStepsAndPrompts)(octokit, repo.owner, repo.repo, runId, 'error' // 웹뷰에서는 항상 'error' 모드 사용
-                        );
-                        panel.webview.postMessage({
-                            command: 'showAnalysisResult',
-                            payload: { runId, failedSteps, prompts }
-                        });
-                    }
-                    catch (e) {
-                        panel.webview.postMessage({ command: 'error', payload: `실행 분석에 실패했습니다: ${e.message}` });
-                    }
-                    return;
-            }
-        }, undefined, context.subscriptions);
-    });
-    context.subscriptions.push(workflowEditorCommand);
+    // --- Webview Commands ---
+    // Main command to open the webview dashboard
+    context.subscriptions.push(vscode.commands.registerCommand('extension.openDashboard', () => {
+        createAndShowWebview(context, 'dashboard');
+    }));
 }
-function getWorkflowEditorContent(context, panel) {
+function getWebviewContent(context, panel) {
     const buildPath = path.join(context.extensionPath, 'out', 'webview-build');
     const scriptPath = path.join(buildPath, 'assets', 'index.js');
     const stylePath = path.join(buildPath, 'assets', 'index.css');
     const scriptUri = panel.webview.asWebviewUri(vscode.Uri.file(scriptPath));
     const styleUri = panel.webview.asWebviewUri(vscode.Uri.file(stylePath));
     const nonce = getNonce();
+    // The title here is for the HTML document itself, not the panel tab.
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource}; script-src 'nonce-${nonce}';">
-      <title>GitHub Actions Workflow Editor</title>
+      <title>MAD Ops</title>
       <link rel="stylesheet" type="text/css" href="${styleUri}">
     </head>
     <body>

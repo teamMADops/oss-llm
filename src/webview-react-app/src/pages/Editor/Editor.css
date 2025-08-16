@@ -1,1 +1,10 @@
-/* Editor 페이지 스타일 */
+.editor-main-content {
+  padding: var(--spacing-large);
+}
+
+.editor-title {
+  font-size: var(--font-size-large-title);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-large);
+  color: var(--color-text-primary);
+}
