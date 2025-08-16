@@ -11,9 +11,9 @@
   overflow: hidden;
   flex-shrink: 0;
   /* 사이드바 내부 스크롤만 허용 */
-  overscrollBehavior: contain;
+  overscroll-behavior: contain;
   /* 화면 움직임 방지 */
-  touchAction: pan-y;
+  touch-action: pan-y;
   transform: translateZ(0);
   /* 가로 스크롤 차단 */
   max-width: 100%;
@@ -115,7 +115,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   /* Actions 리스트만 스크롤 */
-  overscrollBehavior: contain;
+  overscroll-behavior: contain;
   /* 가로 스크롤 차단 */
   max-width: 100%;
   box-sizing: border-box;

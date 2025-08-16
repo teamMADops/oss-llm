@@ -24,12 +24,8 @@
         "title": "Delete GitHub Token"
       },
       {
-        "command": "extension.helloWorld",
-        "title": "Hello World"
-      },
-      {
-        "command": "extension.openWorkflowEditor",
-        "title": "GitHub Actions Workflow Editor"
+        "command": "extension.openDashboard",
+        "title": "MAD Ops: Dashboard"
       }
     ]
   },
