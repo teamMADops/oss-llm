@@ -1,66 +1,81 @@
-import React, { useState, useEffect } from 'react';
-import HistoryTable from '../../components/HistoryTable/HistoryTable';
-import './History.css';
+import React, { useState, useEffect } from "react";
+import HistoryTable from "../../components/HistoryTable/HistoryTable";
+import "./History.css";
 
 interface HistoryPageProps {
   actionId: string | null;
 }
 
-// Mock runs data - in real app, this would be fetched based on actionId
+// TODO: Remove mock data
 const mockRuns = [
   {
-    id: '1234',
-    status: 'failed' as const,
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
-    branch: 'main',
+    id: "1",
+    event: "push",
+    status: "failed" as const,
+    branch: "main",
+    startedAt: new Date("2025-08-15T12:00:34Z"),
+    duration: 120000, // 2 minutes in milliseconds
   },
   {
-    id: '1235',
-    status: 'failed' as const,
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    id: "2",
+    event: "pull_request",
+    status: "failed" as const,
+    branch: "feature/new-feature",
+    startedAt: new Date("2025-08-15T11:30:00Z"),
+    duration: 90000,
   },
   {
-    id: '1236',
-    status: 'failed' as const,
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    id: "3",
+    event: "push",
+    status: "success" as const,
+    branch: "main",
+    startedAt: new Date("2025-08-15T10:15:00Z"),
+    duration: 180000,
   },
   {
-    id: '1237',
-    status: 'failed' as const,
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    id: "4",
+    event: "push",
+    status: "running" as const,
+    branch: "develop",
+    startedAt: new Date("2025-08-15T12:30:00Z"),
+    duration: 45000,
   },
   {
-    id: '1238',
-    status: 'failed' as const,
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    id: "5",
+    event: "pull_request",
+    status: "failed" as const,
+    branch: "bugfix/issue-123",
+    startedAt: new Date("2025-08-15T09:45:00Z"),
+    duration: 95000,
   },
   {
-    id: '1239',
-    status: 'failed' as const,
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    id: "6",
+    event: "push",
+    status: "success" as const,
+    branch: "main",
+    startedAt: new Date("2025-08-15T08:20:00Z"),
+    duration: 150000,
   },
   {
-    id: '1240',
-    status: 'failed' as const,
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    id: "7",
+    event: "push",
+    status: "failed" as const,
+    branch: "feature/auth",
+    startedAt: new Date("2025-08-15T07:10:00Z"),
+    duration: 80000,
   },
   {
-    id: '1241',
-    status: 'failed' as const,
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    id: "8",
+    event: "pull_request",
+    status: "success" as const,
+    branch: "main",
+    startedAt: new Date("2025-08-15T06:00:00Z"),
+    duration: 200000,
   },
 ];
 
 const HistoryPage: React.FC<HistoryPageProps> = ({ actionId }) => {
-  const [runHistory, setRunHistory] = useState(mockRuns);
+  const [runs, setRuns] = useState(mockRuns);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -70,7 +85,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ actionId }) => {
       // TODO: Call api/github.ts getRunHistory(actionId)
       // For now, just use mock data
       setTimeout(() => {
-        setRunHistory(mockRuns);
+        setRuns(mockRuns);
         setIsLoading(false);
       }, 100);
     }
@@ -94,7 +109,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ actionId }) => {
           <p className="text-muted">로딩 중...</p>
         </div>
       ) : (
-        <HistoryTable runs={runHistory} />
+        <HistoryTable runs={runs} />
       )}
     </div>
   );
