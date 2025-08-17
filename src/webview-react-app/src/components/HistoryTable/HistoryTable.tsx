@@ -1,16 +1,9 @@
 import React from 'react';
+import { WorkflowRun } from '@/types/api';
 import './HistoryTable.css';
 
-interface Run {
-  id: string;
-  status: 'success' | 'failed' | 'running' | 'pending' | 'cancelled';
-  timestamp: string;
-  reason: string;
-  branch?: string;
-}
-
 interface HistoryTableProps {
-  runs: Run[];
+  runs: WorkflowRun[];
 }
 
 const HistoryTable: React.FC<HistoryTableProps> = ({ runs }) => {

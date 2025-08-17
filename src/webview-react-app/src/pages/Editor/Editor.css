@@ -21,9 +21,20 @@
 }
 
 .main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 0;
   margin-bottom: 20px;
   flex-shrink: 0; /* 헤더는 고정 */
+}
+
+.header-left {
+  flex: 1;
+}
+
+.header-right {
+  flex-shrink: 0;
 }
 
 .main-title {
@@ -113,6 +124,55 @@
   height: 100%;
   color: #8b949e;
   font-size: 1.125rem;
+}
+
+.editor-main-content {
+  padding: var(--spacing-xlarge);
+  overflow-y: auto;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+}
+
+.editor-empty-state,
+.editor-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  text-align: center;
+}
+
+.editor-empty-state p,
+.editor-loading p {
+  font-size: var(--font-size-body);
+  color: var(--color-text-muted);
+}
+
+.yaml-editor-textarea {
+  width: 100%;
+  min-height: 400px;
+  padding: 16px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #f0f6fc;
+  font-size: 14px;
+  font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
+  line-height: 1.5;
+  resize: vertical;
+  white-space: pre;
+  overflow-wrap: normal;
+  tab-size: 2;
+}
+
+.yaml-editor-textarea:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.yaml-editor-textarea::placeholder {
+  color: #8b949e;
 }
 
 .workflow-editor::-webkit-scrollbar {

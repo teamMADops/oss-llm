@@ -1,14 +1,14 @@
 // GitHub Actions의 정보를 받아올 소스코드
-declare const acquireVsCodeApi: () => {
-  postMessage: (message: any) => void;
-} | undefined;
+import { VSCodeAPI, Action, WorkflowRun, LatestRun } from '../types/api';
+
+declare const acquireVsCodeApi: () => VSCodeAPI | undefined;
 
 // VS Code 환경인지 확인
 const isVSCode = typeof acquireVsCodeApi !== 'undefined';
 const vscode = isVSCode ? acquireVsCodeApi() : undefined;
 
 // GitHub Actions 관련 API 함수들
-export const getActions = (): Promise<any[]> => {
+export const getActions = (): Promise<Action[]> => {
   if (!vscode) {
     // 브라우저 환경에서는 mock 데이터 반환
     return Promise.resolve([
@@ -33,10 +33,16 @@ export const getActions = (): Promise<any[]> => {
   });
 };
 
-export const getLatestRun = (actionId: string): Promise<any> => {
+export const getLatestRun = (actionId: string): Promise<LatestRun> => {
   if (!vscode) {
     // 브라우저 환경에서는 mock 데이터 반환
-    return Promise.resolve({ id: 'run1', status: 'completed', conclusion: 'success' });
+    return Promise.resolve({ 
+      id: 'run1', 
+      status: 'completed', 
+      conclusion: 'success',
+      timestamp: '2025-08-15 12:00:34',
+      reason: 'Push to main'
+    });
   }
 
   return new Promise((resolve) => {
@@ -55,12 +61,24 @@ export const getLatestRun = (actionId: string): Promise<any> => {
   });
 };
 
-export const getRunHistory = (actionId: string): Promise<any[]> => {
+export const getRunHistory = (actionId: string): Promise<WorkflowRun[]> => {
   if (!vscode) {
     // 브라우저 환경에서는 mock 데이터 반환
     return Promise.resolve([
-      { id: 'run1', status: 'completed', conclusion: 'success' },
-      { id: 'run2', status: 'completed', conclusion: 'failed' }
+      { 
+        id: 'run1', 
+        status: 'completed', 
+        conclusion: 'success',
+        timestamp: '2025-08-15 12:00:34',
+        reason: 'Push to main'
+      },
+      { 
+        id: 'run2', 
+        status: 'completed', 
+        conclusion: 'failure',
+        timestamp: '2025-08-15 11:30:22',
+        reason: 'Pull request #123'
+      }
     ]);
   }
 

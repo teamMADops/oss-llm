@@ -28,3 +28,4 @@ requirements.md
 references/
 
 package-lock.json
+*.tsbuildinfo

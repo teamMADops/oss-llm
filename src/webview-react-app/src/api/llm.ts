@@ -1,7 +1,7 @@
 // LLM과 통신하는 API 함수들
-declare const acquireVsCodeApi: () => {
-  postMessage: (message: any) => void;
-} | undefined;
+import { VSCodeAPI } from '@/types/api';
+
+declare const acquireVsCodeApi: () => VSCodeAPI | undefined;
 
 // VS Code 환경인지 확인
 const isVSCode = typeof acquireVsCodeApi !== 'undefined';
