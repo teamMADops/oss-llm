@@ -41,6 +41,8 @@
     "@types/jszip": "^3.4.0",
     "@types/node": "^20.19.9",
     "@types/node-fetch": "^2.6.13",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
     "@types/vscode": "^1.80.0",
     "@vscode/test-electron": "^2.4.2",
     "ts-node": "^10.9.2",
