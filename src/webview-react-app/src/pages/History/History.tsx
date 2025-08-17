@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import HistoryTable from '../../components/HistoryTable/HistoryTable';
+import HistoryTable from '@/components/HistoryTable/HistoryTable';
+import { WorkflowRun } from '@/types/api';
 import './History.css';
 
 interface HistoryPageProps {
@@ -7,53 +8,61 @@ interface HistoryPageProps {
 }
 
 // Mock runs data - in real app, this would be fetched based on actionId
-const mockRuns = [
+const mockRuns: WorkflowRun[] = [
   {
     id: '1234',
-    status: 'failed' as const,
+    status: 'completed',
+    conclusion: 'failure',
     timestamp: '2025-08-15 12:00:34',
     reason: 'Compile Error',
     branch: 'main',
   },
   {
     id: '1235',
-    status: 'failed' as const,
+    status: 'completed',
+    conclusion: 'failure',
     timestamp: '2025-08-15 12:00:34',
     reason: 'Compile Error',
   },
   {
     id: '1236',
-    status: 'failed' as const,
+    status: 'completed',
+    conclusion: 'failure',
     timestamp: '2025-08-15 12:00:34',
     reason: 'Compile Error',
   },
   {
     id: '1237',
-    status: 'failed' as const,
+    status: 'completed',
+    conclusion: 'failure',
     timestamp: '2025-08-15 12:00:34',
     reason: 'Compile Error',
   },
   {
     id: '1238',
-    status: 'failed' as const,
+    status: 'completed',
+    conclusion: 'failure',
     timestamp: '2025-08-15 12:00:34',
     reason: 'Compile Error',
   },
   {
     id: '1239',
-    status: 'failed' as const,
+    status: 'completed',
+    conclusion: 'failure',
     timestamp: '2025-08-15 12:00:34',
     reason: 'Compile Error',
   },
   {
     id: '1240',
-    status: 'failed' as const,
+    status: 'completed',
+    conclusion: 'failure',
     timestamp: '2025-08-15 12:00:34',
     reason: 'Compile Error',
   },
   {
     id: '1241',
-    status: 'failed' as const,
+    status: 'completed',
+    conclusion: 'failure',
     timestamp: '2025-08-15 12:00:34',
     reason: 'Compile Error',
   },

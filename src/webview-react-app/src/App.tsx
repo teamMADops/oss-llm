@@ -7,7 +7,7 @@ import { Action } from './components/Sidebar/types';
 import './styles/theme.css';
 
 function App() {
-  const [page, setPage] = useState('dashboard'); // Default page
+  const [page, setPage] = useState('dashboard');
   const [actions, setActions] = useState<Action[]>([]);
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

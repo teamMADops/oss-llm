@@ -1,0 +1,278 @@
+/* YAML Viewer - GitHub Dark 테마 기반, 코드 에디터 스타일 */
+.yaml-viewer {
+  width: 100%;
+  height: 100%;
+  background: #0d1117; /* GitHub Dark 배경 */
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #30363d;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* 이전 단계로 복원 */
+}
+
+.yaml-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #161b22; /* GitHub Dark 헤더 배경 */
+  border-bottom: 1px solid #30363d;
+  flex-shrink: 0;
+}
+
+.yaml-title {
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f6fc; /* GitHub Dark 텍스트 */
+}
+
+.yaml-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.yaml-btn {
+  padding: 4px 8px;
+  background: #21262d; /* GitHub Dark 버튼 배경 */
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #f0f6fc;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.yaml-btn:hover {
+  background: #30363d;
+  border-color: #58a6ff;
+}
+
+.yaml-btn-copy:hover {
+  background: #238636; /* GitHub Green */
+  border-color: #238636;
+}
+
+.yaml-btn-format:hover {
+  background: #58a6ff; /* GitHub Blue */
+  border-color: #58a6ff;
+}
+
+.yaml-content {
+  flex: 1;
+  overflow: auto !important; /* 가로/세로 스크롤 모두 활성화 */
+  padding: 0;
+  background: #0d1117; /* GitHub Dark 코드 배경 */
+  position: relative;
+  min-height: 0;
+  /* 가로 스크롤 시 줄 번호 고정을 위한 설정 */
+  scroll-behavior: auto;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* 이전 단계로 복원 */
+}
+
+/* YAML 코드 컨테이너 */
+.yaml-code-container {
+  padding: 0; /* 패딩 제거하여 줄 번호 배경이 잘리지 않도록 */
+  font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6; /* 원래 줄간격 복원 (1.4 → 1.6) */
+  color: #f0f6fc;
+  white-space: pre;
+  word-wrap: normal;
+  tab-size: 2;
+  /* 가로 스크롤을 위한 최소 너비 설정 */
+  min-width: max-content;
+}
+
+/* 개별 줄 */
+.yaml-line {
+  display: flex;
+  min-height: 20.8px; /* 원래 높이 복원 (1.6 * 13px = 20.8px) */
+  position: relative;
+}
+
+/* 줄 번호 */
+.line-number {
+  width: 50px;
+  padding: 0 14px 0 22px; /* 이전 상태로 복원 */
+  background: #161b22; /* GitHub Dark 줄 번호 배경 */
+  color: #8b949e; /* GitHub Dark 줄 번호 색상 */
+  text-align: right;
+  user-select: none;
+  flex-shrink: 0;
+  border-right: 1px solid #30363d;
+  position: sticky !important; /* sticky 강제 적용 */
+  left: 0 !important; /* 왼쪽 고정 강제 적용 */
+  z-index: 100; /* z-index 증가 */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* 오른쪽 정렬 */
+}
+
+/* 줄 내용 */
+.line-content {
+  flex: 1;
+  padding: 2px 16px 2px 16px; /* 줄 번호 대신 여기에 패딩 적용 */
+  min-width: 0; /* flexbox에서 줄바꿈 방지 */
+  white-space: pre;
+  overflow: visible;
+}
+
+/* 첫 번째 줄 */
+.yaml-line:first-child .line-content {
+  padding-top: 16px;
+}
+
+/* 마지막 줄 */
+.yaml-line:last-child .line-content {
+  padding-bottom: 16px;
+}
+
+/* 가로 스크롤 시 줄 번호 고정 강화 */
+.yaml-content:hover .line-number,
+.yaml-content:focus .line-number {
+  position: sticky !important;
+  left: 0 !important;
+}
+
+/* YAML 구문 하이라이팅 - VS Code 실제 색상 */
+.yaml-keyword {
+  color: #569cd6; /* VS Code 키워드 (파란색) */
+  font-weight: 600;
+}
+
+.yaml-string {
+  color: #ce9178; /* VS Code 문자열 (주황색) */
+  font-weight: 500; /* 약간 굵게 */
+}
+
+.yaml-number {
+  color: #b5cea8; /* VS Code 숫자 (연한 초록색) */
+}
+
+.yaml-array {
+  color: #c586c0; /* VS Code 배열 (보라색) */
+}
+
+.yaml-comment {
+  color: #6a9955; /* VS Code 주석 (초록색) */
+  font-style: italic;
+}
+
+.yaml-expression {
+  color: #d7ba7d; /* VS Code 표현식 (노란색) */
+  font-weight: 500;
+  background: rgba(215, 186, 125, 0.1);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* 스크롤바 스타일링 - 코드 에디터 스타일 */
+.yaml-content::-webkit-scrollbar {
+  width: 12px; /* 스크롤바 너비 증가 */
+}
+
+.yaml-content::-webkit-scrollbar-track {
+  background: #0d1117;
+  border-radius: 6px;
+}
+
+.yaml-content::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 6px;
+  border: 2px solid #0d1117;
+}
+
+.yaml-content::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+.yaml-content::-webkit-scrollbar-corner {
+  background: #0d1117;
+}
+
+/* 가로 스크롤바 */
+.yaml-content::-webkit-scrollbar:horizontal {
+  height: 12px;
+}
+
+.yaml-content::-webkit-scrollbar-thumb:horizontal {
+  background: #30363d;
+  border-radius: 6px;
+  border: 2px solid #0d1117;
+}
+
+.yaml-content::-webkit-scrollbar-thumb:horizontal:hover {
+  background: #484f58;
+}
+
+/* 선택된 텍스트 스타일 */
+.yaml-code::selection {
+  background: #58a6ff;
+  color: #ffffff;
+}
+
+.yaml-code::-moz-selection {
+  background: #58a6ff;
+  color: #ffffff;
+}
+
+/* 포커스 스타일 */
+.yaml-code:focus {
+  outline: none;
+}
+
+/* 코드 에디터 스타일 개선 */
+.yaml-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #30363d, transparent);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .yaml-viewer {
+    border-radius: 0;
+  }
+  
+  .yaml-header {
+    padding: 8px 12px;
+  }
+  
+  .yaml-content {
+    padding: 32px 40px; /* 모바일에서도 적절한 패딩 유지 */
+  }
+  
+  .yaml-code {
+    font-size: 12px;
+  }
+} 
+
+/* 하이라이트된 라인 스타일 */
+.yaml-line.highlighted {
+  background: rgba(88, 166, 255, 0.1) !important; /* GitHub Blue 배경 */
+  border-left: 3px solid #58a6ff !important;
+  margin-left: -3px; /* border-left로 인한 오프셋 보정 */
+}
+
+.yaml-line.highlighted .line-number {
+  background: rgba(88, 166, 255, 0.2) !important; /* 줄 번호도 하이라이트 */
+  color: #58a6ff !important;
+  font-weight: 600;
+}
+
+.yaml-line.highlighted .line-content {
+  background: rgba(88, 166, 255, 0.05) !important; /* 내용 배경도 약간 하이라이트 */
+} 
+
+/* 빈 줄 스타일 */
+.yaml-line.empty-line {
+  min-height: 20.8px; /* 기본 줄 높이 유지 */
+} 

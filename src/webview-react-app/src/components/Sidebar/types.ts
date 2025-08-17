@@ -1,7 +1,2 @@
-export type ActionStatus = 'success' | 'failed' | 'running' | 'pending' | 'cancelled';
-
-export interface Action {
-  id: string;
-  name: string;
-  status: ActionStatus;
-}
+// 공통 타입 사용으로 변경
+export type { ActionStatus, Action } from '@/types/api';

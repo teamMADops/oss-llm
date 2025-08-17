@@ -173,6 +173,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 
+
 function getWebviewContent(context: vscode.ExtensionContext, panel: vscode.WebviewPanel): string {
   const buildPath = path.join(context.extensionPath, 'out', 'webview-build');
   

@@ -1,10 +1,194 @@
-.editor-main-content {
-  padding: var(--spacing-large);
+/* Editor 페이지 스타일 - 완전 반응형, 섹션별 스크롤, 가로 스크롤 차단 */
+.editor-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background: #0d1117;
+  font-family: var(--font-family-base);
+  overflow: hidden;
 }
 
-.editor-title {
-  font-size: var(--font-size-large-title);
-  font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--spacing-large);
+/* 중앙 Build 섹션 */
+.editor-main {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  padding: 20px;
+  overflow: hidden; /* 메인 섹션 자체는 스크롤 없음 */
+  min-width: 0; /* flexbox에서 축소 허용 */
+  display: flex;
+  flex-direction: column;
+}
+
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+  margin-bottom: 20px;
+  flex-shrink: 0; /* 헤더는 고정 */
+}
+
+.header-left {
+  flex: 1;
+}
+
+.header-right {
+  flex-shrink: 0;
+}
+
+.main-title {
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 38px;
+  color: #ffffff;
+  margin: 0;
+}
+
+.workflow-editor {
+  padding-right: 20px; /* 스크롤바 공간 확보 */
+  margin-right: -20px; /* 부모 패딩 상쇄 */
+  overflow-y: auto;
+  flex: 1;
+}
+
+.workflow-section {
+  margin-bottom: 24px;
+  background: #161b22;
+  border-radius: 8px;
+  border: 1px solid #30363d;
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #21262d;
+  border-bottom: 1px solid #30363d;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin: 0;
+}
+
+.section-content {
+  padding: 20px;
+}
+
+/* ... (이하 dev/FE의 모든 스타일 유지) ... */
+
+.workflow-name-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #f0f6fc;
+  font-size: 14px;
+  font-family: var(--font-family-base);
+  transition: border-color 0.2s ease;
+}
+
+.workflow-name-input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.trigger-item {
+  margin-bottom: 16px;
+}
+
+/* 우측 YAML 미리보기 */
+.yaml-viewer-container {
+  width: 40%;
+  min-width: 300px;
+  max-width: 600px;
+  height: 100%;
+  flex-shrink: 0;
+  resize: horizontal;
+  overflow: auto;
+  border-left: 1px solid #30363d;
+}
+
+.editor-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #8b949e;
+  font-size: 1.125rem;
+}
+
+.editor-main-content {
+  padding: var(--spacing-xlarge);
+  overflow-y: auto;
+  background-color: var(--color-background);
   color: var(--color-text-primary);
+  min-height: 100vh;
+}
+
+.editor-empty-state,
+.editor-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  text-align: center;
+}
+
+.editor-empty-state p,
+.editor-loading p {
+  font-size: var(--font-size-body);
+  color: var(--color-text-muted);
+}
+
+.yaml-editor-textarea {
+  width: 100%;
+  min-height: 400px;
+  padding: 16px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #f0f6fc;
+  font-size: 14px;
+  font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
+  line-height: 1.5;
+  resize: vertical;
+  white-space: pre;
+  overflow-wrap: normal;
+  tab-size: 2;
+}
+
+.yaml-editor-textarea:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.yaml-editor-textarea::placeholder {
+  color: #8b949e;
+}
+
+.workflow-editor::-webkit-scrollbar {
+  width: 8px;
+}
+
+.workflow-editor::-webkit-scrollbar-track {
+  background: #21262d;
+  border-radius: 4px;
+}
+
+.workflow-editor::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+.workflow-editor::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
 }
