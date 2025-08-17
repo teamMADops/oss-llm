@@ -9,7 +9,8 @@ export default function Console(props: ConsoleProps) {
     <div>
       <code>
         {messages.map((message) => (
-          <div key={message}>{message}</div>
+        {messages.map((message, index) => (
+          <div key={index}>{message}</div>
         ))}
       </code>
     </div>
