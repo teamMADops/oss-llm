@@ -1,4 +1,4 @@
-import HistoryTableHead from "./HIstoryTableHead";
+import HistoryTableHead from "./HistoryTableHead";
 import HistoryTableRow, { Run } from "./HistoryTableRow";
 
 interface HistoryTableProps {
