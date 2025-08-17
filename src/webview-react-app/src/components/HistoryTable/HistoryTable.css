@@ -1,0 +1,217 @@
+/* History Table 컴포넌트 스타일 */
+.history-table-container {
+  width: 100%;
+  background-color: var(--color-surface);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-body);
+  background-color: transparent;
+}
+
+.history-table thead {
+  background-color: var(--color-surface-secondary);
+}
+
+.history-table th {
+  padding: var(--spacing-large);
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  border-bottom: var(--border-width) solid var(--color-border);
+  font-size: var(--font-size-body);
+}
+
+.history-table th:first-child {
+  padding-left: var(--spacing-xlarge);
+}
+
+.history-table th:last-child {
+  padding-right: var(--spacing-xlarge);
+}
+
+.history-table-row {
+  transition: background-color var(--transition-medium);
+  border-bottom: var(--border-width) solid var(--color-border-muted);
+}
+
+.history-table-row:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.history-table-row:last-child {
+  border-bottom: none;
+}
+
+.history-table td {
+  padding: var(--spacing-large);
+  color: var(--color-text-primary);
+  vertical-align: middle;
+  border-bottom: none;
+}
+
+.history-table td:first-child {
+  padding-left: var(--spacing-xlarge);
+}
+
+.history-table td:last-child {
+  padding-right: var(--spacing-xlarge);
+}
+
+/* Run ID 스타일 */
+.run-id {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* Status 스타일 */
+.run-status {
+  display: flex;
+  align-items: center;
+}
+
+.run-status .status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-small);
+  padding: var(--spacing-small) var(--spacing-medium);
+  border-radius: var(--border-radius-small);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  text-transform: capitalize;
+  letter-spacing: 0.025em;
+  min-width: 70px;
+  justify-content: center;
+}
+
+/* Status Text Color by State */
+.status-success {
+  color: var(--color-success);
+}
+
+.status-failed {
+  color: var(--color-danger);
+}
+
+.status-running {
+  color: var(--color-running);
+}
+
+.status-pending {
+  color: var(--color-pending);
+}
+
+.status-cancelled {
+  color: var(--color-cancelled);
+}
+
+/* Timestamp 스타일 */
+.run-timestamp {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+}
+
+/* Reason 스타일 */
+.reason-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-medium);
+}
+
+.reason-text {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body);
+}
+
+.branch-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-small);
+  background-color: var(--color-accent);
+  color: var(--color-white);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--border-radius-small);
+  text-transform: lowercase;
+}
+
+/* Reason Text Color by State */
+.status-failed .reason-text {
+  color: var(--color-danger);
+}
+
+.status-success .reason-text {
+  color: var(--color-success);
+}
+
+.status-running .reason-text {
+  color: var(--color-running);
+}
+
+.status-pending .reason-text {
+  color: var(--color-pending);
+}
+
+.status-cancelled .reason-text {
+  color: var(--color-cancelled);
+}
+
+/* Empty State */
+.empty-state {
+  padding: var(--spacing-xxlarge);
+  text-align: center;
+  background-color: var(--color-surface);
+}
+
+.empty-state p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .history-table th,
+  .history-table td {
+    padding: var(--spacing-medium);
+  }
+  
+  .history-table th:first-child,
+  .history-table td:first-child {
+    padding-left: var(--spacing-large);
+  }
+  
+  .history-table th:last-child,
+  .history-table td:last-child {
+    padding-right: var(--spacing-large);
+  }
+  
+  .reason-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-small);
+  }
+  
+  .run-timestamp {
+    font-size: var(--font-size-caption);
+  }
+}
+
+/* 스크롤 가능한 테이블 */
+@media (max-width: 480px) {
+  .history-table-container {
+    overflow-x: auto;
+  }
+  
+  .history-table {
+    min-width: 600px;
+  }
+}

@@ -1,0 +1,30 @@
+/* History Page Layout */
+.history-main-content {
+  padding: var(--spacing-xlarge);
+  overflow-y: auto;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+}
+
+.history-title {
+  font-size: var(--font-size-large-title);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-xlarge);
+  color: var(--color-text-primary);
+}
+
+.history-empty-state,
+.history-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  text-align: center;
+}
+
+.history-empty-state p,
+.history-loading p {
+  font-size: var(--font-size-body);
+  color: var(--color-text-muted);
+}
