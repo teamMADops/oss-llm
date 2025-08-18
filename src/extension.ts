@@ -421,14 +421,22 @@ export function activate(context: vscode.ExtensionContext) {
           // 출력창에 전체 결과(JSON) 덤프
           printToOutput('LLM 분석 결과', [JSON.stringify(analysis, null, 2)]);
 
-          // 요약만 팝업으로
-          const summary = analysis.summary ?? 'LLM 분석이 완료되었습니다.';
-          const choice = await vscode.window.showInformationMessage(`🧠 ${summary}`, '출력창 열기', '요약 복사');
-          if (choice === '출력창 열기') {
-            vscode.commands.executeCommand('workbench.action.output.toggleOutput');
-          } else if (choice === '요약 복사') {
-            await vscode.env.clipboard.writeText(summary);
-            vscode.window.showInformationMessage('📋 요약을 클립보드에 복사했어요.');
+          // 웹뷰로 LLM 분석 결과 전송
+          if (panels['dashboard']) {
+            panels['dashboard'].webview.postMessage({
+              command: 'llmAnalysisResult',
+              payload: analysis
+            });
+            vscode.window.showInformationMessage('LLM 분석 결과가 대시보드에 표시되었습니다.');
+          } else {
+            const summary = analysis.summary ?? 'LLM 분석이 완료되었습니다.';
+            const choice = await vscode.window.showInformationMessage(`🧠 ${summary}`, '출력창 열기', '요약 복사');
+            if (choice === '출력창 열기') {
+              vscode.commands.executeCommand('workbench.action.output.toggleOutput');
+            } else if (choice === '요약 복사') {
+              await vscode.env.clipboard.writeText(summary);
+              vscode.window.showInformationMessage('📋 요약을 클립보드에 복사했어요.');
+            }
           }
         } catch (e: any) {
           vscode.window.showErrorMessage(`❌ 분석 실패: ${e?.message ?? e}`);

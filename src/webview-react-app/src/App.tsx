@@ -1,71 +1,62 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar/Sidebar';
 import DashboardPage from './pages/Dashboard/Dashboard';
 import EditorPage from './pages/Editor/Editor';
 import HistoryPage from './pages/History/History';
-import { Action } from './components/Sidebar/types';
-import { getActions } from './api/github';
+import { LLMResult } from '../../llm/analyze'; // Import LLMResult type
+import { Action } from './components/Sidebar/types'; // Import Action type
+import { getActions } from './api/github'; // Import getActions
 import './styles/theme.css';
 
 function App() {
-  const [page, setPage] = useState('dashboard');
-  const [actions, setActions] = useState<Action[]>([]);
+  const [currentPage, setCurrentPage] = useState<string>('dashboard');
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [dropdownActive, setDropdownActive] = useState(false);
-  const [actionHighlighted, setActionHighlighted] = useState(true);
-
-  // TODO : Mock data for now, will be replaced by API calls
-  const mockActions: Action[] = useMemo(() => [
-    { id: 'action-one', name: 'Action one_happy', status: 'success' },
-    { id: 'action-two', name: 'Action twooo', status: 'failed' },
-    { id: 'action-three', name: 'Action three', status: 'running' },
-  ], []);
+  const [llmAnalysisResult, setLlmAnalysisResult] = useState<LLMResult | null>(null);
+  const [actions, setActions] = useState<Action[]>([]); // New state for actions
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false); // New state for sidebar collapsed
+  const [dropdownActive, setDropdownActive] = useState<boolean>(false); // New state for dropdown active
+  const [actionHighlighted, setActionHighlighted] = useState<boolean>(false); // New state for action highlighted // Use LLMResult type
 
   useEffect(() => {
-    // --- Set up message listener for routing ---
-    const handleMessage = (event: MessageEvent) => {
-      const message = event.data;
-      if (message.command === 'changePage') {
-        setPage(message.page);
+    // Handle messages from the extension
+    window.addEventListener('message', event => {
+      const message = event.data; // The JSON data our extension sent
+      console.log('Message from extension:', message);
+
+      switch (message.command) {
+        case 'changePage':
+          setCurrentPage(message.page);
+          break;
+        case 'llmAnalysisResult': // New case for LLM analysis result
+          setLlmAnalysisResult(message.payload);
+          setCurrentPage('dashboard'); // Ensure dashboard is active when result arrives
+          break;
+        // Add other message handlers here
       }
-      // API 응답 처리
-      if (message.command === 'getActionsResponse') {
-        console.log('[📋] 워크플로우 목록 받음:', message.payload);
-        setActions(message.payload);
-        if (message.payload.length > 0) {
-          setSelectedActionId(message.payload[0].id);
-        }
+    });
+
+    // Fetch actions when component mounts
+    const fetchActions = async () => {
+      try {
+        const fetchedActions = await getActions();
+        setActions(fetchedActions);
+      } catch (error) {
+        console.error('Failed to fetch actions:', error);
       }
     };
-    window.addEventListener('message', handleMessage);
 
-    // --- Fetch initial data ---
-    console.log('[🚀] GitHub Actions 데이터 가져오는 중...');
-    getActions()
-      .then(actions => {
-        console.log('[✅] Actions 로드 완료:', actions);
-        setActions(actions);
-        if (actions.length > 0) {
-          setSelectedActionId(actions[0].id);
-        }
-      })
-      .catch(error => {
-        console.error('[❌] Actions 로드 실패:', error);
-        // 에러 발생 시 mock 데이터 사용
-        // TODO : 이거 어떻게 해야하지?
-        setActions(mockActions);
-        if (mockActions.length > 0) {
-          setSelectedActionId(mockActions[0].id);
-        }
-      });
+    fetchActions();
+  }, []);
 
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
-  }, [mockActions]);
+  const onSelectPage = (pageName: string) => {
+    setCurrentPage(pageName);
+    // dropdown item 클릭 시 action 하이라이트 비활성화
+    setActionHighlighted(false);
+    // dropdown은 열린 상태 유지
+    setDropdownActive(true);
+  };
 
-  const handleSelectAction = (actionId: string) => {
+  const onSelectAction = (actionId: string) => {
     if (selectedActionId === actionId) {
       // 이미 선택된 action을 다시 클릭한 경우
       if (dropdownActive && !actionHighlighted) {
@@ -85,31 +76,11 @@ function App() {
       setActionHighlighted(true); // action 하이라이트 활성화
     }
     // 항상 dashboard로 이동
-    setPage('dashboard');
+    setCurrentPage('dashboard');
   };
 
-  const handleSelectPage = (pageName: string) => {
-    setPage(pageName);
-    // dropdown item 클릭 시 action 하이라이트 비활성화
-    setActionHighlighted(false);
-    // dropdown은 열린 상태 유지
-  };
-
-  const handleSidebarToggle = () => {
+  const onSidebarToggle = () => {
     setSidebarCollapsed(!sidebarCollapsed);
-  };
-
-  const renderPage = () => {
-    switch (page) {
-      case 'dashboard':
-        return <DashboardPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
-      case 'editor':
-        return <EditorPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
-      case 'history':
-        return <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
-      default:
-        return <DashboardPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
-    }
   };
 
   return (
@@ -117,16 +88,18 @@ function App() {
       <Sidebar
         actions={actions}
         selectedActionId={selectedActionId}
-        activePage={page}
+        activePage={currentPage}
         sidebarCollapsed={sidebarCollapsed}
         dropdownActive={dropdownActive}
         actionHighlighted={actionHighlighted}
-        onSelectAction={handleSelectAction}
-        onSelectPage={handleSelectPage}
-        onSidebarToggle={handleSidebarToggle}
+        onSelectAction={onSelectAction}
+        onSelectPage={onSelectPage}
+        onSidebarToggle={onSidebarToggle}
       />
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-closed' : 'sidebar-open'}`}>
-        {renderPage()}
+        {currentPage === 'dashboard' && <DashboardPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} llmAnalysisResult={llmAnalysisResult} />}
+        {currentPage === 'editor' && <EditorPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />}
+        {currentPage === 'history' && <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />}
       </main>
     </div>
   );

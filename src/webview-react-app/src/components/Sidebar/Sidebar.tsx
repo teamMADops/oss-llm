@@ -99,7 +99,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onSelectPage('editor');
                       }}
                     >
-                      {/* 아이콘은 나중에 SVG 파일로 교체하는 것이 좋습니다. */}
+                      {/* TODO : 아이콘은 나중에 SVG 파일로 교체 */}
                       <span className="dropdown-icon">🔧</span>
                       <span>Editor</span>
                     </div>

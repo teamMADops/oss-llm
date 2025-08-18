@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import './Dashboard.css';
+import { LLMResult } from '../../../../llm/analyze';
 
 interface DashboardPageProps {
   actionId: string | null;
   isSidebarOpen: boolean;
+  llmAnalysisResult: LLMResult | null; // Use LLMResult type
 }
 
 // Mock data for dashboard
@@ -42,35 +44,7 @@ const mockDetailedLog = `2025-08-15T12:00:34.123Z [INFO] Starting workflow run
 2025-08-15T12:00:53.567Z [INFO] Artifacts uploaded successfully
 2025-08-15T12:00:54.890Z [INFO] Workflow completed successfully`;
 
-const mockLLMAnalysis = `## Build Analysis Summary
-
-### ✅ Build Status: SUCCESS
-The workflow completed successfully with all jobs passing.
-
-### 🔍 Key Findings
-1. **Dependencies**: All npm packages resolved successfully
-2. **Code Quality**: ESLint passed with no issues
-3. **Testing**: 127 tests passed (100% success rate)
-4. **Build Process**: Application compiled without errors
-5. **Artifacts**: Build artifacts generated and uploaded successfully
-
-### 📊 Performance Metrics
-- **Total Duration**: 5m 23s
-- **Dependency Installation**: ~2.5s
-- **Linting**: ~1.2s
-- **Testing**: ~1.8s
-- **Build**: ~1.5s
-
-### 🎯 Recommendations
-- Build time is within acceptable range
-- Consider caching dependencies for faster builds
-- Test coverage is excellent
-- No security vulnerabilities detected
-
-### 🔗 Related Logs
-The analysis is based on detailed logs from lines 1-25, showing successful execution of all workflow steps.`;
-
-const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, isSidebarOpen }) => {
+const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, isSidebarOpen, llmAnalysisResult }) => {
   const [selectedPanel, setSelectedPanel] = useState<number>(1);
 
   if (!actionId) {
@@ -222,21 +196,32 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, isSidebarOpen }
         </div>
         <div className="llm-analysis-content">
           <div className="llm-analysis-text">
-            {mockLLMAnalysis.split('\n').map((line, index) => {
-              if (line.startsWith('## ')) {
-                return <h2 key={index} className="llm-h2">{line.substring(3)}</h2>;
-              } else if (line.startsWith('### ')) {
-                return <h3 key={index} className="llm-h3">{line.substring(4)}</h3>;
-              } else if (line.startsWith('- ')) {
-                return <li key={index} className="llm-li">{line.substring(2)}</li>;
-              } else if (line.startsWith('1. ')) {
-                return <li key={index} className="llm-li">{line.substring(3)}</li>;
-              } else if (line.trim() === '') {
-                return <br key={index} />;
-              } else {
-                return <p key={index} className="llm-p">{line}</p>;
-              }
-            })}
+            {llmAnalysisResult ? (
+              <>
+                <h2 className="llm-h2">요약</h2>
+                {llmAnalysisResult.summary.split('\n').map((line: string, index: number) => (
+                  line.startsWith('- ') || line.startsWith('* ') ?
+                    <li key={index} className="llm-li">{line.substring(2)}</li> :
+                    <p key={index} className="llm-p">{line}</p>
+                ))}
+
+                <h3 className="llm-h3">근본 원인</h3>
+                {llmAnalysisResult.rootCause.split('\n').map((line: string, index: number) => (
+                  line.startsWith('- ') || line.startsWith('* ') ?
+                    <li key={index} className="llm-li">{line.substring(2)}</li> :
+                    <p key={index} className="llm-p">{line}</p>
+                ))}
+
+                <h3 className="llm-h3">해결 방법</h3>
+                {llmAnalysisResult.suggestion.split('\n').map((line: string, index: number) => (
+                  line.startsWith('- ') || line.startsWith('* ') ?
+                    <li key={index} className="llm-li">{line.substring(2)}</li> :
+                    <p key={index} className="llm-p">{line}</p>
+                ))}
+              </>
+            ) : (
+              <p className="llm-p">LLM 분석 결과를 기다리는 중입니다...</p>
+            )}
           </div>
         </div>
       </div>
