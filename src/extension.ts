@@ -1,15 +1,14 @@
 // 수정 예정
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { Octokit } from '@octokit/rest';
 
 import { getSavedRepo, promptAndSaveRepo,deleteSavedRepo, type RepoRef} from './github/getRepoInfo';
 import { getOctokitViaVSCodeAuth } from './auth/githubSession';
 
 import { getRunIdFromQuickPick } from './github/getRunList';
 import { printToOutput } from './output/printToOutput';       
-import { spawn } from 'child_process';
-import * as crypto from 'crypto';
+// import { spawn } from 'child_process';
+// import * as crypto from 'crypto';
 
 
 function resolveServerBase(context: vscode.ExtensionContext) {

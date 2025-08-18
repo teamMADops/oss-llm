@@ -1,16 +1,4 @@
 "use strict";
-<<<<<<< HEAD
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRepoInfo = getRepoInfo;
-async function getRepoInfo() {
-    // 하드코딩된 리포지토리 정보 사용
-    const owner = 'angkmfirefoxygal';
-    const repo = 'oss';
-    console.log(`[🔍] 하드코딩된 리포지토리 정보: ${owner}/${repo}`);
-    return { owner, repo };
-=======
-// src/github/getRepoInfo.ts
-// 사용자, repo 이름 가져오기
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -49,6 +37,7 @@ exports.formatRepo = formatRepo;
 exports.getSavedRepo = getSavedRepo;
 exports.promptAndSaveRepo = promptAndSaveRepo;
 exports.deleteSavedRepo = deleteSavedRepo;
+// src/github/getRepoInfo.ts
 const vscode = __importStar(require("vscode"));
 /** 전역 저장 키 */
 const KEY = 'gh_actions_analyzer.fixed_repo';
@@ -112,5 +101,4 @@ async function deleteSavedRepo(context) {
         return;
     await context.globalState.update(KEY, undefined);
     vscode.window.showInformationMessage('🗑️ 저장된 레포를 삭제했습니다.');
->>>>>>> fc65f3f57797582ac9db54d480b39ff60a02c1f8
 }

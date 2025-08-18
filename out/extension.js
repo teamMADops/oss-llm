@@ -38,13 +38,23 @@ exports.deactivate = deactivate;
 // 수정 예정
 const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
-
-
 const getRepoInfo_1 = require("./github/getRepoInfo");
 const githubSession_1 = require("./auth/githubSession");
 const getRunList_1 = require("./github/getRunList");
 const printToOutput_1 = require("./output/printToOutput");
-<<<<<<< HEAD
+// import { spawn } from 'child_process';
+// import * as crypto from 'crypto';
+function resolveServerBase(context) {
+    const cfg = vscode.workspace.getConfiguration('oss');
+    const fromSetting = cfg.get('serverBase');
+    if (fromSetting)
+        return fromSetting;
+    if (process.env.SERVER_BASE)
+        return process.env.SERVER_BASE;
+    return context.extensionMode === vscode.ExtensionMode.Development
+        ? 'http://localhost:4310'
+        : 'https://YOUR-DEPLOYED-API.example.com';
+}
 // Webview panel management - Keep track of panels to prevent duplicates
 const panels = {};
 /**
@@ -78,17 +88,18 @@ function createAndShowWebview(context, page) {
     panel.webview.onDidReceiveMessage(async (message) => {
         // All messages from the webview will be handled here.
         // This is where the API layer described in structure.md is implemented on the extension side.
-        const repo = await (0, getRepoInfo_1.getRepoInfo)();
+        const repo = await (0, getRepoInfo_1.getSavedRepo)(context);
         if (!repo) {
             panel.webview.postMessage({ command: 'error', payload: 'GitHub 리포지토리 정보를 찾을 수 없습니다.' });
             return;
         }
-        const token = await (0, tokenManager_1.getGitHubToken)(context);
-        if (!token) {
-            panel.webview.postMessage({ command: 'error', payload: 'GitHub 토큰을 찾을 수 없습니다. 설정 명령을 실행해주세요.' });
+        //github auto auth-login
+        const octokit = await (0, githubSession_1.getOctokitViaVSCodeAuth)();
+        if (!octokit) {
+            vscode.window.showErrorMessage('GitHub 로그인에 실패했습니다.');
             return;
         }
-        const octokit = new rest_1.Octokit({ auth: token });
+        console.log('[3] 🔑 VS Code GitHub 세션 확보');
         switch (message.command) {
             // These are placeholders for the API calls defined in structure.md
             case 'getActions':
@@ -266,19 +277,6 @@ function createAndShowWebview(context, page) {
     // Store the panel and send the initial page message
     panels[page] = panel;
     panel.webview.postMessage({ command: 'changePage', page });
-=======
-
-function resolveServerBase(context) {
-    const cfg = vscode.workspace.getConfiguration('oss');
-    const fromSetting = cfg.get('serverBase');
-    if (fromSetting)
-        return fromSetting;
-    if (process.env.SERVER_BASE)
-        return process.env.SERVER_BASE;
-    return context.extensionMode === vscode.ExtensionMode.Development
-        ? 'http://localhost:4310'
-        : 'https://YOUR-DEPLOYED-API.example.com';
->>>>>>> fc65f3f57797582ac9db54d480b39ff60a02c1f8
 }
 function activate(context) {
     // 레포 등록/수정
@@ -296,7 +294,6 @@ function activate(context) {
     });
     context.subscriptions.push(cmdSetRepo, cmdClearRepo, cmdShowRepo);
     const disposable = vscode.commands.registerCommand('extension.analyzeGitHubActions', async (repoArg) => {
-
         console.log('[1] 🔍 확장 실행됨');
         // 우선순위: 명령 인자 > 저장된 레포
         const repo = repoArg ?? (0, getRepoInfo_1.getSavedRepo)(context);
@@ -304,13 +301,11 @@ function activate(context) {
             vscode.window.showWarningMessage('저장된 레포가 없습니다. 먼저 레포를 등록하세요.');
             return;
         }
-
         console.log(`[2] ✅ 레포: ${repo.owner}/${repo.repo}`);
         // GitHub 인증 세션 가져오기
         const octokit = await (0, githubSession_1.getOctokitViaVSCodeAuth)();
         if (!octokit) {
             vscode.window.showErrorMessage('GitHub 로그인에 실패했습니다.');
-
             return;
         }
         console.log('[3] 🔑 VS Code GitHub 세션 확보');

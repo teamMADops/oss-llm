@@ -11,5 +11,5 @@
     "skipLibCheck": true
   },
 
-  "exclude": ["src/getFailedLogsForLLM.ts"]
+  "exclude": ["src/getFailedLogsForLLM.ts", "src/webview-react-app"]
 }
