@@ -37,12 +37,14 @@ exports.activate = activate;
 exports.deactivate = deactivate;
 // 수정 예정
 const vscode = __importStar(require("vscode"));
-const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
+
+
 const getRepoInfo_1 = require("./github/getRepoInfo");
 const githubSession_1 = require("./auth/githubSession");
 const getRunList_1 = require("./github/getRunList");
 const printToOutput_1 = require("./output/printToOutput");
+
 function resolveServerBase(context) {
     const cfg = vscode.workspace.getConfiguration('oss');
     const fromSetting = cfg.get('serverBase');
@@ -70,6 +72,7 @@ function activate(context) {
     });
     context.subscriptions.push(cmdSetRepo, cmdClearRepo, cmdShowRepo);
     const disposable = vscode.commands.registerCommand('extension.analyzeGitHubActions', async (repoArg) => {
+
         console.log('[1] 🔍 확장 실행됨');
         // 우선순위: 명령 인자 > 저장된 레포
         const repo = repoArg ?? (0, getRepoInfo_1.getSavedRepo)(context);
@@ -77,11 +80,13 @@ function activate(context) {
             vscode.window.showWarningMessage('저장된 레포가 없습니다. 먼저 레포를 등록하세요.');
             return;
         }
+
         console.log(`[2] ✅ 레포: ${repo.owner}/${repo.repo}`);
         // GitHub 인증 세션 가져오기
         const octokit = await (0, githubSession_1.getOctokitViaVSCodeAuth)();
         if (!octokit) {
             vscode.window.showErrorMessage('GitHub 로그인에 실패했습니다.');
+
             return;
         }
         console.log('[3] 🔑 VS Code GitHub 세션 확보');
@@ -174,59 +179,42 @@ function activate(context) {
         });
     });
     context.subscriptions.push(disposable);
-    // 0. 웹뷰 개발 시작 전 테스트를 위한 Hello World 페이지
-    const helloWorldCommand = vscode.commands.registerCommand('extension.helloWorld', () => {
-        const panel = vscode.window.createWebviewPanel('helloWorld', 'Hello World', vscode.ViewColumn.One, {
-            enableScripts: true
-        });
-        panel.webview.html = getWebviewContent(context);
-        // Hello World webview 메시지 처리
-        panel.webview.onDidReceiveMessage(message => {
-            switch (message.command) {
-                case 'showMessage':
-                    vscode.window.showInformationMessage(message.text);
-                    return;
-            }
-        }, undefined, context.subscriptions);
-    });
-    context.subscriptions.push(helloWorldCommand);
-    // 1. GitHub Actions Workflow Editor 명령어 : 임시 페이지 
-    const workflowEditorCommand = vscode.commands.registerCommand('extension.openWorkflowEditor', () => {
-        const panel = vscode.window.createWebviewPanel('workflowEditor', 'GitHub Actions Workflow Editor', vscode.ViewColumn.One, {
-            enableScripts: true,
-            retainContextWhenHidden: true
-        });
-        panel.webview.html = getWorkflowEditorContent(context, panel);
-        // webview와 확장간 메시지 통신 설정
-        panel.webview.onDidReceiveMessage(message => {
-            switch (message.command) {
-                case 'submitPrompt':
-                    vscode.window.showInformationMessage(`LLM Prompt submitted: ${message.text}`);
-                    return;
-                case 'saveWorkflow':
-                    vscode.window.showInformationMessage('Workflow saved successfully!');
-                    return;
-            }
-        }, undefined, context.subscriptions);
-    });
-    context.subscriptions.push(workflowEditorCommand);
-    function getWebviewContent(context) {
-        const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'hello.html');
-        return fs.readFileSync(htmlPath, 'utf8');
+    // --- Webview Commands ---
+    // Main command to open the webview dashboard
+    context.subscriptions.push(vscode.commands.registerCommand('extension.openDashboard', () => {
+        createAndShowWebview(context, 'dashboard');
+    }));
+}
+function getWebviewContent(context, panel) {
+    const buildPath = path.join(context.extensionPath, 'out', 'webview-build');
+    const scriptPath = path.join(buildPath, 'assets', 'index.js');
+    const stylePath = path.join(buildPath, 'assets', 'index.css');
+    const scriptUri = panel.webview.asWebviewUri(vscode.Uri.file(scriptPath));
+    const styleUri = panel.webview.asWebviewUri(vscode.Uri.file(stylePath));
+    const nonce = getNonce();
+    // The title here is for the HTML document itself, not the panel tab.
+    return `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource}; script-src 'nonce-${nonce}';">
+      <title>MAD Ops</title>
+      <link rel="stylesheet" type="text/css" href="${styleUri}">
+    </head>
+    <body>
+      <div id="root"></div>
+      <script nonce="${nonce}" src="${scriptUri}"></script>
+    </body>
+    </html>`;
+}
+function getNonce() {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
-    function getWorkflowEditorContent(context, panel) {
-        const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor', 'workflow_editor.html');
-        let htmlContent = fs.readFileSync(htmlPath, 'utf8');
-        // Common CSS
-        const commonCssPath = path.join(context.extensionPath, 'src', 'webview', 'common', 'common.css');
-        const commonCssUri = panel.webview.asWebviewUri(vscode.Uri.file(commonCssPath));
-        htmlContent = htmlContent.replace('href="../common/common.css"', `href="${commonCssUri}"`);
-        // Page-specific CSS
-        const pageCssPath = path.join(context.extensionPath, 'src', 'webview', 'workflow_editor', 'workflow_editor.css');
-        const pageCssUri = panel.webview.asWebviewUri(vscode.Uri.file(pageCssPath));
-        htmlContent = htmlContent.replace('href="workflow_editor.css"', `href="${pageCssUri}"`);
-        return htmlContent;
-    }
+    return text;
 }
 function deactivate() {
     console.log('📴 GitHub Actions 확장 종료됨');
