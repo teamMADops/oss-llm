@@ -1,4 +1,4 @@
-// API 관련 공통 타입 정의
+
 
 // VS Code API 메시지 타입
 export interface VSCodeMessage {
@@ -47,7 +47,13 @@ export interface LatestRun {
 // LLM 분석 결과 타입
 export interface LLMAnalysisResult {
   summary: string;
-  errorType?: string;
-  solution?: string;
-  recommendations?: string[];
+  rootCause?: string;
+  suggestion?: string;
+  items: {
+    step: string;
+    filename?: string;
+    reason: string;
+    fix?: string;
+  }[];
 }
+""
