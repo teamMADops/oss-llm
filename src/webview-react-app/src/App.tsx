@@ -59,11 +59,11 @@ function App() {
   const renderPage = () => {
     switch (page) {
       case 'dashboard':
-        return <Dashboard actionId={selectedActionId} />;
+        return <Dashboard actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
       case 'editor':
-        return <Editor actionId={selectedActionId} />;
+        return <Editor actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
       case 'history':
-        return <HistoryPage actionId={selectedActionId} />;
+        return <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
       default:
         return <Dashboard actionId={selectedActionId} />;
     }
@@ -80,7 +80,7 @@ function App() {
         onSelectPage={handleSelectPage}
         onSidebarToggle={handleSidebarToggle}
       />
-      <div className="main-content">
+      <div className={`main-content ${sidebarCollapsed ? 'sidebar-closed' : 'sidebar-open'}`}>
         {renderPage()}
       </div>
     </div>

@@ -3,11 +3,12 @@ import './Dashboard.css';
 
 interface DashboardPageProps {
   actionId: string | null;
+  isSidebarOpen: boolean;
 }
 
-const DashboardPage: React.FC<DashboardPageProps> = ({ actionId }) => {
+const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, isSidebarOpen }) => {
   return (
-    <main className="dashboard-main-content">
+    <main className={`dashboard-main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <h1 className="dashboard-title">Dashboard</h1>
       {actionId ? (
         <p>Displaying dashboard for action: {actionId}</p>

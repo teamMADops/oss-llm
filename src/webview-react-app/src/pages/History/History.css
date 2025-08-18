@@ -1,3 +1,6 @@
+/* History 페이지 스타일 - theme.css에서 기본 스타일을 가져옴 */
+@import '../../styles/theme.css';
+
 /* History Page Layout */
 .history-main-content {
   padding: var(--spacing-xlarge);
@@ -5,6 +8,22 @@
   background-color: var(--color-background);
   color: var(--color-text-primary);
   min-height: 100vh;
+  transition: all 0.3s ease; /* 사이드바 열림/닫힘에 따른 자연스러운 크기 변화 */
+}
+
+/* 사이드바 상태에 따른 History 페이지 크기 조정 */
+.history-main-content.sidebar-open {
+  /* 사이드바가 열려있을 때: 기본 크기 */
+  width: 100%;
+}
+
+.history-main-content.sidebar-closed {
+  /* 사이드바가 닫혀있을 때: 전체 화면 사용 */
+  width: 100vw;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100vh;
 }
 
 .history-title {

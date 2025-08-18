@@ -50,7 +50,7 @@ const StatusIndicator: React.FC<{ status: ActionStatus }> = ({ status }) => {
             </svg>
         );
     }
-    return <div className="status-dot" style={{ backgroundColor: getStatusColor(status) }}></div>;
+    return <div className={`status-dot status-${status}`}></div>;
 };
 
 
@@ -87,7 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <StatusIndicator status={action.status} />
                 </div>
                 <span className="action-name">{action.name}</span>
-                <span className="action-status" style={{ color: getStatusColor(action.status) }}>
+                <span className={`action-status status-${action.status}`}>
                   {getStatusText(action.status)}
                 </span>
               </div>

@@ -4,9 +4,10 @@ import './HistoryTable.css';
 
 interface HistoryTableProps {
   runs: WorkflowRun[];
+  isSidebarOpen: boolean;
 }
 
-const HistoryTable: React.FC<HistoryTableProps> = ({ runs }) => {
+const HistoryTable: React.FC<HistoryTableProps> = ({ runs, isSidebarOpen }) => {
   const getStatusClass = (status: string) => {
     switch (status) {
       case 'success':
@@ -54,7 +55,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ runs }) => {
   };
 
   return (
-    <div className="history-table-container">
+    <div className={`history-table-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <table className="table history-table">
         <thead>
           <tr>

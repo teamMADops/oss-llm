@@ -5,6 +5,7 @@ import './History.css';
 
 interface HistoryPageProps {
   actionId: string | null;
+  isSidebarOpen: boolean;
 }
 
 // Mock runs data - in real app, this would be fetched based on actionId
@@ -68,7 +69,7 @@ const mockRuns: WorkflowRun[] = [
   },
 ];
 
-const HistoryPage: React.FC<HistoryPageProps> = ({ actionId }) => {
+const HistoryPage: React.FC<HistoryPageProps> = ({ actionId, isSidebarOpen }) => {
   const [runHistory, setRunHistory] = useState(mockRuns);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -87,7 +88,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ actionId }) => {
 
   if (!actionId) {
     return (
-      <div className="history-main-content">
+      <div className={`history-main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
         <div className="history-empty-state">
           <p className="text-muted">워크플로우를 선택해주세요.</p>
         </div>
@@ -96,14 +97,14 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ actionId }) => {
   }
 
   return (
-    <div className="history-main-content">
+    <div className={`history-main-content ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <h1 className="history-title">Workflow Run History</h1>
       {isLoading ? (
         <div className="history-loading">
           <p className="text-muted">로딩 중...</p>
         </div>
       ) : (
-        <HistoryTable runs={runHistory} />
+        <HistoryTable runs={runHistory} isSidebarOpen={isSidebarOpen} />
       )}
     </div>
   );
