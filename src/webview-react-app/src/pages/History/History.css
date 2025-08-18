@@ -1,24 +1,26 @@
 /* History 페이지 스타일 - theme.css에서 기본 스타일을 가져옴 */
 @import '../../styles/theme.css';
 
-/* History Page Layout */
-.history-main-content {
-  padding: var(--spacing-xlarge);
-  overflow-y: auto;
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
-  min-height: 100vh;
-  transition: all 0.3s ease; /* 사이드바 열림/닫힘에 따른 자연스러운 크기 변화 */
-}
-
-/* 사이드바 상태에 따른 History 페이지 크기 조정 */
-.history-main-content.sidebar-open {
-  /* 사이드바가 열려있을 때: 기본 크기 */
+/* History Container */
+.history-container {
+  display: flex;
   width: 100%;
+  height: 100%;
+  background: #0d1117;
+  font-family: var(--font-family-base);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 0;
+  margin: 0;
 }
 
-.history-main-content.sidebar-closed {
-  /* 사이드바가 닫혀있을 때: 전체 화면 사용 */
+.history-container.sidebar-open {
+  /* 사이드바가 열려있을 때: 메인 패널이 1/2 차지 (사이드바 제외한 화면의) */
+}
+
+.history-container.sidebar-closed {
+  /* 사이드바가 닫혀있을 때: 메인 패널이 1/2 차지 (전체 화면의) */
   width: 100vw;
   position: absolute;
   left: 0;
@@ -26,13 +28,62 @@
   height: 100vh;
 }
 
-.history-title {
-  font-size: var(--font-size-large-title);
-  font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--spacing-xlarge);
-  color: var(--color-text-primary);
+/* History Main */
+.history-main {
+  position: relative;
+  height: 100%;
+  padding: 20px; /* 메인 패널과 동일한 padding */
+  overflow: hidden;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  box-sizing: border-box; /* padding이 width에 포함되도록 */
 }
 
+.history-container.sidebar-open .history-main {
+  /* 사이드바 열림: 히스토리는 YAML 뷰어 없이 남은 영역 전체 사용 */
+  flex: 1;
+  width: 100%;
+  margin-right: 0;
+  padding: 20px; /* padding 값 유지 */
+}
+
+.history-container.sidebar-closed .history-main {
+  /* 사이드바 닫힘: 히스토리는 전체 화면 사용 */
+  flex: 1;
+  width: 100%;
+  margin-right: 0;
+  padding: 20px; /* padding 값 유지 */
+}
+
+/* History Editor */
+.history-editor {
+  padding: 0 0 20px 0; /* 좌우 패딩 제거 (메인 패널에서 처리), 하단만 유지 */
+  margin-right: 0; /* 오른쪽 마진 제거 */
+  overflow-y: auto;
+  flex: 1;
+}
+
+.history-editor::-webkit-scrollbar {
+  width: 8px;
+}
+
+.history-editor::-webkit-scrollbar-track {
+  background: #21262d;
+  border-radius: 4px;
+}
+
+.history-editor::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+.history-editor::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* History Empty State */
 .history-empty-state,
 .history-loading {
   display: flex;

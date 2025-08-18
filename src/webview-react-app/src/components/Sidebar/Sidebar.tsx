@@ -81,7 +81,10 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div key={action.id}>
               <div
                 className={`action-item ${selectedActionId === action.id ? 'selected' : ''}`}
-                onClick={() => onSelectAction(action.id)}
+                onClick={(e) => {
+                  e.stopPropagation(); // 이벤트 버블링 방지
+                  onSelectAction(action.id);
+                }}
               >
                 <div className="action-status-indicator">
                     <StatusIndicator status={action.status} />
@@ -97,7 +100,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <div className="action-dropdown">
                     <div 
                       className={`dropdown-item ${activePage === 'editor' ? 'selected' : ''}`}
-                      onClick={() => onSelectPage('editor')}
+                      onClick={(e) => {
+                        e.stopPropagation(); // 이벤트 버블링 방지
+                        onSelectPage('editor');
+                      }}
                     >
                       {/* 아이콘은 나중에 SVG 파일로 교체하는 것이 좋습니다. */}
                       <span className="dropdown-icon">🔧</span>
@@ -105,7 +111,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                     <div 
                       className={`dropdown-item ${activePage === 'history' ? 'selected' : ''}`}
-                      onClick={() => onSelectPage('history')}
+                      onClick={(e) => {
+                        e.stopPropagation(); // 이벤트 버블링 방지
+                        onSelectPage('history');
+                      }}
                     >
                       <span className="dropdown-icon">📋</span>
                       <span>Run History</span>

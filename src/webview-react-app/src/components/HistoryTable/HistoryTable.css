@@ -1,233 +1,204 @@
-/* History Table 컴포넌트 스타일 */
-.history-table-container {
-  width: 100%;
-  background-color: var(--color-surface);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  transition: all 0.3s ease; /* 사이드바 열림/닫힘에 따른 자연스러운 크기 변화 */
-}
+/* History Table 스타일 - theme.css에서 기본 스타일을 가져옴 */
+@import '../../styles/theme.css';
 
-/* 사이드바 상태에 따른 History 테이블 크기 조정 */
-.history-table-container.sidebar-open {
-  /* 사이드바가 열려있을 때: 기본 크기 */
+/* History Table Wrapper */
+.history-table-wrapper {
   width: 100%;
 }
 
-.history-table-container.sidebar-closed {
-  /* 사이드바가 닫혀있을 때: 전체 화면 사용 */
-  width: 100vw;
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100vh;
+/* Runs List */
+.runs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.history-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-body);
-  background-color: transparent;
+/* Runs Header */
+.runs-header {
+  display: grid;
+  grid-template-columns: 80px 140px 180px 120px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 16px;
+  background: #21262d;
+  border-radius: 6px;
+  border: 1px solid #30363d;
+  margin-bottom: 12px;
 }
 
-.history-table thead {
-  background-color: var(--color-surface-secondary);
+.runs-header > div {
+  font-family: var(--font-family-base);
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.history-table th {
-  padding: var(--spacing-large);
+.header-id {
   text-align: left;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  border-bottom: var(--border-width) solid var(--color-border);
-  font-size: var(--font-size-body);
 }
 
-.history-table th:first-child {
-  padding-left: var(--spacing-xlarge);
+.header-status {
+  text-align: center;
 }
 
-.history-table th:last-child {
-  padding-right: var(--spacing-xlarge);
+.header-timestamp {
+  text-align: left;
 }
 
-.history-table-row {
-  transition: background-color var(--transition-medium);
-  border-bottom: var(--border-width) solid var(--color-border-muted);
+.header-branch {
+  text-align: center;
 }
 
-.history-table-row:hover {
-  background-color: var(--color-surface-hover);
+.header-reason {
+  text-align: left;
 }
 
-.history-table-row:last-child {
-  border-bottom: none;
+/* Run Item */
+.run-item {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
-.history-table td {
-  padding: var(--spacing-large);
-  color: var(--color-text-primary);
-  vertical-align: middle;
-  border-bottom: none;
+.run-item:hover {
+  background: #21262d;
+  border-color: #58a6ff;
 }
 
-.history-table td:first-child {
-  padding-left: var(--spacing-xlarge);
+/* Run Row - 가로 배치 */
+.run-row {
+  display: grid;
+  grid-template-columns: 80px 140px 180px 120px 1fr;
+  gap: 16px;
+  align-items: center;
 }
 
-.history-table td:last-child {
-  padding-right: var(--spacing-xlarge);
-}
-
-/* Run ID 스타일 */
+/* Run ID */
 .run-id {
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f6fc;
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
 }
 
-/* Status 스타일 */
+/* Run Status */
 .run-status {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
-.run-status .status {
-  display: inline-flex;
+.status-indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
   align-items: center;
-  gap: var(--spacing-small);
-  padding: var(--spacing-small) var(--spacing-medium);
-  border-radius: var(--border-radius-small);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-medium);
-  text-transform: capitalize;
-  letter-spacing: 0.025em;
-  min-width: 70px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.status-indicator.status-success {
+  background: rgba(35, 134, 54, 0.15);
+  border: 1px solid rgba(35, 134, 54, 0.3);
+}
+
+.status-indicator.status-failed {
+  background: rgba(218, 54, 51, 0.15);
+  border: 1px solid rgba(218, 54, 51, 0.3);
+}
+
+.status-indicator.status-running {
+  background: rgba(255, 136, 0, 0.15);
+  border: 1px solid rgba(255, 136, 0, 0.3);
+}
+
+.status-indicator.status-pending {
+  background: rgba(139, 148, 158, 0.15);
+  border: 1px solid rgba(139, 148, 158, 0.3);
+}
+
+.status-text {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.status-indicator.status-success + .status-text {
+  color: #238636;
+}
+
+.status-indicator.status-failed + .status-text {
+  color: #da3633;
+}
+
+.status-indicator.status-running + .status-text {
+  color: #ff8800;
+}
+
+.status-indicator.status-pending + .status-text {
+  color: #8b949e;
+}
+
+/* Run Timestamp */
+.run-timestamp {
+  font-family: var(--font-family-base);
+  font-size: 12px;
+  color: #8b949e;
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
+}
+
+/* Run Branch */
+.run-branch {
+  display: flex;
   justify-content: center;
 }
 
-/* Status Text Color by State */
-.status-success {
-  color: var(--color-success);
-}
-
-.status-failed {
-  color: var(--color-danger);
-}
-
-.status-running {
-  color: var(--color-running);
-}
-
-.status-pending {
-  color: var(--color-pending);
-}
-
-.status-cancelled {
-  color: var(--color-cancelled);
-}
-
-/* Timestamp 스타일 */
-.run-timestamp {
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-body);
-  color: var(--color-text-secondary);
-}
-
-/* Reason 스타일 */
-.reason-container {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-medium);
-}
-
-.reason-text {
-  color: var(--color-text-primary);
-  font-size: var(--font-size-body);
-}
-
 .branch-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--spacing-xs) var(--spacing-small);
-  background-color: var(--color-accent);
-  color: var(--color-white);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
-  border-radius: var(--border-radius-small);
-  text-transform: lowercase;
+  background: #21262d;
+  color: #58a6ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #30363d;
+  white-space: nowrap;
 }
 
-/* Reason Text Color by State */
-.status-failed .reason-text {
-  color: var(--color-danger);
+.no-branch {
+  color: #8b949e;
+  font-size: 12px;
 }
 
-.status-success .reason-text {
-  color: var(--color-success);
-}
-
-.status-running .reason-text {
-  color: var(--color-running);
-}
-
-.status-pending .reason-text {
-  color: var(--color-pending);
-}
-
-.status-cancelled .reason-text {
-  color: var(--color-cancelled);
+/* Run Reason */
+.run-reason {
+  font-family: var(--font-family-base);
+  font-size: 13px;
+  color: #c9d1d9;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Empty State */
 .empty-state {
-  padding: var(--spacing-xxlarge);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 120px;
   text-align: center;
-  background-color: var(--color-surface);
 }
 
 .empty-state p {
-  margin: 0;
-  color: var(--color-text-muted);
   font-size: var(--font-size-body);
-}
-
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-  .history-table th,
-  .history-table td {
-    padding: var(--spacing-medium);
-  }
-  
-  .history-table th:first-child,
-  .history-table td:first-child {
-    padding-left: var(--spacing-large);
-  }
-  
-  .history-table th:last-child,
-  .history-table td:last-child {
-    padding-right: var(--spacing-large);
-  }
-  
-  .reason-container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-small);
-  }
-  
-  .run-timestamp {
-    font-size: var(--font-size-caption);
-  }
-}
-
-/* 스크롤 가능한 테이블 */
-@media (max-width: 480px) {
-  .history-table-container {
-    overflow-x: auto;
-  }
-  
-  .history-table {
-    min-width: 600px;
-  }
+  color: var(--color-text-muted);
 }

@@ -414,26 +414,33 @@ body {
 
 /* Editor Main */
 .editor-main {
-  position: relative;
-  height: 100%;
-  padding: 0; /* 전체 패딩 제거하여 전체 화면 차지 */
-  overflow: hidden;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease;
+	position: relative;
+	height: 100%;
+	padding: 20px; /* 메인 패널 자체에 고정 padding 설정 */
+	overflow: hidden;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	transition: all 0.3s ease;
+	box-sizing: border-box; /* padding이 width에 포함되도록 */
 }
 
+/* Editor Main - sidebar open */
 .editor-container.sidebar-open .editor-main {
-  /* 사이드바 열림: 메인 패널이 1/2 차지 (사이드바 제외한 화면의) */
+  /* 사이드바 열림: 메인 패널이 YAML 뷰어 왼쪽에 고정, 남은 공간의 절반 */
   flex: 1;
+  width: calc((100vw - 25%) / 2); /* 사이드바 제외한 공간의 절반 */
+  margin-right: calc((100vw - 25%) / 2 - 40px); /* 원래 마진에서 40px 제거 */
+  padding: 20px; /* padding 값 유지 */
 }
 
+/* Editor Main - sidebar closed */
 .editor-container.sidebar-closed .editor-main {
-  /* 사이드바 닫힘: 메인 패널이 1/2 차지 (전체 화면의) */
+  /* 사이드바 닫힘: 메인 패널이 YAML 뷰어 왼쪽에 고정, 전체 화면의 절반 */
   flex: 1;
-  /* 사이드바가 사라진 공간까지 사용 */
-  width: 50%;
+  width: 50vw; /* 전체 화면의 절반 */
+  margin-right: 50vw; /* YAML 뷰어 너비만큼 여백으로 겹침 방지 */
+  padding: 20px; /* padding 값 유지 */
 }
 
 /* Main Header */
@@ -458,8 +465,8 @@ body {
 
 /* Workflow Editor */
 .workflow-editor {
-  padding: 0 20px 20px 20px; /* 위쪽은 0, 좌우 하단에만 패딩 */
-  margin-right: -20px;
+  padding: 0 0 20px 0; /* 좌우 패딩 제거 (메인 패널에서 처리), 하단만 유지 */
+  margin-right: 0; /* 오른쪽 마진 제거 */
   overflow-y: auto;
   flex: 1;
 }
@@ -717,21 +724,21 @@ body {
   border-left: 1px solid #30363d;
   transition: all 0.3s ease;
   background: #0d1117;
+  position: fixed; /* 화면 오른쪽 고정 */
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50vw; /* 기본: 전체 화면의 절반 */
 }
 
 .editor-container.sidebar-open .yaml-viewer-container {
-  /* 사이드바 열림: YAML 뷰어가 1/2 차지 (사이드바 제외한 화면의) */
-  flex: 1;
-  min-width: 300px;
-  max-width: 500px;
+  /* 사이드바 열림: 사이드바 제외한 공간의 절반 */
+  width: calc((100vw - 25%) / 2);
 }
 
 .editor-container.sidebar-closed .yaml-viewer-container {
-  /* 사이드바 닫힘: YAML 뷰어가 1/2 차지 (전체 화면의) */
-  flex: 1;
-  width: 50%;
-  min-width: 400px;
-  max-width: 800px;
+  /* 사이드바 닫힘: 전체 화면의 절반 */
+  width: 50vw;
 }
 
 .yaml-viewer-container .yaml-viewer {
