@@ -8,6 +8,8 @@ interface SidebarProps {
   selectedActionId: string | null;
   activePage: string;
   sidebarCollapsed: boolean;
+  dropdownActive: boolean;
+  actionHighlighted: boolean;
   onSelectAction: (actionId: string) => void;
   onSelectPage: (pageName: string) => void;
   onSidebarToggle: () => void;
@@ -59,6 +61,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   selectedActionId,
   activePage,
   sidebarCollapsed,
+  dropdownActive,
+  actionHighlighted,
   onSelectAction,
   onSelectPage,
   onSidebarToggle
@@ -80,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           {actions.map((action) => (
             <div key={action.id}>
               <div
-                className={`action-item ${selectedActionId === action.id ? 'selected' : ''}`}
+                className={`action-item ${selectedActionId === action.id && actionHighlighted ? 'selected' : ''}`}
                 onClick={(e) => {
                   e.stopPropagation(); // 이벤트 버블링 방지
                   onSelectAction(action.id);
@@ -95,8 +99,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </span>
               </div>
               
-              {/* Dropdown 메뉴: FE/eodudrepublic의 로직(선택된 액션에만 표시)과 dev/FE의 스타일을 결합 */}
-              {selectedActionId === action.id && (
+              {/* Dropdown 메뉴: dropdownActive 상태에 따라 표시 */}
+              {selectedActionId === action.id && dropdownActive && (
                   <div className="action-dropdown">
                     <div 
                       className={`dropdown-item ${activePage === 'editor' ? 'selected' : ''}`}
