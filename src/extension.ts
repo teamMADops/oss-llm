@@ -65,17 +65,19 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
         async message => {
             // All messages from the webview will be handled here.
             // This is where the API layer described in structure.md is implemented on the extension side.
-            const repo = await getRepoInfo();
+            const repo = await getSavedRepo(context);
             if (!repo) {
                 panel.webview.postMessage({ command: 'error', payload: 'GitHub 리포지토리 정보를 찾을 수 없습니다.' });
                 return;
             }
-            const token = await getGitHubToken(context);
-            if (!token) {
-                panel.webview.postMessage({ command: 'error', payload: 'GitHub 토큰을 찾을 수 없습니다. 설정 명령을 실행해주세요.' });
-                return;
+            
+            //github auto auth-login
+            const octokit = await getOctokitViaVSCodeAuth();
+            if (!octokit) {
+            vscode.window.showErrorMessage('GitHub 로그인에 실패했습니다.');
+            return;
             }
-            const octokit = new Octokit({ auth: token });
+            console.log('[3] 🔑 VS Code GitHub 세션 확보');
 
             switch (message.command) {
                 // These are placeholders for the API calls defined in structure.md
