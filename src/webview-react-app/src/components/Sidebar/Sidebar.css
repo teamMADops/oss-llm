@@ -1,46 +1,3 @@
-/* Sidebar 컴포넌트 스타일 - theme.css에서 기본 스타일을 가져옴 */
-@import '../../styles/theme.css';
-
-/* 상태별 색상 클래스 */
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.status-success {
-  background-color: #238636;
-}
-
-.status-failed {
-  background-color: #da3633;
-}
-
-.status-running {
-  background-color: #ff8800;
-}
-
-.status-pending {
-  background-color: #8b949e;
-}
-
-.action-status.status-success {
-  color: #238636;
-}
-
-.action-status.status-failed {
-  color: #da3633;
-}
-
-.action-status.status-running {
-  color: #ff8800;
-}
-
-.action-status.status-pending {
-  color: #8b949e;
-}
-
 /* 좌측 Actions 사이드바 */
 .editor-sidebar {
   position: relative;
@@ -64,7 +21,7 @@
 }
 
 .editor-sidebar.collapsed {
-  /* 크기는 유지하되 왼쪽으로 완전히 이동하여 공간을 차지하지 않음 */
+  /* 크기는 유지하되 왼쪽으로 이동 */
   width: 25%;
   min-width: 280px;
   max-width: 400px;
@@ -73,9 +30,6 @@
   border: none;
   overflow: hidden;
   transform: translateX(-100%); /* 왼쪽으로 완전히 이동 */
-  position: absolute; /* 절대 위치로 설정하여 공간을 차지하지 않음 */
-  left: 0; /* 왼쪽 끝에 위치 */
-  z-index: 1000; /* 다른 요소 위에 표시 */
 }
 
 .sidebar-header {
@@ -208,6 +162,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.status-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
   flex-shrink: 0;
 }
 

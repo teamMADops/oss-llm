@@ -52,7 +52,7 @@ const StatusIndicator: React.FC<{ status: ActionStatus }> = ({ status }) => {
             </svg>
         );
     }
-    return <div className={`status-dot status-${status}`}></div>;
+    return <div className="status-dot" style={{ backgroundColor: getStatusColor(status) }}></div>;
 };
 
 
@@ -85,16 +85,13 @@ const Sidebar: React.FC<SidebarProps> = ({
             <div key={action.id}>
               <div
                 className={`action-item ${selectedActionId === action.id && actionHighlighted ? 'selected' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation(); // 이벤트 버블링 방지
-                  onSelectAction(action.id);
-                }}
+                onClick={() => onSelectAction(action.id)}
               >
                 <div className="action-status-indicator">
                     <StatusIndicator status={action.status} />
                 </div>
                 <span className="action-name">{action.name}</span>
-                <span className={`action-status status-${action.status}`}>
+                <span className="action-status" style={{ color: getStatusColor(action.status) }}>
                   {getStatusText(action.status)}
                 </span>
               </div>
@@ -104,10 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <div className="action-dropdown">
                     <div 
                       className={`dropdown-item ${activePage === 'editor' ? 'selected' : ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation(); // 이벤트 버블링 방지
-                        onSelectPage('editor');
-                      }}
+                      onClick={() => onSelectPage('editor')}
                     >
                       {/* 아이콘은 나중에 SVG 파일로 교체하는 것이 좋습니다. */}
                       <span className="dropdown-icon">🔧</span>
@@ -115,10 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                     <div 
                       className={`dropdown-item ${activePage === 'history' ? 'selected' : ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation(); // 이벤트 버블링 방지
-                        onSelectPage('history');
-                      }}
+                      onClick={() => onSelectPage('history')}
                     >
                       <span className="dropdown-icon">📋</span>
                       <span>Run History</span>

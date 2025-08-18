@@ -49,7 +49,7 @@ const StatusIndicator: React.FC<{ status: string, conclusion: string | null }> =
   );
 };
 
-const HistoryTable: React.FC<HistoryTableProps> = ({ runs, isSidebarOpen }) => {
+const HistoryTable: React.FC<HistoryTableProps> = ({ runs }) => {
   const getStatusClass = (status: string, conclusion: string | null) => {
     if (conclusion === 'success') {
       return 'status-success';

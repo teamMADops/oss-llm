@@ -87,7 +87,7 @@ function App() {
       case 'history':
         return <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
       default:
-        return <Dashboard actionId={selectedActionId} />;
+        return <Dashboard actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
     }
   };
 
