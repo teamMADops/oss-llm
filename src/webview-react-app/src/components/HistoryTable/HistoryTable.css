@@ -1,19 +1,19 @@
 /* History Table 스타일 - theme.css에서 기본 스타일을 가져옴 */
 @import '../../styles/theme.css';
 
-/* History Table Wrapper */
+/* 전체 히스토리 테이블을 감싸는 래퍼 */
 .history-table-wrapper {
   width: 100%;
 }
 
-/* Runs List */
+/* 실행 기록 목록 전체를 감싸는 컨테이너 */
 .runs-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-/* Runs Header */
+/* 실행 기록 테이블의 헤더(머리글) */
 .runs-header {
   display: grid;
   grid-template-columns: 80px 140px 180px 120px 1fr;
@@ -26,6 +26,7 @@
   margin-bottom: 12px;
 }
 
+/* 헤더의 각 컬럼(ID, Status 등) 텍스트 스타일 */
 .runs-header > div {
   font-family: var(--font-family-base);
   font-size: 12px;
@@ -35,27 +36,32 @@
   letter-spacing: 0.5px;
 }
 
+/* 헤더의 'ID' 컬럼 */
 .header-id {
   text-align: left;
 }
 
+/* 헤더의 'Status' 컬럼 */
 .header-status {
   text-align: center;
 }
 
+/* 헤더의 'Timestamp' 컬럼 */
 .header-timestamp {
   text-align: left;
 }
 
+/* 헤더의 'Branch' 컬럼 */
 .header-branch {
   text-align: center;
 }
 
+/* 헤더의 'Reason' 컬럼 */
 .header-reason {
   text-align: left;
 }
 
-/* Run Item */
+/* 개별 실행 기록 아이템 */
 .run-item {
   background: #161b22;
   border: 1px solid #30363d;
@@ -65,12 +71,13 @@
   cursor: pointer;
 }
 
+/* 실행 기록 아이템에 마우스를 올렸을 때의 스타일 */
 .run-item:hover {
   background: #21262d;
   border-color: #58a6ff;
 }
 
-/* Run Row - 가로 배치 */
+/* 실행 기록 아이템 내부의 한 줄(row) */
 .run-row {
   display: grid;
   grid-template-columns: 80px 140px 180px 120px 1fr;
@@ -78,7 +85,7 @@
   align-items: center;
 }
 
-/* Run ID */
+/* 실행 ID 스타일 */
 .run-id {
   font-family: var(--font-family-base);
   font-size: 14px;
@@ -87,13 +94,14 @@
   font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
 }
 
-/* Run Status */
+/* 실행 상태(status) 영역 */
 .run-status {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
+/* 상태를 나타내는 아이콘(동그라미 등)의 컨테이너 */
 .status-indicator {
   width: 24px;
   height: 24px;
@@ -104,26 +112,31 @@
   flex-shrink: 0;
 }
 
+/* 성공(success) 상태 아이콘 */
 .status-indicator.status-success {
   background: rgba(35, 134, 54, 0.15);
   border: 1px solid rgba(35, 134, 54, 0.3);
 }
 
+/* 실패(failed) 상태 아이콘 */
 .status-indicator.status-failed {
   background: rgba(218, 54, 51, 0.15);
   border: 1px solid rgba(218, 54, 51, 0.3);
 }
 
+/* 실행 중(running) 상태 아이콘 */
 .status-indicator.status-running {
   background: rgba(255, 136, 0, 0.15);
   border: 1px solid rgba(255, 136, 0, 0.3);
 }
 
+/* 대기(pending) 상태 아이콘 */
 .status-indicator.status-pending {
   background: rgba(139, 148, 158, 0.15);
   border: 1px solid rgba(139, 148, 158, 0.3);
 }
 
+/* 상태 텍스트(Completed, Failed 등) */
 .status-text {
   font-size: 12px;
   font-weight: 500;
@@ -132,23 +145,27 @@
   white-space: nowrap;
 }
 
+/* 성공 상태 텍스트 색상 */
 .status-indicator.status-success + .status-text {
   color: #238636;
 }
 
+/* 실패 상태 텍스트 색상 */
 .status-indicator.status-failed + .status-text {
   color: #da3633;
 }
 
+/* 실행 중 상태 텍스트 색상 */
 .status-indicator.status-running + .status-text {
   color: #ff8800;
 }
 
+/* 대기 상태 텍스트 색상 */
 .status-indicator.status-pending + .status-text {
   color: #8b949e;
 }
 
-/* Run Timestamp */
+/* 실행 시각(Timestamp) 스타일 */
 .run-timestamp {
   font-family: var(--font-family-base);
   font-size: 12px;
@@ -156,12 +173,13 @@
   font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
 }
 
-/* Run Branch */
+/* 브랜치(Branch) 정보 영역 */
 .run-branch {
   display: flex;
   justify-content: center;
 }
 
+/* 브랜치 이름을 감싸는 태그 */
 .branch-tag {
   background: #21262d;
   color: #58a6ff;
@@ -173,12 +191,13 @@
   white-space: nowrap;
 }
 
+/* 브랜치 정보가 없을 때 표시되는 스타일 */
 .no-branch {
   color: #8b949e;
   font-size: 12px;
 }
 
-/* Run Reason */
+/* 실행 이유(Reason) 스타일 */
 .run-reason {
   font-family: var(--font-family-base);
   font-size: 13px;
@@ -189,7 +208,7 @@
   white-space: nowrap;
 }
 
-/* Empty State */
+/* 실행 기록이 없을 때 보여주는 영역 */
 .empty-state {
   display: flex;
   justify-content: center;
@@ -198,6 +217,7 @@
   text-align: center;
 }
 
+/* 실행 기록이 없을 때 보여주는 텍스트 스타일 */
 .empty-state p {
   font-size: var(--font-size-body);
   color: var(--color-text-muted);

@@ -1,13 +1,16 @@
+/* 웹뷰 전체의 디자인 테마를 정의하는 전역 스타일시트 */
+
 /* Pretendard Variable 폰트 import */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css');
 
-/* 전역 CSS 리셋 */
+/* 전역 CSS 리셋: 모든 요소의 기본 마진, 패딩을 제거하고 box-sizing을 설정합니다. */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* html, body: 전체 페이지의 크기와 스크롤을 제어합니다. */
 html, body {
   margin: 0;
   padding: 0;
@@ -16,6 +19,7 @@ html, body {
   overflow: hidden;
 }
 
+/* #root: React 앱의 최상위 요소가 전체 화면을 차지하도록 설정합니다. */
 #root {
   width: 100%;
   height: 100%;
@@ -23,37 +27,33 @@ html, body {
   padding: 0;
 }
 
-/* CSS 변수 정의 */
+/* :root: 앱 전체에서 사용될 CSS 변수(색상, 폰트 등)를 정의합니다. */
 :root {
-  /* 색상 */
-  --color-background: #0F1A24;
-  --color-surface: #161b22;
-  --color-surface-secondary: #21262d;
-  --color-surface-hover: #30363d;
-  --color-border: #30363d;
-  --color-border-subtle: #21262d;
-  --color-text-primary: #f0f6fc;
-  --color-text-secondary: #8b949e;
-  --color-accent: #58a6ff;
-  --color-accent-hover: #79c0ff;
-  --color-accent-emphasis: #1f6feb;
-  --color-white: #DBE8F2;
-  --color-black: #0F1A24;
+  /* 색상 변수 */
+  --color-background: #0F1A24; /* 앱의 기본 배경색 */
+  --color-surface: #161b22; /* 카드 등 UI 요소의 표면색 */
+  --color-surface-secondary: #21262d; /* 보조 표면색 */
+  --color-surface-hover: #30363d; /* 마우스를 올렸을 때의 표면색 */
+  --color-border: #30363d; /* 테두리 색상 */
+  --color-border-subtle: #21262d; /* 옅은 테두리 색상 */
+  --color-text-primary: #f0f6fc; /* 주요 텍스트 색상 */
+  --color-text-secondary: #8b949e; /* 보조 텍스트 색상 */
+  --color-accent: #58a6ff; /* 강조 색상 (파란색 계열) */
+  --color-accent-hover: #79c0ff; /* 강조 색상에 마우스를 올렸을 때 */
+  --color-accent-emphasis: #1f6feb; /* 더 강한 강조 색상 */
+  --color-white: #DBE8F2; /* 흰색 계열 색상 */
+  --color-black: #0F1A24; /* 검은색 계열 색상 */
   
-  /* Pretendard Variable 폰트 - 모든 서체 */
-  --font-family-base: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
-  --font-family-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  /* 폰트 변수 */
+  --font-family-base: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif; /* 기본 폰트 */
+  --font-family-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; /* 고정폭 폰트 (코드 표시용) */
   
-  /* Pretendard Variable 폰트 굵기 (직접 숫자 사용) */
-  /* Thin: 100, Extra Light: 200, Light: 300, Regular: 400 */
-  /* Medium: 500, Semi Bold: 600, Bold: 700, Extra Bold: 800, Black: 900 */
-  
-  /* 전환 효과 */
+  /* 전환 효과 변수 */
   --transition-fast: 0.15s ease;
   --transition-medium: 0.3s ease;
   --transition-slow: 0.5s ease;
   
-  /* Editor specific variables */
+  /* 에디터 페이지 전용 변수 */
   --bg-primary: var(--color-background);
   --bg-secondary: var(--color-surface);
   --bg-tertiary: var(--color-surface-secondary);
@@ -65,6 +65,7 @@ html, body {
   --accent-bg: rgba(88, 166, 255, 0.1);
 }
 
+/* body: 앱의 기본 폰트, 배경색, 글자색 등 전역 스타일을 설정합니다. */
 body {
   font-family: var(--font-family-base);
   background-color: var(--color-background);
@@ -75,21 +76,44 @@ body {
   line-height: 1.5;
 }
 
-/* App Layout */
+/* App.tsx의 최상위 레이아웃 컨테이너 */
 .app-container {
   display: flex;
   height: 100vh;
 }
 
+/* 사이드바를 제외한 메인 콘텐츠 영역 */
 .main-content {
   flex: 1;
   overflow: auto;
   padding: 20px;
+  transition: all 0.3s ease;
 }
 
-/* Common Component Styles */
+/* 사이드바가 열려있을 때의 메인 콘텐츠 영역 스타일 */
+.main-content.sidebar-open {
+  margin-left: 0;
+  padding: 0;
+  width: calc(100vw - 25%);
+  position: absolute;
+  left: 25%;
+  top: 0;
+  height: 100vh;
+  transition: left 0.3s ease, width 0.3s ease;
+}
 
-/* Buttons */
+/* 사이드바가 닫혀있을 때의 메인 콘텐츠 영역 스타일 */
+.main-content.sidebar-closed {
+  margin-left: 0;
+  width: 100vw;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  transition: left 0.3s ease, width 0.3s ease;
+}
+
+/* 공용 버튼 기본 스타일 */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -106,6 +130,7 @@ body {
   white-space: nowrap;
 }
 
+/* 주요 버튼 스타일 (파란색 계열) */
 .btn-primary {
   background-color: var(--color-accent);
   color: var(--color-white);
@@ -117,6 +142,7 @@ body {
   border-color: var(--color-accent-hover);
 }
 
+/* 보조 버튼 스타일 (회색 계열) */
 .btn-secondary {
   background-color: var(--color-surface);
   color: var(--color-text-primary);
@@ -127,6 +153,7 @@ body {
   background-color: var(--color-surface-hover);
 }
 
+/* 성공 버튼 스타일 (초록색 계열) */
 .btn-success {
   background-color: var(--color-success);
   color: var(--color-white);
@@ -137,6 +164,7 @@ body {
   background-color: var(--color-success-hover);
 }
 
+/* 위험 버튼 스타일 (빨간색 계열) */
 .btn-danger {
   background-color: var(--color-danger);
   color: var(--color-white);
@@ -147,7 +175,7 @@ body {
   background-color: var(--color-danger-hover);
 }
 
-/* Status Indicators */
+/* 상태 표시기 기본 스타일 */
 .status {
   display: inline-flex;
   align-items: center;
@@ -160,37 +188,42 @@ body {
   letter-spacing: 0.025em;
 }
 
+/* 성공 상태 스타일 */
 .status-success {
   background-color: rgba(35, 134, 54, 0.1);
   color: var(--color-success);
   border: 1px solid rgba(35, 134, 54, 0.2);
 }
 
+/* 실패 상태 스타일 */
 .status-failed {
   background-color: rgba(218, 54, 51, 0.1);
   color: var(--color-danger);
   border: 1px solid rgba(218, 54, 51, 0.2);
 }
 
+/* 실행 중 상태 스타일 */
 .status-running {
   background-color: rgba(251, 133, 0, 0.1);
   color: var(--color-running);
   border: 1px solid rgba(251, 133, 0, 0.2);
 }
 
+/* 대기 중 상태 스타일 */
 .status-pending {
   background-color: rgba(210, 153, 34, 0.1);
   color: var(--color-pending);
   border: 1px solid rgba(210, 153, 34, 0.2);
 }
 
+/* 취소됨 상태 스타일 */
 .status-cancelled {
   background-color: rgba(139, 148, 158, 0.1);
   color: var(--color-cancelled);
   border: 1px solid rgba(139, 148, 158, 0.2);
 }
 
-/* Cards */
+/* 카드 UI 컴포넌트 기본 스타일 */
 .card {
   background-color: var(--color-surface);
   border: var(--border-width) solid var(--color-border);
@@ -198,23 +231,26 @@ body {
   overflow: hidden;
 }
 
+/* 카드 헤더 스타일 */
 .card-header {
   padding: var(--spacing-large);
   border-bottom: var(--border-width) solid var(--color-border);
   background-color: var(--color-surface-secondary);
 }
 
+/* 카드 본문 스타일 */
 .card-body {
   padding: var(--spacing-large);
 }
 
+/* 카드 푸터 스타일 */
 .card-footer {
   padding: var(--spacing-large);
   border-top: var(--border-width) solid var(--color-border);
   background-color: var(--color-surface-secondary);
 }
 
-/* Navigation */
+/* 네비게이션 메뉴 기본 스타일 */
 .nav {
   display: flex;
   list-style: none;
@@ -222,10 +258,12 @@ body {
   padding: 0;
 }
 
+/* 네비게이션 아이템 */
 .nav-item {
   display: flex;
 }
 
+/* 네비게이션 링크 */
 .nav-link {
   display: flex;
   align-items: center;
@@ -241,13 +279,14 @@ body {
   background-color: var(--color-surface-hover);
 }
 
+/* 활성화된 네비게이션 링크 */
 .nav-link.active {
   color: var(--color-text-primary);
   background-color: var(--color-surface-secondary);
   font-weight: var(--font-weight-medium);
 }
 
-/* Forms */
+/* 폼 컨트롤(input 등) 기본 스타일 */
 .form-control {
   display: block;
   width: 100%;
@@ -271,7 +310,7 @@ body {
   color: var(--color-text-placeholder);
 }
 
-/* Tables */
+/* 테이블 기본 스타일 */
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -295,7 +334,7 @@ body {
   background-color: var(--color-surface-hover);
 }
 
-/* Utility Classes */
+/* 유틸리티 클래스: 텍스트 색상 */
 .text-primary { color: var(--color-text-primary); }
 .text-secondary { color: var(--color-text-secondary); }
 .text-muted { color: var(--color-text-muted); }
@@ -303,43 +342,51 @@ body {
 .text-danger { color: var(--color-danger); }
 .text-warning { color: var(--color-warning); }
 
+/* 유틸리티 클래스: 배경색 */
 .bg-surface { background-color: var(--color-surface); }
 .bg-surface-secondary { background-color: var(--color-surface-secondary); }
 
+/* 유틸리티 클래스: 테두리 */
 .border { border: var(--border-width) solid var(--color-border); }
 .border-top { border-top: var(--border-width) solid var(--color-border); }
 .border-bottom { border-bottom: var(--border-width) solid var(--color-border); }
 .border-left { border-left: var(--border-width) solid var(--color-border); }
 .border-right { border-right: var(--border-width) solid var(--color-border); }
 
+/* 유틸리티 클래스: 둥근 모서리 */
 .rounded { border-radius: var(--border-radius); }
 .rounded-large { border-radius: var(--border-radius-large); }
 
+/* 유틸리티 클래스: 패딩 */
 .p-0 { padding: 0; }
 .p-small { padding: var(--spacing-small); }
 .p-medium { padding: var(--spacing-medium); }
 .p-large { padding: var(--spacing-large); }
 
+/* 유틸리티 클래스: 마진 */
 .m-0 { margin: 0; }
 .m-small { margin: var(--spacing-small); }
 .m-medium { margin: var(--spacing-medium); }
 .m-large { margin: var(--spacing-large); }
 
+/* 유틸리티 클래스: 디스플레이 */
 .d-flex { display: flex; }
 .d-block { display: block; }
 .d-inline-block { display: inline-block; }
 .d-none { display: none; }
 
+/* 유틸리티 클래스: Flexbox */
 .flex-column { flex-direction: column; }
 .flex-row { flex-direction: row; }
 .align-items-center { align-items: center; }
 .justify-content-center { justify-content: center; }
 .justify-content-between { justify-content: space-between; }
 
+/* 유틸리티 클래스: 크기 */
 .w-100 { width: 100%; }
 .h-100 { height: 100%; }
 
-/* Animations */
+/* 애니메이션: 서서히 나타남 */
 .fade-in {
   animation: fadeIn var(--transition-medium) ease-in-out;
 }
@@ -349,6 +396,7 @@ body {
   to { opacity: 1; }
 }
 
+/* 애니메이션: 아래에서 위로 나타남 */
 .slide-in {
   animation: slideIn var(--transition-medium) ease-out;
 }
@@ -356,4 +404,428 @@ body {
 @keyframes slideIn {
   from { transform: translateY(-10px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+/* ===== 워크플로우 에디터 페이지 스타일 ===== */
+
+/* 에디터 페이지 최상위 컨테이너 */
+.editor-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background: #0d1117;
+  font-family: var(--font-family-base);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 0; /* 전체 패딩 제거 */
+  margin: 0; /* 전체 마진 제거 */
+}
+
+/* 사이드바가 열렸을 때 에디터 컨테이너 */
+.editor-container.sidebar-open {
+  /* 사이드바가 열려있을 때: 메인 패널과 YAML 뷰어가 1:1 비율 */
+}
+
+/* 사이드바가 닫혔을 때 에디터 컨테이너 */
+.editor-container.sidebar-closed {
+  width: 100vw;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100vh;
+}
+
+/* 에디터의 메인 패널 (왼쪽) */
+.editor-main {
+	position: relative;
+	height: 100%;
+	padding: 20px; /* 메인 패널 자체에 고정 padding 설정 */
+	overflow: hidden;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	transition: all 0.3s ease;
+	box-sizing: border-box; /* padding이 width에 포함되도록 */
+}
+
+/* 사이드바가 열렸을 때 에디터 메인 패널 */
+.editor-container.sidebar-open .editor-main {
+  /* 사이드바 열림: 메인 패널이 YAML 뷰어 왼쪽에 고정, 남은 공간의 절반 */
+  flex: 1;
+  width: calc((100vw - 25%) / 2); /* 사이드바 제외한 공간의 절반 */
+  margin-right: calc((100vw - 25%) / 2 - 40px); /* 원래 마진에서 40px 제거 */
+  padding: 20px; /* padding 값 유지 */
+}
+
+/* 사이드바가 닫혔을 때 에디터 메인 패널 */
+.editor-container.sidebar-closed .editor-main {
+  /* 사이드바 닫힘: 메인 패널이 YAML 뷰어 왼쪽에 고정, 전체 화면의 절반 */
+  flex: 1;
+  width: 50vw; /* 전체 화면의 절반 */
+  margin-right: 50vw; /* YAML 뷰어 너비만큼 여백으로 겹침 방지 */
+  padding: 20px; /* padding 값 유지 */
+}
+
+/* 에디터 메인 헤더 */
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 0 20px; /* 위쪽과 좌우에만 패딩, 아래쪽은 0 */
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+/* 에디터 메인 제목 */
+.main-title {
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 38px;
+  color: #ffffff;
+  margin: 0;
+}
+
+/* 워크플로우 에디터 영역 (스크롤 가능) */
+.workflow-editor {
+  padding: 0 0 20px 0; /* 좌우 패딩 제거 (메인 패널에서 처리), 하단만 유지 */
+  margin-right: 0; /* 오른쪽 마진 제거 */
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* 워크플로우 에디터 스크롤바 */
+.workflow-editor::-webkit-scrollbar {
+  width: 8px;
+}
+
+.workflow-editor::-webkit-scrollbar-track {
+  background: #21262d;
+  border-radius: 4px;
+}
+
+.workflow-editor::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+.workflow-editor::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* 워크플로우의 각 섹션 (Name, Triggers, Jobs) */
+.workflow-section {
+  margin-bottom: 24px;
+  background: #161b22;
+  border-radius: 8px;
+  border: 1px solid #30363d;
+  overflow: hidden;
+}
+
+/* 섹션 헤더 */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #21262d;
+  border-bottom: 1px solid #30363d;
+}
+
+/* 섹션 제목 */
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin: 0;
+}
+
+/* 섹션 내용 */
+.section-content {
+  padding: 20px;
+}
+
+/* 워크플로우 이름 입력 필드 */
+.workflow-name-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #f0f6fc;
+  font-size: 14px;
+  font-family: var(--font-family-base);
+  transition: border-color 0.2s ease;
+}
+
+.workflow-name-input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+/* 트리거 아이템 */
+.trigger-item {
+  margin-bottom: 16px;
+}
+
+/* 트리거 아이템 헤더 (클릭하여 열고 닫기) */
+.trigger-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #21262d;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.trigger-header:hover {
+  background: #30363d;
+}
+
+/* 트리거 활성화 체크박스 영역 */
+.trigger-checkbox {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+}
+
+.trigger-checkbox input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+/* 커스텀 체크마크 */
+.checkmark {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #30363d;
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+}
+
+.trigger-checkbox input[type="checkbox"]:checked + .checkmark::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  color: #58a6ff;
+  font-size: 12px;
+}
+
+/* 트리거 이름 */
+.trigger-name {
+  flex: 1;
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+/* 드롭다운 화살표 아이콘 */
+.dropdown-arrow {
+  font-size: 12px;
+  color: #8b949e;
+  transition: transform 0.2s ease;
+}
+
+/* 열렸을 때의 드롭다운 화살표 */
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* 트리거 상세 설정 영역 */
+.trigger-details {
+  margin-top: 8px;
+  padding: 16px;
+  background: #0d1117;
+  border-radius: 6px;
+  border: 1px solid #30363d;
+}
+
+/* 입력 필드 그룹 */
+.field-group {
+  margin-bottom: 16px;
+}
+
+.field-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.field-group input,
+.field-group select {
+  width: 100%;
+  padding: 8px 12px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #f0f6fc;
+  font-size: 14px;
+}
+
+.field-group input:focus,
+.field-group select:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+/* Job 아이템 */
+.job-item {
+  margin-bottom: 16px;
+  background: #161b22;
+  border-radius: 8px;
+  border: 1px solid #30363d;
+  overflow: hidden;
+}
+
+/* Job 헤더 (클릭하여 열고 닫기) */
+.job-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #21262d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.job-header:hover {
+  background: #30363d;
+}
+
+/* Job 이름 */
+.job-name {
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+/* Job 상세 설정 영역 */
+.job-details {
+  padding: 20px;
+}
+
+/* 'Add Job' 버튼, 'Add Step' 버튼 */
+.add-job-btn,
+.add-step-btn {
+  padding: 8px 16px;
+  background: #58a6ff;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-job-btn:hover,
+.add-step-btn:hover {
+  background: #79c0ff;
+}
+
+/* Step 아이템 */
+.step-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 16px;
+  background: #0d1117;
+  border-radius: 6px;
+  border: 1px solid #30363d;
+}
+
+.step-item input {
+  flex: 1;
+  padding: 8px 12px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #f0f6fc;
+  font-size: 14px;
+}
+
+.step-item input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.step-item input::placeholder {
+  color: #8b949e;
+}
+
+/* YAML 뷰어 컨테이너 (오른쪽 패널) */
+.yaml-viewer-container {
+  height: 100%;
+  flex-shrink: 0;
+  resize: horizontal;
+  overflow: hidden;
+  border-left: 1px solid #30363d;
+  transition: all 0.3s ease;
+  background: #0d1117;
+  position: fixed; /* 화면 오른쪽 고정 */
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50vw; /* 기본: 전체 화면의 절반 */
+}
+
+/* 사이드바가 열렸을 때 YAML 뷰어 */
+.editor-container.sidebar-open .yaml-viewer-container {
+  /* 사이드바 열림: 사이드바 제외한 공간의 절반 */
+  width: calc((100vw - 25%) / 2);
+}
+
+/* 사이드바가 닫혔을 때 YAML 뷰어 */
+.editor-container.sidebar-closed .yaml-viewer-container {
+  /* 사이드바 닫힘: 전체 화면의 절반 */
+  width: 50vw;
+}
+
+/* YAML 뷰어 내부의 실제 뷰어 컴포넌트 */
+.yaml-viewer-container .yaml-viewer {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* 에디터에 선택된 파일이 없을 때 플레이스홀더 */
+.editor-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #8b949e;
+  font-size: 1.125rem;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+  .yaml-viewer-container {
+    min-width: 350px;
+    max-width: 600px;
+  }
+}
+
+@media (max-width: 768px) {
+  .editor-container {
+    flex-direction: column;
+  }
+  
+  .yaml-viewer-container {
+    width: 100% !important;
+    height: 50%;
+    min-width: unset;
+    max-width: unset;
+    border-left: none;
+    border-top: 1px solid #30363d;
+  }
+  
+  .editor-main {
+    padding: 16px;
+  }
 }

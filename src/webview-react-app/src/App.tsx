@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Sidebar from './components/Sidebar/Sidebar';
-import Dashboard from './pages/Dashboard/Dashboard';
-import Editor from './pages/Editor/Editor';
+import DashboardPage from './pages/Dashboard/Dashboard';
+import EditorPage from './pages/Editor/Editor';
 import HistoryPage from './pages/History/History';
 import { Action } from './components/Sidebar/types';
 import { getActions } from './api/github';
@@ -15,7 +15,7 @@ function App() {
   const [dropdownActive, setDropdownActive] = useState(false);
   const [actionHighlighted, setActionHighlighted] = useState(true);
 
-  // Mock data for now, will be replaced by API calls
+  // TODO : Mock data for now, will be replaced by API calls
   const mockActions: Action[] = useMemo(() => [
     { id: 'action-one', name: 'Action one_happy', status: 'success' },
     { id: 'action-two', name: 'Action twooo', status: 'failed' },
@@ -53,6 +53,7 @@ function App() {
       .catch(error => {
         console.error('[❌] Actions 로드 실패:', error);
         // 에러 발생 시 mock 데이터 사용
+        // TODO : 이거 어떻게 해야하지?
         setActions(mockActions);
         if (mockActions.length > 0) {
           setSelectedActionId(mockActions[0].id);
@@ -62,7 +63,7 @@ function App() {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [mockActions]);
 
   const handleSelectAction = (actionId: string) => {
     if (selectedActionId === actionId) {
@@ -101,13 +102,13 @@ function App() {
   const renderPage = () => {
     switch (page) {
       case 'dashboard':
-        return <Dashboard actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
+        return <DashboardPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
       case 'editor':
-        return <Editor actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
+        return <EditorPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
       case 'history':
         return <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
       default:
-        return <Dashboard actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
+        return <DashboardPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />;
     }
   };
 
@@ -124,9 +125,9 @@ function App() {
         onSelectPage={handleSelectPage}
         onSidebarToggle={handleSidebarToggle}
       />
-      <div className="main-content">
+      <main className={`main-content ${sidebarCollapsed ? 'sidebar-closed' : 'sidebar-open'}`}>
         {renderPage()}
-      </div>
+      </main>
     </div>
   );
 }

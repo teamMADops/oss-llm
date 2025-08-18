@@ -1,9 +1,9 @@
-/* Editor 페이지 스타일 - theme.css에서 워크플로우 에디터 스타일을 가져옴 */
+/* EditorPage 컴포넌트의 스타일을 정의합니다. 이 페이지는 워크플로우의 YAML 설정 파일을 확인하고 수정하는 화면입니다. */
+
+/* theme.css에서 전역 스타일 변수 및 워크플로우 에디터 관련 스타일을 가져옵니다. */
 @import '../../styles/theme.css';
 
-/* Editor 페이지 전용 스타일 (필요한 경우에만 추가) */
-
-/* 화면을 반으로 나누는 레이아웃 */
+/* Editor 페이지 전체를 감싸는 컨테이너 */
 .editor-container {
   display: flex;
   width: 100%;
@@ -16,16 +16,14 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
 }
 
+/* 사이드바가 열려있을 때의 에디터 컨테이너 */
 .editor-container.sidebar-open {
   /* 사이드바가 열려있을 때: 메인 패널과 YAML 뷰어 반반 분할 */
   margin: 0;
   padding: 0;
 }
 
-/* 사이드바 열림 시 메인 패널 설정은 아래에서 통합 */
-
-/* 사이드바 열림 시 YAML viewer 설정은 아래에서 통합 */
-
+/* 사이드바가 닫혔을 때의 에디터 컨테이너 */
 .editor-container.sidebar-closed {
   /* 사이드바가 닫혀있을 때: 메인 패널과 YAML 뷰어 반반 분할 (전체 화면) */
   width: 100vw;
@@ -35,6 +33,7 @@
   height: 100vh;
 }
 
+/* 사이드바가 닫혔을 때 에디터 메인 패널의 너비 조정 */
 .editor-container.sidebar-closed .editor-main {
   width: 50% !important; /* 전체 화면의 37.5% */
   margin-left: 0;
@@ -43,12 +42,13 @@
   box-sizing: border-box !important; /* 박스 모델 강제 적용 */
 }
 
+/* 사이드바가 닫혔을 때 YAML 뷰어 컨테이너의 너비 조정 */
 .editor-container.sidebar-closed .yaml-viewer-container {
   width: 50% !important; /* 전체 화면의 37.5% */
   right: 0;
 }
 
-/* 중앙 Build 섹션 */
+/* 에디터의 메인 패널 (왼쪽 영역) */
 .editor-main {
   position: relative;
   height: 100%;
@@ -63,27 +63,13 @@
   box-sizing: border-box; /* 패딩과 보더를 포함한 크기 계산 */
 }
 
-/* 중복된 규칙 제거 - 아래에서 통합 */
-
-/* 우측 YAML 뷰어 컨테이너 */
-.yaml-viewer-container {
-  width: 37.5%; /* 기본: 화면의 37.5% 차지 */
-  min-width: 400px; /* 최소 너비 보장 */
-  height: 100%;
-  flex-shrink: 0; /* 축소 방지 */
-  position: fixed; /* 오른쪽 고정 */
-  right: 0;
-  top: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
-}
-
-/* 사이드바가 열려있을 때 전체 webview 마진 조정 */
+/* 사이드바가 열려있을 때 전체 webview의 마진/패딩 제거 */
 .editor-container.sidebar-open {
   margin: 0 !important; /* 강제로 마진 제거 */
   padding: 0 !important; /* 강제로 패딩 제거 */
 }
 
-/* 사이드바 열림 시 메인 패널과 YAML viewer 1:1 분할 */
+/* 사이드바가 열렸을 때 메인 패널의 너비 조정 */
 .editor-container.sidebar-open .editor-main {
   width: 50% !important; /* 사이드바 열림 후 남은 공간을 37.5%씩 분할 */
   margin: 0 !important;
@@ -91,24 +77,19 @@
   box-sizing: border-box !important; /* 박스 모델 강제 적용 */
 }
 
+/* 사이드바가 열렸을 때 YAML 뷰어 컨테이너의 너비 조정 */
 .editor-container.sidebar-open .yaml-viewer-container {
   width: 37.5% !important; /* 사이드바 열림 후 남은 공간을 37.5%씩 분할 */
   right: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-/* 사이드바가 열려있을 때 메인 컨텐츠 영역 마진 조정 */
-.editor-container.sidebar-open .main-content {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* main-content의 기본 padding 제거 */
+/* 메인 콘텐츠 영역의 기본 패딩 제거 */
 .main-content {
   padding: 0 !important;
 }
 
-/* FE/sungwon의 정교한 UI 스타일들 */
+/* 워크플로우 에디터 영역 (스크롤 가능) */
 .workflow-editor {
   padding-right: 20px; /* 스크롤바 공간 확보 */
   margin-right: -20px; /* 부모 패딩 상쇄 */
@@ -116,6 +97,7 @@
   flex: 1;
 }
 
+/* 워크플로우의 각 섹션 (Name, Triggers, Jobs) */
 .workflow-section {
   margin-bottom: 24px;
   background: #161b22;
@@ -124,6 +106,7 @@
   overflow: hidden;
 }
 
+/* 섹션 헤더 */
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -133,6 +116,7 @@
   border-bottom: 1px solid #30363d;
 }
 
+/* 섹션 제목 */
 .section-title {
   font-size: 16px;
   font-weight: 600;
@@ -140,11 +124,12 @@
   margin: 0;
 }
 
+/* 섹션 내용 */
 .section-content {
   padding: 20px;
 }
 
-/* 트리거 아이템 스타일 */
+/* 트리거 아이템 */
 .trigger-item {
   margin-bottom: 16px;
   border: 1px solid #30363d;
@@ -152,6 +137,7 @@
   overflow: hidden;
 }
 
+/* 트리거 아이템 헤더 (클릭하여 열고 닫기) */
 .trigger-header {
   display: flex;
   align-items: center;
@@ -161,41 +147,49 @@
   user-select: none;
 }
 
+/* 트리거 활성화 체크박스 영역 */
 .trigger-checkbox {
   display: flex;
   align-items: center;
   margin-right: 12px;
 }
 
+/* 체크박스 입력 필드 */
 .trigger-checkbox input[type="checkbox"] {
   margin-right: 8px;
 }
 
+/* 트리거 이름 */
 .trigger-name {
   flex: 1;
   font-weight: 500;
   color: #f0f6fc;
 }
 
+/* 드롭다운 화살표 아이콘 */
 .dropdown-arrow {
   color: #8b949e;
   transition: transform 0.2s ease;
 }
 
+/* 열렸을 때의 드롭다운 화살표 */
 .dropdown-arrow.open {
   transform: rotate(180deg);
 }
 
+/* 트리거 상세 설정 영역 */
 .trigger-details {
   padding: 16px;
   background: #161b22;
   border-top: 1px solid #30363d;
 }
 
+/* 입력 필드 그룹 */
 .field-group {
   margin-bottom: 16px;
 }
 
+/* 입력 필드 라벨 */
 .field-group label {
   display: block;
   margin-bottom: 8px;
@@ -203,6 +197,7 @@
   color: #f0f6fc;
 }
 
+/* 입력 필드 (input, select) */
 .field-group input,
 .field-group select {
   width: 100%;
@@ -214,7 +209,7 @@
   font-size: 14px;
 }
 
-/* Jobs 스타일 */
+/* 'Add Job' 버튼 */
 .add-job-btn {
   padding: 6px 12px;
   background: #238636;
@@ -226,10 +221,12 @@
   transition: background-color 0.2s ease;
 }
 
+/* 'Add Job' 버튼에 마우스를 올렸을 때 */
 .add-job-btn:hover {
   background: #2ea043;
 }
 
+/* Job 아이템 */
 .job-item {
   margin-bottom: 16px;
   border: 1px solid #30363d;
@@ -237,6 +234,7 @@
   overflow: hidden;
 }
 
+/* Job 헤더 (클릭하여 열고 닫기) */
 .job-header {
   display: flex;
   align-items: center;
@@ -246,24 +244,28 @@
   user-select: none;
 }
 
+/* Job 이름 */
 .job-name {
   flex: 1;
   font-weight: 500;
   color: #f0f6fc;
 }
 
+/* Job 상세 설정 영역 */
 .job-details {
   padding: 16px;
   background: #161b22;
   border-top: 1px solid #30363d;
 }
 
+/* Step 아이템 */
 .step-item {
   display: flex;
   gap: 12px;
   margin-bottom: 12px;
 }
 
+/* Step 아이템의 입력 필드 */
 .step-item input {
   flex: 1;
 }
@@ -281,6 +283,7 @@
   transition: border-color 0.2s ease;
 }
 
+/* 워크플로우 이름 입력 필드에 포커스 시 */
 .workflow-name-input:focus {
   outline: none;
   border-color: #58a6ff;
@@ -300,7 +303,26 @@
   min-height: 200px;
 }
 
+/* YAML 에디터 텍스트 영역에 포커스 시 */
 .yaml-editor-textarea:focus {
   outline: none;
   border-color: #58a6ff;
+}
+
+/* 우측 YAML 뷰어 컨테이너 */
+.yaml-viewer-container {
+  width: 37.5%; /* 기본: 화면의 37.5% 차지 */
+  min-width: 400px; /* 최소 너비 보장 */
+  height: 100%;
+  flex-shrink: 0; /* 축소 방지 */
+  position: fixed; /* 오른쪽 고정 */
+  right: 0;
+  top: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
+}
+
+/* 사이드바가 열려있을 때 메인 컨텐츠 영역 마진 조정 */
+.editor-container.sidebar-open .main-content {
+  margin: 0 !important;
+  padding: 0 !important;
 }

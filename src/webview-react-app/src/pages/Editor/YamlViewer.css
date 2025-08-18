@@ -1,7 +1,7 @@
 /* YAML Viewer 스타일 - theme.css에서 기본 스타일을 가져옴 */
 @import '../../styles/theme.css';
 
-/* YAML Viewer 전용 스타일 */
+/* YAML 뷰어 전체 컨테이너 */
 .yaml-viewer {
   width: 100%;
   height: 100%;
@@ -15,6 +15,7 @@
   transition: all 0.3s ease;
 }
 
+/* YAML 뷰어 헤더 (제목과 액션 버튼 포함) */
 .yaml-header {
   display: flex;
   justify-content: space-between;
@@ -25,6 +26,7 @@
   flex-shrink: 0;
 }
 
+/* YAML 뷰어 제목 */
 .yaml-title {
   font-family: var(--font-family-base);
   font-size: 14px;
@@ -32,11 +34,13 @@
   color: #f0f6fc;
 }
 
+/* YAML 뷰어 헤더의 액션 버튼 컨테이너 */
 .yaml-actions {
   display: flex;
   gap: 8px;
 }
 
+/* YAML 뷰어 헤더의 개별 버튼 */
 .yaml-btn {
   padding: 4px 8px;
   background: #21262d;
@@ -49,21 +53,25 @@
   transition: all 0.2s ease;
 }
 
+/* YAML 뷰어 버튼에 마우스를 올렸을 때 */
 .yaml-btn:hover {
   background: #30363d;
   border-color: #58a6ff;
 }
 
+/* 복사 버튼에 마우스를 올렸을 때 */
 .yaml-btn-copy:hover {
   background: #238636;
   border-color: #238636;
 }
 
+/* 포맷 버튼에 마우스를 올렸을 때 */
 .yaml-btn-format:hover {
   background: #58a6ff;
   border-color: #58a6ff;
 }
 
+/* YAML 내용이 표시되는 영역 */
 .yaml-content {
   flex: 1;
   overflow: auto !important;
@@ -75,6 +83,7 @@
   transition: all 0.3s ease;
 }
 
+/* YAML 코드 내용을 감싸는 컨테이너 */
 .yaml-code-container {
   padding: 0;
   font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
@@ -87,12 +96,14 @@
   min-width: max-content;
 }
 
+/* YAML 코드의 각 줄 */
 .yaml-line {
   display: flex;
   min-height: 20.8px;
   position: relative;
 }
 
+/* YAML 코드 줄 번호 */
 .line-number {
   width: 50px;
   padding: 0 14px 0 22px;
@@ -110,6 +121,7 @@
   justify-content: flex-end;
 }
 
+/* YAML 코드 줄 내용 */
 .line-content {
   flex: 1;
   padding: 2px 16px 2px 16px;
@@ -118,44 +130,52 @@
   overflow: visible;
 }
 
+/* YAML 코드의 첫 번째 줄 내용 패딩 */
 .yaml-line:first-child .line-content {
   padding-top: 16px;
 }
 
+/* YAML 코드의 마지막 줄 내용 패딩 */
 .yaml-line:last-child .line-content {
   padding-bottom: 16px;
 }
 
+/* YAML 내용에 마우스를 올렸을 때 줄 번호의 sticky 속성 유지 */
 .yaml-content:hover .line-number,
 .yaml-content:focus .line-number {
   position: sticky !important;
   left: 0 !important;
 }
 
-/* YAML 구문 하이라이팅 */
+/* YAML 구문 하이라이팅: 키워드 */
 .yaml-keyword {
   color: #569cd6;
   font-weight: 600;
 }
 
+/* YAML 구문 하이라이팅: 문자열 */
 .yaml-string {
   color: #ce9178;
   font-weight: 500;
 }
 
+/* YAML 구문 하이라이팅: 숫자 */
 .yaml-number {
   color: #b5cea8;
 }
 
+/* YAML 구문 하이라이팅: 배열 */
 .yaml-array {
   color: #c586c0;
 }
 
+/* YAML 구문 하이라이팅: 주석 */
 .yaml-comment {
   color: #6a9955;
   font-style: italic;
 }
 
+/* YAML 구문 하이라이팅: 표현식 */
 .yaml-expression {
   color: #d7ba7d;
   font-weight: 500;
@@ -164,67 +184,76 @@
   border-radius: 3px;
 }
 
-/* 스크롤바 스타일링 */
+/* YAML 내용 스크롤바 너비 */
 .yaml-content::-webkit-scrollbar {
   width: 12px;
 }
 
+/* YAML 내용 스크롤바 트랙 */
 .yaml-content::-webkit-scrollbar-track {
   background: #0d1117;
   border-radius: 6px;
 }
 
+/* YAML 내용 스크롤바 핸들 */
 .yaml-content::-webkit-scrollbar-thumb {
   background: #30363d;
   border-radius: 6px;
   border: 2px solid #0d1117;
 }
 
+/* YAML 내용 스크롤바 핸들에 마우스를 올렸을 때 */
 .yaml-content::-webkit-scrollbar-thumb:hover {
   background: #484f58;
 }
 
+/* YAML 내용 스크롤바 코너 */
 .yaml-content::-webkit-scrollbar-corner {
   background: #0d1117;
 }
 
+/* YAML 내용 가로 스크롤바 높이 */
 .yaml-content::-webkit-scrollbar:horizontal {
   height: 12px;
 }
 
+/* YAML 내용 가로 스크롤바 핸들 */
 .yaml-content::-webkit-scrollbar-thumb:horizontal {
   background: #30363d;
   border-radius: 6px;
   border: 2px solid #0d1117;
 }
 
+/* YAML 내용 가로 스크롤바 핸들에 마우스를 올렸을 때 */
 .yaml-content::-webkit-scrollbar-thumb:horizontal:hover {
   background: #484f58;
 }
 
-/* 하이라이트된 라인 스타일 */
+/* 하이라이트된 YAML 줄 */
 .yaml-line.highlighted {
   background: rgba(88, 166, 255, 0.1) !important;
   border-left: 3px solid #58a6ff !important;
   margin-left: -3px;
 }
 
+/* 하이라이트된 YAML 줄의 줄 번호 */
 .yaml-line.highlighted .line-number {
   background: rgba(88, 166, 255, 0.2) !important;
   color: #58a6ff !important;
   font-weight: 600;
 }
 
+/* 하이라이트된 YAML 줄의 내용 */
 .yaml-line.highlighted .line-content {
   background: rgba(88, 166, 255, 0.05) !important;
 }
 
-/* 빈 줄 스타일 */
+/* 빈 YAML 줄 */
 .yaml-line.empty-line {
   min-height: 20.8px;
 }
 
-/* 반응형 디자인 */
+/* 반응형 디자인: 768px 이하 화면 */
 @media (max-width: 768px) {
   .yaml-viewer {
     border-radius: 0;
@@ -241,4 +270,4 @@
   .yaml-code {
     font-size: 12px;
   }
-} 
+}

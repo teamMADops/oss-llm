@@ -47,10 +47,6 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    
     "server:start": "tsx server/index.ts",
     "server:dev": "tsx watch server/index.ts",
     "vscode:prepublish": "npm run compile",

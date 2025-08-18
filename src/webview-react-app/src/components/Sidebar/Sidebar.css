@@ -1,4 +1,55 @@
-/* 좌측 Actions 사이드바 */
+/* Sidebar 컴포넌트 스타일 - theme.css에서 기본 스타일을 가져옴 */
+@import '../../styles/theme.css';
+
+/* 상태를 나타내는 작은 원형 아이콘 */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* 성공(success) 상태를 나타내는 초록색 원 */
+.status-success {
+  background-color: #238636;
+}
+
+/* 실패(failed) 상태를 나타내는 빨간색 원 */
+.status-failed {
+  background-color: #da3633;
+}
+
+/* 실행 중(running) 상태를 나타내는 주황색 원 */
+.status-running {
+  background-color: #ff8800;
+}
+
+/* 대기(pending) 상태를 나타내는 회색 원 */
+.status-pending {
+  background-color: #8b949e;
+}
+
+/* 액션 상태 텍스트의 성공(success) 색상 */
+.action-status.status-success {
+  color: #238636;
+}
+
+/* 액션 상태 텍스트의 실패(failed) 색상 */
+.action-status.status-failed {
+  color: #da3633;
+}
+
+/* 액션 상태 텍스트의 실행 중(running) 색상 */
+.action-status.status-running {
+  color: #ff8800;
+}
+
+/* 액션 상태 텍스트의 대기(pending) 색상 */
+.action-status.status-pending {
+  color: #8b949e;
+}
+
+/* 사이드바 전체 컨테이너 */
 .editor-sidebar {
   position: relative;
   width: 25%;
@@ -20,8 +71,9 @@
   box-sizing: border-box;
 }
 
+/* 사이드바가 접혔을(collapsed) 때의 스타일 */
 .editor-sidebar.collapsed {
-  /* 크기는 유지하되 왼쪽으로 이동 */
+  /* 크기는 유지하되 왼쪽으로 완전히 이동하여 공간을 차지하지 않음 */
   width: 25%;
   min-width: 280px;
   max-width: 400px;
@@ -30,8 +82,12 @@
   border: none;
   overflow: hidden;
   transform: translateX(-100%); /* 왼쪽으로 완전히 이동 */
+  position: absolute; /* 절대 위치로 설정하여 공간을 차지하지 않음 */
+  left: 0; /* 왼쪽 끝에 위치 */
+  z-index: 1000; /* 다른 요소 위에 표시 */
 }
 
+/* 사이드바 헤더 (제목과 토글 버튼 포함) */
 .sidebar-header {
   position: relative;
   padding: 20px 20px 0;
@@ -45,10 +101,12 @@
   transition: opacity 0.3s ease; /* 부드러운 투명도 전환 */
 }
 
+/* 사이드바가 접혔을 때 헤더를 숨김 */
 .editor-sidebar.collapsed .sidebar-header {
   opacity: 0;
 }
 
+/* 사이드바 제목 (Actions) */
 .sidebar-title {
   font-family: var(--font-family-base);
   font-style: normal;
@@ -65,10 +123,12 @@
   white-space: nowrap;
 }
 
+/* 사이드바가 접혔을 때 제목을 숨김 */
 .editor-sidebar.collapsed .sidebar-title {
   opacity: 0;
 }
 
+/* 사이드바를 접고 펴는 토글 버튼 */
 .sidebar-toggle-btn {
   position: absolute;
   top: 34px;
@@ -89,15 +149,18 @@
   overflow: hidden;
 }
 
+/* 사이드바가 접혔을 때 토글 버튼을 숨김 */
 .editor-sidebar.collapsed .sidebar-toggle-btn {
   opacity: 0;
 }
 
+/* 토글 버튼에 마우스를 올렸을 때 */
 .sidebar-toggle-btn:hover {
   background: #30363d;
   border-color: #58a6ff;
 }
 
+/* 토글 버튼 안의 SVG 아이콘 */
 .sidebar-toggle-btn svg {
   width: 16px;
   height: 16px;
@@ -105,10 +168,12 @@
   transition: transform 0.3s ease;
 }
 
+/* 사이드바가 접혔을 때 토글 버튼 아이콘을 180도 회전 */
 .editor-sidebar.collapsed .sidebar-toggle-btn svg {
   transform: rotate(180deg);
 }
 
+/* 액션 목록을 감싸는 리스트 */
 .actions-list {
   flex: 1;
   padding: 20px;
@@ -122,10 +187,12 @@
   transition: opacity 0.3s ease; /* 부드러운 투명도 전환 */
 }
 
+/* 사이드바가 접혔을 때 액션 리스트를 숨김 */
 .editor-sidebar.collapsed .actions-list {
   opacity: 0;
 }
 
+/* 개별 액션 아이템 */
 .action-item {
   position: relative;
   width: 100%;
@@ -143,11 +210,13 @@
   box-sizing: border-box;
 }
 
+/* 액션 아이템에 마우스를 올렸을 때 */
 .action-item:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: #30363d;
 }
 
+/* 선택된 액션 아이템 */
 .action-item.selected {
   background: var(--color-white);
   border-color: var(--color-accent);
@@ -155,6 +224,7 @@
   transition: none;
 }
 
+/* 액션 상태 아이콘(점, SVG 등)을 감싸는 영역 */
 .action-status-indicator {
   width: 16px;
   height: 16px;
@@ -165,13 +235,7 @@
   flex-shrink: 0;
 }
 
-.status-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
+/* 액션 이름 */
 .action-name {
   flex: 1;
   font-family: var(--font-family-base);
@@ -188,10 +252,12 @@
   white-space: nowrap;
 }
 
+/* 선택된 액션 아이템의 이름 */
 .action-item.selected .action-name {
   color: var(--color-black);
 }
 
+/* 액션 상태 텍스트 (Success, Failed 등) */
 .action-status {
   font-family: var(--font-family-base);
   font-style: normal;
@@ -206,7 +272,7 @@
   flex-shrink: 0;
 }
 
-/* Dropdown 메뉴 */
+/* 액션 아이템 클릭 시 나타나는 드롭다운 메뉴 */
 .action-dropdown {
   position: relative;
   width: 100%;
@@ -220,6 +286,7 @@
   margin-bottom: 8px;
 }
 
+/* 드롭다운 메뉴의 각 아이템 (Editor, Run History) */
 .dropdown-item {
   padding: 12px 16px;
   cursor: pointer;
@@ -237,6 +304,7 @@
   border: none;
 }
 
+/* 드롭다운 아이템에 마우스를 올렸을 때 */
 .dropdown-item:hover {
   /* hover 시에만 배경과 테두리 표시 */
   background: var(--color-surface-hover);
@@ -245,7 +313,7 @@
   padding-left: 28px;
 }
 
-/* 선택된 상태 - action-item과 동일한 스타일 */
+/* 선택된 드롭다운 아이템 */
 .dropdown-item.selected {
   background: var(--color-white);
   border: 1px solid var(--color-accent);
@@ -257,6 +325,7 @@
   transition: none;
 }
 
+/* 선택된 드롭다운 아이템에 마우스를 올렸을 때 */
 .dropdown-item.selected:hover {
   /* 선택된 상태에서 hover 시에도 동일한 스타일 유지 */
   background: var(--color-white);
@@ -264,27 +333,32 @@
   border-radius: 20px !important; /* 우선순위 강제 적용 */
 }
 
-/* 선택된 상태의 first-child와 last-child도 border-radius 적용 */
+/* 선택된 드롭다운 아이템의 첫 번째 자식 */
 .dropdown-item.selected:first-child {
   border-radius: 20px !important;
 }
 
+/* 선택된 드롭다운 아이템의 마지막 자식 */
 .dropdown-item.selected:last-child {
   border-radius: 20px !important;
 }
 
+/* 드롭다운 아이템의 첫 번째 자식 */
 .dropdown-item:first-child {
   border-radius: 20px;
 }
 
+/* 드롭다운 아이템의 마지막 자식 */
 .dropdown-item:last-child {
   border-radius: 20px;
 }
 
+/* 드롭다운 아이템 사이의 구분선 제거 */
 .dropdown-item:not(:last-child) {
   border-bottom: none;
 }
 
+/* 드롭다운 아이템의 아이콘 */
 .dropdown-icon {
   flex-shrink: 0;
   color: var(--color-text-secondary);
@@ -293,16 +367,17 @@
   height: 16px;
 }
 
+/* 드롭다운 아이템에 마우스를 올렸을 때 아이콘 색상 변경 */
 .dropdown-item:hover .dropdown-icon {
   color: var(--color-text-primary);
 }
 
-/* 선택된 상태의 아이콘 색상 */
+/* 선택된 드롭다운 아이템의 아이콘 색상 */
 .dropdown-item.selected .dropdown-icon {
   filter: brightness(0); /* 검은색으로 변경 */
 }
 
-/* 사이드바가 닫혔을 때 화살표 표시 */
+/* 사이드바가 접혔을 때 나타나는 화살표 버튼 */
 .sidebar-collapsed-arrow {
   position: absolute;
   left: 0;
@@ -322,15 +397,18 @@
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
 }
 
+/* 화살표 버튼에 마우스를 올렸을 때 */
 .sidebar-collapsed-arrow:hover {
   background: #79c0ff;
   width: 24px;
 }
 
+/* 사이드바가 접혔을 때만 화살표 버튼을 표시 */
 .editor-sidebar.collapsed ~ .sidebar-collapsed-arrow {
   display: flex;
 }
 
+/* 화살표 버튼 안의 SVG 아이콘 */
 .sidebar-collapsed-arrow svg {
   width: 12px;
   height: 12px;

@@ -1,4 +1,6 @@
-/* Dashboard Container */
+/* DashboardPage 컴포넌트 스타일 */
+
+/* 대시보드 페이지 전체를 감싸는 최상위 컨테이너 */
 .dashboard-container {
   display: flex;
   height: 100vh;
@@ -6,7 +8,7 @@
   color: var(--text-color);
 }
 
-/* Main Dashboard Section */
+/* 대시보드의 메인 콘텐츠 영역(중앙 패널) */
 .dashboard-main {
   flex: 1;
   display: flex;
@@ -15,13 +17,14 @@
   overflow: hidden;
 }
 
-/* Main Header */
+/* 메인 콘텐츠 영역의 헤더 */
 .main-header {
   padding: 20px 24px;
   border-bottom: 1px solid var(--border-color);
   background-color: var(--header-background);
 }
 
+/* 메인 콘텐츠 영역의 제목(Run Log) */
 .main-title {
   font-size: 24px;
   font-weight: 600;
@@ -29,7 +32,7 @@
   color: var(--text-color);
 }
 
-/* Dashboard Content */
+/* 대시보드 콘텐츠(패널 선택 버튼 및 패널 내용)를 감싸는 영역 */
 .dashboard-content {
   flex: 1;
   display: flex;
@@ -37,7 +40,7 @@
   overflow: hidden;
 }
 
-/* Panel Selector */
+/* 'Panel 1', 'Panel 2' 등 패널을 선택하는 버튼들의 컨테이너 */
 .panel-selector {
   display: flex;
   padding: 16px 24px 0;
@@ -45,6 +48,7 @@
   background-color: var(--header-background);
 }
 
+/* 개별 패널 선택 버튼 */
 .panel-btn {
   padding: 8px 16px;
   margin-right: 8px;
@@ -57,27 +61,31 @@
   transition: all 0.2s ease;
 }
 
+/* 패널 선택 버튼에 마우스를 올렸을 때 */
 .panel-btn:hover {
   background-color: var(--hover-color);
 }
 
+/* 활성화된(선택된) 패널 선택 버튼 */
 .panel-btn.active {
   background-color: var(--primary-color);
   color: white;
   border-color: var(--primary-color);
 }
 
-/* Panel Content */
+/* 선택된 패널의 내용이 표시되는 영역 */
 .panel-content {
   flex: 1;
   padding: 24px;
   overflow-y: auto;
 }
 
+/* 패널 내용 안의 각 섹션(Run Information, Detailed Log 등) */
 .panel-section {
   margin-bottom: 32px;
 }
 
+/* 각 섹션의 제목 */
 .section-title {
   font-size: 18px;
   font-weight: 600;
@@ -85,7 +93,7 @@
   color: var(--text-color);
 }
 
-/* Run Information Card */
+/* 실행 정보(Run Information)를 보여주는 카드 */
 .run-info-card {
   background-color: var(--card-background);
   border: 1px solid var(--border-color);
@@ -93,6 +101,7 @@
   padding: 20px;
 }
 
+/* 실행 정보 카드 안의 각 행(row) */
 .run-info-row {
   display: flex;
   justify-content: space-between;
@@ -101,33 +110,39 @@
   border-bottom: 1px solid var(--border-color-light);
 }
 
+/* 실행 정보 카드의 마지막 행 */
 .run-info-row:last-child {
   border-bottom: none;
 }
 
+/* 실행 정보의 레이블(Run ID, Status 등) */
 .run-info-label {
   font-weight: 500;
   color: var(--text-secondary);
 }
 
+/* 실행 정보의 값(1234, success 등) */
 .run-info-value {
   font-weight: 600;
   color: var(--text-color);
 }
 
+/* 성공(success) 상태 텍스트 색상 */
 .status-success {
   color: var(--success-color);
 }
 
+/* 실패(failure) 상태 텍스트 색상 */
 .status-failure {
   color: var(--error-color);
 }
 
+/* 취소(cancelled) 상태 텍스트 색상 */
 .status-cancelled {
   color: var(--warning-color);
 }
 
-/* Log Viewer */
+/* 상세 로그(Detailed Log) 뷰어 */
 .log-viewer {
   background-color: var(--card-background);
   border: 1px solid var(--border-color);
@@ -135,6 +150,7 @@
   overflow: hidden;
 }
 
+/* 로그 뷰어의 헤더 */
 .log-header {
   display: flex;
   justify-content: space-between;
@@ -144,16 +160,19 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+/* 로그 뷰어의 제목(build.log) */
 .log-title {
   font-weight: 600;
   color: var(--text-color);
 }
 
+/* 로그 뷰어 헤더의 액션 버튼(Copy, Search) 컨테이너 */
 .log-actions {
   display: flex;
   gap: 8px;
 }
 
+/* 로그 뷰어 헤더의 개별 버튼 */
 .log-btn {
   padding: 4px 12px;
   border: 1px solid var(--border-color);
@@ -165,15 +184,18 @@
   transition: all 0.2s ease;
 }
 
+/* 로그 뷰어 버튼에 마우스를 올렸을 때 */
 .log-btn:hover {
   background-color: var(--hover-color);
 }
 
+/* 로그 내용이 표시되는 영역 */
 .log-content {
   max-height: 400px;
   overflow-y: auto;
 }
 
+/* 로그 내용 중 코드 부분을 감싸는 컨테이너 */
 .log-code-container {
   padding: 16px;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
@@ -181,12 +203,14 @@
   line-height: 1.5;
 }
 
+/* 로그의 각 한 줄 */
 .log-line {
   display: flex;
   align-items: flex-start;
   margin-bottom: 2px;
 }
 
+/* 로그 줄 번호 */
 .line-number {
   min-width: 40px;
   color: var(--text-secondary);
@@ -194,13 +218,14 @@
   margin-right: 16px;
 }
 
+/* 로그 줄 내용 */
 .line-content {
   flex: 1;
   color: var(--text-color);
   word-break: break-all;
 }
 
-/* Panel Placeholder */
+/* 패널 내용이 비어있을 때 표시되는 플레이스홀더 */
 .panel-placeholder {
   background-color: var(--card-background);
   border: 1px solid var(--border-color);
@@ -210,7 +235,7 @@
   color: var(--text-secondary);
 }
 
-/* LLM Analysis Container */
+/* LLM 분석 결과를 보여주는 우측 패널 컨테이너 */
 .llm-analysis-container {
   width: 400px;
   display: flex;
@@ -219,6 +244,7 @@
   background-color: var(--card-background);
 }
 
+/* LLM 분석 패널의 헤더 */
 .llm-analysis-header {
   display: flex;
   justify-content: space-between;
@@ -228,17 +254,20 @@
   background-color: var(--header-background);
 }
 
+/* LLM 분석 패널의 제목 */
 .llm-analysis-title {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-color);
 }
 
+/* LLM 분석 패널 헤더의 액션 버튼(Refresh, Export) 컨테이너 */
 .llm-analysis-actions {
   display: flex;
   gap: 8px;
 }
 
+/* LLM 분석 패널 헤더의 개별 버튼 */
 .llm-btn {
   padding: 4px 12px;
   border: 1px solid var(--border-color);
@@ -250,20 +279,24 @@
   transition: all 0.2s ease;
 }
 
+/* LLM 분석 패널 버튼에 마우스를 올렸을 때 */
 .llm-btn:hover {
   background-color: var(--hover-color);
 }
 
+/* LLM 분석 내용이 표시되는 영역 */
 .llm-analysis-content {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
 }
 
+/* LLM 분석 내용의 텍스트 스타일 */
 .llm-analysis-text {
   line-height: 1.6;
 }
 
+/* LLM 분석 내용의 제목(h2) 스타일 */
 .llm-h2 {
   font-size: 18px;
   font-weight: 600;
@@ -273,10 +306,12 @@
   padding-bottom: 8px;
 }
 
+/* LLM 분석 내용의 첫 번째 제목 */
 .llm-h2:first-child {
   margin-top: 0;
 }
 
+/* LLM 분석 내용의 소제목(h3) 스타일 */
 .llm-h3 {
   font-size: 16px;
   font-weight: 600;
@@ -284,11 +319,13 @@
   color: var(--text-color);
 }
 
+/* LLM 분석 내용의 문단(p) 스타일 */
 .llm-p {
   margin: 12px 0;
   color: var(--text-color);
 }
 
+/* LLM 분석 내용의 리스트 아이템(li) 스타일 */
 .llm-li {
   margin: 8px 0;
   color: var(--text-color);
@@ -297,6 +334,7 @@
   position: relative;
 }
 
+/* LLM 분석 내용의 리스트 아이템 앞의 불릿(•) */
 .llm-li::before {
   content: "•";
   color: var(--primary-color);
@@ -305,7 +343,7 @@
   left: 0;
 }
 
-/* Empty State */
+/* 대시보드에 선택된 액션이 없을 때 표시되는 영역 */
 .dashboard-empty-state {
   display: flex;
   align-items: center;
@@ -314,6 +352,7 @@
   color: var(--text-secondary);
 }
 
+/* 사이드바 상태에 따른 대시보드 메인 영역의 반응형 스타일 */
 /* Responsive Design */
 @media (max-width: 1200px) {
   .llm-analysis-container {

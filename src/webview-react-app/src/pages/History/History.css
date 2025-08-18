@@ -1,7 +1,7 @@
 /* History 페이지 스타일 - theme.css에서 기본 스타일을 가져옴 */
 @import '../../styles/theme.css';
 
-/* History Container */
+/* 히스토리 페이지 전체를 감싸는 최상위 컨테이너 */
 .history-container {
   display: flex;
   width: 100%;
@@ -15,10 +15,12 @@
   margin: 0;
 }
 
+/* 사이드바가 열려있을 때의 히스토리 컨테이너 */
 .history-container.sidebar-open {
   /* 사이드바가 열려있을 때: 메인 패널이 1/2 차지 (사이드바 제외한 화면의) */
 }
 
+/* 사이드바가 닫혔을 때의 히스토리 컨테이너 */
 .history-container.sidebar-closed {
   /* 사이드바가 닫혀있을 때: 메인 패널이 1/2 차지 (전체 화면의) */
   width: 100vw;
@@ -28,7 +30,7 @@
   height: 100vh;
 }
 
-/* History Main */
+/* 히스토리 페이지의 메인 콘텐츠 영역 */
 .history-main {
   position: relative;
   height: 100%;
@@ -41,6 +43,7 @@
   box-sizing: border-box; /* padding이 width에 포함되도록 */
 }
 
+/* 사이드바가 열려있을 때의 히스토리 메인 영역 */
 .history-container.sidebar-open .history-main {
   /* 사이드바 열림: 히스토리는 YAML 뷰어 없이 남은 영역 전체 사용 */
   flex: 1;
@@ -49,6 +52,7 @@
   padding: 20px; /* padding 값 유지 */
 }
 
+/* 사이드바가 닫혔을 때의 히스토리 메인 영역 */
 .history-container.sidebar-closed .history-main {
   /* 사이드바 닫힘: 히스토리는 전체 화면 사용 */
   flex: 1;
@@ -57,7 +61,7 @@
   padding: 20px; /* padding 값 유지 */
 }
 
-/* History Editor */
+/* 히스토리 테이블을 감싸는 에디터 형식의 컨테이너 */
 .history-editor {
   padding: 0 0 20px 0; /* 좌우 패딩 제거 (메인 패널에서 처리), 하단만 유지 */
   margin-right: 0; /* 오른쪽 마진 제거 */
@@ -65,25 +69,29 @@
   flex: 1;
 }
 
+/* 히스토리 에디터의 스크롤바 */
 .history-editor::-webkit-scrollbar {
   width: 8px;
 }
 
+/* 스크롤바 트랙 */
 .history-editor::-webkit-scrollbar-track {
   background: #21262d;
   border-radius: 4px;
 }
 
+/* 스크롤바 핸들 */
 .history-editor::-webkit-scrollbar-thumb {
   background: #30363d;
   border-radius: 4px;
 }
 
+/* 스크롤바 핸들에 마우스를 올렸을 때 */
 .history-editor::-webkit-scrollbar-thumb:hover {
   background: #484f58;
 }
 
-/* History Empty State */
+/* 히스토리 데이터가 없거나 로딩 중일 때의 상태 표시 영역 */
 .history-empty-state,
 .history-loading {
   display: flex;
@@ -93,6 +101,7 @@
   text-align: center;
 }
 
+/* 데이터가 없거나 로딩 중일 때의 텍스트 스타일 */
 .history-empty-state p,
 .history-loading p {
   font-size: var(--font-size-body);
