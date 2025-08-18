@@ -6,10 +6,11 @@ import './Editor.css';
 // Props: App.tsx로부터 받음
 interface EditorProps {
   actionId: string | null;
+  isSidebarOpen?: boolean;
 }
 
 // dev/FE의 UI 컴포넌트와 상태 로직을 대부분 재사용
-const Editor: React.FC<EditorProps> = ({ actionId }) => {
+const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
   // --- State ---
   const [workflowContent, setWorkflowContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -77,7 +78,7 @@ const Editor: React.FC<EditorProps> = ({ actionId }) => {
   }
 
   return (
-    <div className="editor-container">
+    <div className={`editor-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <div className="editor-main">
         <div className="main-header">
           <div className="header-left">

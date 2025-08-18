@@ -5,6 +5,7 @@ import './History.css';
 
 interface HistoryPageProps {
   actionId: string | null;
+  isSidebarOpen: boolean;
 }
 
 // Mock runs data - in real app, this would be fetched based on actionId
@@ -12,63 +13,70 @@ const mockRuns: WorkflowRun[] = [
   {
     id: '1234',
     status: 'completed',
-    conclusion: 'failure',
+    conclusion: 'success',
     timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    reason: 'Build completed successfully',
     branch: 'main',
   },
   {
     id: '1235',
     status: 'completed',
     conclusion: 'failure',
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    timestamp: '2025-08-15 11:45:22',
+    reason: 'Compile Error: Syntax error in line 45',
+    branch: 'develop',
   },
   {
     id: '1236',
     status: 'completed',
-    conclusion: 'failure',
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    conclusion: 'success',
+    timestamp: '2025-08-15 11:30:15',
+    reason: 'All tests passed',
+    branch: 'feature/new-ui',
   },
   {
     id: '1237',
     status: 'completed',
     conclusion: 'failure',
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    timestamp: '2025-08-15 11:15:08',
+    reason: 'Test failure: 3 tests failed',
+    branch: 'main',
   },
   {
     id: '1238',
     status: 'completed',
-    conclusion: 'failure',
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    conclusion: 'success',
+    timestamp: '2025-08-15 11:00:42',
+    reason: 'Deployment successful',
+    branch: 'staging',
   },
   {
     id: '1239',
     status: 'completed',
     conclusion: 'failure',
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    timestamp: '2025-08-15 10:45:33',
+    reason: 'Dependency resolution failed',
+    branch: 'develop',
   },
   {
     id: '1240',
     status: 'completed',
-    conclusion: 'failure',
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    conclusion: 'success',
+    timestamp: '2025-08-15 10:30:18',
+    reason: 'Code quality checks passed',
+    branch: 'main',
   },
   {
     id: '1241',
     status: 'completed',
     conclusion: 'failure',
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Compile Error',
+    timestamp: '2025-08-15 10:15:55',
+    reason: 'Build timeout after 30 minutes',
+    branch: 'feature/performance',
   },
 ];
 
-const HistoryPage: React.FC<HistoryPageProps> = ({ actionId }) => {
+const HistoryPage: React.FC<HistoryPageProps> = ({ actionId, isSidebarOpen }) => {
   const [runHistory, setRunHistory] = useState(mockRuns);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -87,24 +95,41 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ actionId }) => {
 
   if (!actionId) {
     return (
-      <div className="history-main-content">
-        <div className="history-empty-state">
-          <p className="text-muted">워크플로우를 선택해주세요.</p>
+      <div className={`history-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+        <div className="history-main">
+          <div className="main-header">
+            <h1 className="main-title">Workflow Run History</h1>
+          </div>
+          <div className="history-editor">
+            <div className="history-empty-state">
+              <p className="text-muted">워크플로우를 선택해주세요.</p>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="history-main-content">
-      <h1 className="history-title">Workflow Run History</h1>
-      {isLoading ? (
-        <div className="history-loading">
-          <p className="text-muted">로딩 중...</p>
+    <div className={`history-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+      {/* Central History Section */}
+      <div className="history-main">
+        {/* Main Header */}
+        <div className="main-header">
+          <h1 className="main-title">Workflow Run History</h1>
         </div>
-      ) : (
-        <HistoryTable runs={runHistory} />
-      )}
+
+        {/* History Editor */}
+        <div className="history-editor">
+          {isLoading ? (
+            <div className="history-loading">
+              <p className="text-muted">로딩 중...</p>
+            </div>
+          ) : (
+            <HistoryTable runs={runHistory} isSidebarOpen={isSidebarOpen} />
+          )}
+        </div>
+      </div>
     </div>
   );
 };

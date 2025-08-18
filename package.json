@@ -59,11 +59,13 @@
   },
   "dependencies": {
 
+
     "@octokit/rest": "^22.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "eventsource": "^4.0.0",
     "express": "^5.1.0",
+
     "jszip": "^3.10.1",
     "node-fetch": "^2.7.0",
     "openai": "^5.12.2",
