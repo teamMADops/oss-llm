@@ -90,22 +90,170 @@ function createAndShowWebview(context, page) {
         switch (message.command) {
             // These are placeholders for the API calls defined in structure.md
             case 'getActions':
-                // TODO: Implement logic to get the list of workflow files (actions)
+                try {
+                    // GitHub 워크플로우 파일 목록 가져오기
+                    const { data: workflows } = await octokit.actions.listRepoWorkflows({
+                        owner: repo.owner,
+                        repo: repo.repo
+                    });
+                    console.log(`[📋] 워크플로우 개수: ${workflows.workflows.length}`);
+                    if (workflows.workflows.length === 0) {
+                        console.log('[⚠️] 워크플로우 파일이 없습니다.');
+                        panel.webview.postMessage({
+                            command: 'getActionsResponse',
+                            payload: []
+                        });
+                        return;
+                    }
+                    const actions = workflows.workflows.map(workflow => ({
+                        id: workflow.id.toString(),
+                        name: workflow.name,
+                        status: workflow.state === 'active' ? 'success' : 'failed'
+                    }));
+                    console.log(`[✅] 워크플로우 목록:`, actions);
+                    panel.webview.postMessage({
+                        command: 'getActionsResponse',
+                        payload: actions
+                    });
+                }
+                catch (error) {
+                    console.error('Error fetching actions:', error);
+                    panel.webview.postMessage({
+                        command: 'error',
+                        payload: '워크플로우 목록을 가져오는데 실패했습니다.'
+                    });
+                }
                 break;
             case 'getLatestRun':
-                // TODO: Implement logic to get the latest run for a specific action
+                try {
+                    const actionId = message.payload?.actionId;
+                    if (!actionId) {
+                        panel.webview.postMessage({
+                            command: 'error',
+                            payload: 'Action ID가 필요합니다.'
+                        });
+                        return;
+                    }
+                    // 특정 워크플로우의 최신 실행 가져오기
+                    const { data: runs } = await octokit.actions.listWorkflowRuns({
+                        owner: repo.owner,
+                        repo: repo.repo,
+                        workflow_id: parseInt(actionId),
+                        per_page: 1
+                    });
+                    if (runs.workflow_runs.length > 0) {
+                        const run = runs.workflow_runs[0];
+                        const latestRun = {
+                            id: run.id.toString(),
+                            status: run.status,
+                            conclusion: run.conclusion || 'unknown',
+                            timestamp: run.created_at,
+                            reason: run.head_commit?.message || 'Unknown'
+                        };
+                        panel.webview.postMessage({
+                            command: 'getLatestRunResponse',
+                            payload: latestRun
+                        });
+                    }
+                    else {
+                        panel.webview.postMessage({
+                            command: 'getLatestRunResponse',
+                            payload: null
+                        });
+                    }
+                }
+                catch (error) {
+                    console.error('Error fetching latest run:', error);
+                    panel.webview.postMessage({
+                        command: 'error',
+                        payload: '최신 실행 정보를 가져오는데 실패했습니다.'
+                    });
+                }
                 break;
             case 'getRunHistory':
-                // TODO: Implement logic to get the run history for a specific action
+                try {
+                    const actionId = message.payload?.actionId;
+                    if (!actionId) {
+                        panel.webview.postMessage({
+                            command: 'error',
+                            payload: 'Action ID가 필요합니다.'
+                        });
+                        return;
+                    }
+                    console.log(`[🔍] 워크플로우 ID ${actionId}의 실행 기록을 가져오는 중...`);
+                    // 특정 워크플로우의 실행 기록 가져오기
+                    const { data: runs } = await octokit.actions.listWorkflowRuns({
+                        owner: repo.owner,
+                        repo: repo.repo,
+                        workflow_id: parseInt(actionId),
+                        per_page: 10
+                    });
+                    console.log(`[📊] 실행 기록 개수: ${runs.workflow_runs.length}`);
+                    const runHistory = runs.workflow_runs.map(run => ({
+                        id: run.id.toString(),
+                        status: run.status,
+                        conclusion: run.conclusion || 'unknown',
+                        timestamp: run.created_at,
+                        reason: run.head_commit?.message || 'Unknown',
+                        branch: run.head_branch
+                    }));
+                    panel.webview.postMessage({
+                        command: 'getRunHistoryResponse',
+                        payload: runHistory
+                    });
+                }
+                catch (error) {
+                    console.error('Error fetching run history:', error);
+                    panel.webview.postMessage({
+                        command: 'error',
+                        payload: '실행 기록을 가져오는데 실패했습니다.'
+                    });
+                }
                 break;
             case 'getWorkflowFile':
-                // TODO: Implement logic to get the content of a workflow file
+                try {
+                    const actionId = message.payload?.actionId;
+                    if (!actionId) {
+                        panel.webview.postMessage({
+                            command: 'error',
+                            payload: 'Action ID가 필요합니다.'
+                        });
+                        return;
+                    }
+                    // 워크플로우 파일 내용 가져오기
+                    const { data: workflow } = await octokit.actions.getWorkflow({
+                        owner: repo.owner,
+                        repo: repo.repo,
+                        workflow_id: parseInt(actionId)
+                    });
+                    // 워크플로우 파일의 YAML 내용을 가져오기 위해 추가 API 호출 필요
+                    // 여기서는 기본 정보만 반환
+                    panel.webview.postMessage({
+                        command: 'getWorkflowFileResponse',
+                        payload: workflow.path
+                    });
+                }
+                catch (error) {
+                    console.error('Error fetching workflow file:', error);
+                    panel.webview.postMessage({
+                        command: 'error',
+                        payload: '워크플로우 파일을 가져오는데 실패했습니다.'
+                    });
+                }
                 break;
             case 'saveWorkflowFile':
-                // TODO: Implement logic to save the content of a workflow file
+                // TODO: 워크플로우 파일 저장 로직 구현
+                panel.webview.postMessage({
+                    command: 'error',
+                    payload: '워크플로우 파일 저장은 아직 구현되지 않았습니다.'
+                });
                 break;
             case 'analyzeLog':
-                // TODO: Implement logic to analyze a log with an LLM
+                // TODO: LLM을 사용한 로그 분석 로직 구현
+                panel.webview.postMessage({
+                    command: 'error',
+                    payload: '로그 분석은 아직 구현되지 않았습니다.'
+                });
                 break;
         }
     }, undefined, context.subscriptions);

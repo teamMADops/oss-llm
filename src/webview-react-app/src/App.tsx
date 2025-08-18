@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard/Dashboard';
 import Editor from './pages/Editor/Editor';
 import HistoryPage from './pages/History/History';
 import { Action } from './components/Sidebar/types';
+import { getActions } from './api/github';
 import './styles/theme.css';
 
 function App() {
@@ -28,21 +29,40 @@ function App() {
       if (message.command === 'changePage') {
         setPage(message.page);
       }
-      // TODO: Add listeners for API responses (e.g., 'showActions')
+      // API 응답 처리
+      if (message.command === 'getActionsResponse') {
+        console.log('[📋] 워크플로우 목록 받음:', message.payload);
+        setActions(message.payload);
+        if (message.payload.length > 0) {
+          setSelectedActionId(message.payload[0].id);
+        }
+      }
     };
     window.addEventListener('message', handleMessage);
 
     // --- Fetch initial data ---
-    // githubApi.getActions(); // TODO: Uncomment when API is implemented
-    setActions(mockActions); // Using mock data for now
-    if (mockActions.length > 0) {
-        setSelectedActionId(mockActions[0].id);
-    }
+    console.log('[🚀] GitHub Actions 데이터 가져오는 중...');
+    getActions()
+      .then(actions => {
+        console.log('[✅] Actions 로드 완료:', actions);
+        setActions(actions);
+        if (actions.length > 0) {
+          setSelectedActionId(actions[0].id);
+        }
+      })
+      .catch(error => {
+        console.error('[❌] Actions 로드 실패:', error);
+        // 에러 발생 시 mock 데이터 사용
+        setActions(mockActions);
+        if (mockActions.length > 0) {
+          setSelectedActionId(mockActions[0].id);
+        }
+      });
 
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [mockActions]);
+  }, []);
 
   const handleSelectAction = (actionId: string) => {
     if (selectedActionId === actionId) {
@@ -104,7 +124,7 @@ function App() {
         onSelectPage={handleSelectPage}
         onSidebarToggle={handleSidebarToggle}
       />
-      <div className={`main-content ${sidebarCollapsed ? 'sidebar-closed' : 'sidebar-open'}`}>
+      <div className="main-content">
         {renderPage()}
       </div>
     </div>

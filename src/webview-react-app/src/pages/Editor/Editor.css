@@ -1,4 +1,9 @@
-/* Editor 페이지 스타일 - 완전 반응형, 섹션별 스크롤, 가로 스크롤 차단 */
+/* Editor 페이지 스타일 - theme.css에서 워크플로우 에디터 스타일을 가져옴 */
+@import '../../styles/theme.css';
+
+/* Editor 페이지 전용 스타일 (필요한 경우에만 추가) */
+
+/* 화면을 반으로 나누는 레이아웃 */
 .editor-container {
   display: flex;
   width: 100%;
@@ -6,47 +11,104 @@
   background: #0d1117;
   font-family: var(--font-family-base);
   overflow: hidden;
+  gap: 0; /* 두 패널을 서로 붙이기 */
+  position: relative; /* 절대 배치된 YAML 뷰어의 기준 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
+}
+
+.editor-container.sidebar-open {
+  /* 사이드바가 열려있을 때: 메인 패널과 YAML 뷰어 반반 분할 */
+  margin: 0;
+  padding: 0;
+}
+
+/* 사이드바 열림 시 메인 패널 설정은 아래에서 통합 */
+
+/* 사이드바 열림 시 YAML viewer 설정은 아래에서 통합 */
+
+.editor-container.sidebar-closed {
+  /* 사이드바가 닫혀있을 때: 메인 패널과 YAML 뷰어 반반 분할 (전체 화면) */
+  width: 100vw;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100vh;
+}
+
+.editor-container.sidebar-closed .editor-main {
+  width: 50% !important; /* 전체 화면의 37.5% */
+  margin-left: 0;
+  margin-right: 0; /* 오른쪽 마진 제거 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 자연스러운 이동 */
+  box-sizing: border-box !important; /* 박스 모델 강제 적용 */
+}
+
+.editor-container.sidebar-closed .yaml-viewer-container {
+  width: 50% !important; /* 전체 화면의 37.5% */
+  right: 0;
 }
 
 /* 중앙 Build 섹션 */
 .editor-main {
   position: relative;
-  flex: 1;
   height: 100%;
   padding: 20px;
   overflow: hidden; /* 메인 섹션 자체는 스크롤 없음 */
   min-width: 0; /* flexbox에서 축소 허용 */
   display: flex;
   flex-direction: column;
+  width: 37.5%; /* 기본: 화면의 37.5% (YAML 뷰어와 1:1) */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
+  margin-right: 0; /* 기본 오른쪽 마진 */
+  box-sizing: border-box; /* 패딩과 보더를 포함한 크기 계산 */
 }
 
-.main-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0;
-  margin-bottom: 20px;
-  flex-shrink: 0; /* 헤더는 고정 */
+/* 중복된 규칙 제거 - 아래에서 통합 */
+
+/* 우측 YAML 뷰어 컨테이너 */
+.yaml-viewer-container {
+  width: 37.5%; /* 기본: 화면의 37.5% 차지 */
+  min-width: 400px; /* 최소 너비 보장 */
+  height: 100%;
+  flex-shrink: 0; /* 축소 방지 */
+  position: fixed; /* 오른쪽 고정 */
+  right: 0;
+  top: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
 }
 
-.header-left {
-  flex: 1;
+/* 사이드바가 열려있을 때 전체 webview 마진 조정 */
+.editor-container.sidebar-open {
+  margin: 0 !important; /* 강제로 마진 제거 */
+  padding: 0 !important; /* 강제로 패딩 제거 */
 }
 
-.header-right {
-  flex-shrink: 0;
+/* 사이드바 열림 시 메인 패널과 YAML viewer 1:1 분할 */
+.editor-container.sidebar-open .editor-main {
+  width: 50% !important; /* 사이드바 열림 후 남은 공간을 37.5%씩 분할 */
+  margin: 0 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important; /* 박스 모델 강제 적용 */
 }
 
-.main-title {
-  font-family: var(--font-family-base);
-  font-style: normal;
-  font-weight: 600;
-  font-size: 32px;
-  line-height: 38px;
-  color: #ffffff;
-  margin: 0;
+.editor-container.sidebar-open .yaml-viewer-container {
+  width: 37.5% !important; /* 사이드바 열림 후 남은 공간을 37.5%씩 분할 */
+  right: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
+/* 사이드바가 열려있을 때 메인 컨텐츠 영역 마진 조정 */
+.editor-container.sidebar-open .main-content {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* main-content의 기본 padding 제거 */
+.main-content {
+  padding: 0 !important;
+}
+
+/* FE/sungwon의 정교한 UI 스타일들 */
 .workflow-editor {
   padding-right: 20px; /* 스크롤바 공간 확보 */
   margin-right: -20px; /* 부모 패딩 상쇄 */
@@ -82,8 +144,131 @@
   padding: 20px;
 }
 
-/* ... (이하 dev/FE의 모든 스타일 유지) ... */
+/* 트리거 아이템 스타일 */
+.trigger-item {
+  margin-bottom: 16px;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  overflow: hidden;
+}
 
+.trigger-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #21262d;
+  cursor: pointer;
+  user-select: none;
+}
+
+.trigger-checkbox {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+}
+
+.trigger-checkbox input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+.trigger-name {
+  flex: 1;
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.dropdown-arrow {
+  color: #8b949e;
+  transition: transform 0.2s ease;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.trigger-details {
+  padding: 16px;
+  background: #161b22;
+  border-top: 1px solid #30363d;
+}
+
+.field-group {
+  margin-bottom: 16px;
+}
+
+.field-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.field-group input,
+.field-group select {
+  width: 100%;
+  padding: 8px 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #f0f6fc;
+  font-size: 14px;
+}
+
+/* Jobs 스타일 */
+.add-job-btn {
+  padding: 6px 12px;
+  background: #238636;
+  border: 1px solid #238636;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-job-btn:hover {
+  background: #2ea043;
+}
+
+.job-item {
+  margin-bottom: 16px;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.job-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #21262d;
+  cursor: pointer;
+  user-select: none;
+}
+
+.job-name {
+  flex: 1;
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.job-details {
+  padding: 16px;
+  background: #161b22;
+  border-top: 1px solid #30363d;
+}
+
+.step-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.step-item input {
+  flex: 1;
+}
+
+/* 워크플로우 이름 입력 필드 */
 .workflow-name-input {
   width: 100%;
   padding: 12px 16px;
@@ -101,94 +286,21 @@
   border-color: #58a6ff;
 }
 
-.trigger-item {
-  margin-bottom: 16px;
-}
-
-/* 우측 YAML 미리보기 */
-.yaml-viewer-container {
-  width: 40%;
-  min-width: 300px;
-  max-width: 600px;
-  height: 100%;
-  flex-shrink: 0;
-  resize: horizontal;
-  overflow: auto;
-  border-left: 1px solid #30363d;
-}
-
-.editor-placeholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  color: #8b949e;
-  font-size: 1.125rem;
-}
-
-.editor-main-content {
-  padding: var(--spacing-xlarge);
-  overflow-y: auto;
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
-  min-height: 100vh;
-}
-
-.editor-empty-state,
-.editor-loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 200px;
-  text-align: center;
-}
-
-.editor-empty-state p,
-.editor-loading p {
-  font-size: var(--font-size-body);
-  color: var(--color-text-muted);
-}
-
+/* YAML 에디터 텍스트 영역 */
 .yaml-editor-textarea {
   width: 100%;
-  min-height: 400px;
-  padding: 16px;
+  padding: 12px 16px;
   background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 6px;
   color: #f0f6fc;
   font-size: 14px;
-  font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
-  line-height: 1.5;
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
   resize: vertical;
-  white-space: pre;
-  overflow-wrap: normal;
-  tab-size: 2;
+  min-height: 200px;
 }
 
 .yaml-editor-textarea:focus {
   outline: none;
   border-color: #58a6ff;
-}
-
-.yaml-editor-textarea::placeholder {
-  color: #8b949e;
-}
-
-.workflow-editor::-webkit-scrollbar {
-  width: 8px;
-}
-
-.workflow-editor::-webkit-scrollbar-track {
-  background: #21262d;
-  border-radius: 4px;
-}
-
-.workflow-editor::-webkit-scrollbar-thumb {
-  background: #30363d;
-  border-radius: 4px;
-}
-
-.workflow-editor::-webkit-scrollbar-thumb:hover {
-  background: #484f58;
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import HistoryTable from '@/components/HistoryTable/HistoryTable';
 import { WorkflowRun } from '@/types/api';
+import { getRunHistory } from '@/api/github';
 import './History.css';
 
 interface HistoryPageProps {
@@ -81,15 +82,21 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ actionId, isSidebarOpen }) =>
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // In a real app, fetch run history when actionId changes
+    // API를 통해 실제 run history를 가져옴
     if (actionId) {
       setIsLoading(true);
-      // TODO: Call api/github.ts getRunHistory(actionId)
-      // For now, just use mock data
-      setTimeout(() => {
-        setRunHistory(mockRuns);
-        setIsLoading(false);
-      }, 100);
+      getRunHistory(actionId)
+        .then(runs => {
+          setRunHistory(runs);
+        })
+        .catch(error => {
+          console.error('Failed to fetch run history:', error);
+          // 에러 발생 시 mock 데이터 사용
+          setRunHistory(mockRuns);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   }, [actionId]);
 
