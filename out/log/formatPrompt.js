@@ -1,5 +1,6 @@
 "use strict";
 // src/log/formatPrompt.ts
+// 지피티한테 넘기자
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.formatPrompt = formatPrompt;
 function formatPrompt(label, snippet) {
