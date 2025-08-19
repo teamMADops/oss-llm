@@ -270,6 +270,7 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                     break;
                     
                 // [ADD] Webview로부터 LLM 분석 요청 처리
+                // TODO : 추가한 webview에서 LLM 분석을 위해 요청하는 case
                 case 'analyzeRun':
                     try {
                         const runIdStr = message.payload?.runId;
@@ -291,6 +292,7 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                         }
                         
                         console.log(`[🚀] Webview로부터 LLM 분석 요청 수신 (Run ID: ${runId})`);
+                        // TODO : 여기서 triggerLlmAnalysis 사용, 이를 적절하게 대체 필요!
                         await triggerLlmAnalysis(context, repo, runId);
 
                     } catch (error) {
@@ -303,7 +305,6 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                     break;
 
                 case 'analyzeLog':
-                    // TODO: LLM을 사용한 로그 분석 로직 구현
                     panel.webview.postMessage({ 
                         command: 'error', 
                         payload: '로그 분석은 아직 구현되지 않았습니다.' 
@@ -331,8 +332,10 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
 
 
 /* LLM 분석을 트리거하는 공통 함수 */
+// TODO : 해당 함수 대체 (analyzeRun)에서 사용 중
 async function triggerLlmAnalysis(context: vscode.ExtensionContext, repo: RepoRef, runId: number) {
     const logMode = 'all'; // 또는 'error' 등 필요에 따라 설정
+    // TODO : 해당 함수는 사라진 상태 -> 원래 해당 함수 코드를 찾아서 적절하게 교체
     const SERVER_BASE = resolveServerBase(context);
 
     if (!/^https?:\/\//.test(SERVER_BASE) || SERVER_BASE.includes('YOUR-DEPLOYED-API')) {
