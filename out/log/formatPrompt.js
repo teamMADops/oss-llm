@@ -10,6 +10,7 @@ function formatPrompt(params) {
         stepName ? `대상 Step: ${stepName}` : undefined,
         `파일: ${filename}`,
         ``,
+        `반드시 한국어로 작성해.`,
         `다음 형식의 JSON으로만 답해:`,
         `{`,
         `  "summary": "로그 전체 요약",`,
