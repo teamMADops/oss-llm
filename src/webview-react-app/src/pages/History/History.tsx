@@ -7,6 +7,7 @@ import './History.css';
 interface HistoryPageProps {
   actionId: string | null;
   isSidebarOpen: boolean;
+  onRunClick: (runId: string) => void; // [ADD] 실행(run) 클릭 시 호출될 함수
 }
 
 // Mock runs data - in real app, this would be fetched based on actionId
@@ -77,7 +78,7 @@ const mockRuns: WorkflowRun[] = [
   },
 ];
 
-const HistoryPage: React.FC<HistoryPageProps> = ({ actionId, isSidebarOpen }) => {
+const HistoryPage: React.FC<HistoryPageProps> = ({ actionId, isSidebarOpen, onRunClick }) => { // [MOD] onRunClick prop 추가
   const [runHistory, setRunHistory] = useState(mockRuns);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -133,8 +134,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ actionId, isSidebarOpen }) =>
               <p className="text-muted">로딩 중...</p>
             </div>
           ) : (
-            <HistoryTable runs={runHistory} isSidebarOpen={isSidebarOpen} />
-          )}
+            <HistoryTable runs={runHistory} isSidebarOpen={isSidebarOpen} onRunClick={onRunClick} />)}
         </div>
       </div>
     </div>
