@@ -10,7 +10,6 @@ import { printToOutput } from './output/printToOutput';
 // import { spawn } from 'child_process';
 // import * as crypto from 'crypto';
 
-
 function resolveServerBase(context: vscode.ExtensionContext) {
   const cfg = vscode.workspace.getConfiguration('oss');
   const fromSetting = cfg.get<string>('serverBase');
