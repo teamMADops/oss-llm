@@ -293,7 +293,61 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                         
                         console.log(`[🚀] Webview로부터 LLM 분석 요청 수신 (Run ID: ${runId})`);
                         // TODO : 여기서 triggerLlmAnalysis 사용, 이를 적절하게 대체 필요!
-                        await triggerLlmAnalysis(context, repo, runId);
+                        // await triggerLlmAnalysis(context, repo, runId);
+                        // ✅ 커맨드 경로의 LLM 분석 블록을 그대로 사용 (변수명만 맞춤)
+const logMode: 'all' | 'error' = message.payload?.logMode === 'all' ? 'all' : 'error';
+
+await vscode.window.withProgress(
+  { location: vscode.ProgressLocation.Notification, title: `Run #${runId} 분석 중...` },
+  async (progress) => {
+    try {
+      progress.report({ message: '로그 ZIP 다운로드 및 프롬프트 생성 중' });
+
+      const { failedSteps, prompts } = await getFailedStepsAndPrompts(
+        octokit,
+        repo.owner,
+        repo.repo,
+        runId,
+        logMode
+      );
+
+      printToOutput(`Run #${runId} 실패한 Step 목록`, failedSteps);
+      printToOutput(`Run #${runId} → LLM 프롬프트`, prompts);
+
+      if (prompts.length === 0) {
+        panel.webview.postMessage({
+          command: 'llmAnalysisResult',
+          payload: { runId, summary: '분석할 로그가 없습니다.', rootCause: null, suggestion: null, items: [] }
+        });
+        vscode.window.showInformationMessage('분석할 로그가 없습니다.');
+        return;
+      }
+
+      progress.report({ message: 'LLM 호출 중' });
+
+      const analysis = await analyzePrompts(prompts);
+
+      printToOutput('LLM 분석 결과', [JSON.stringify(analysis, null, 2)]);
+
+      // 여기서는 현재 열려있는 대시보드로 보내거나, 바로 이 패널로 회신 둘 중 택1
+      if (panels['dashboard']) {
+        panels['dashboard'].webview.postMessage({
+          command: 'llmAnalysisResult',
+          payload: { runId, ...analysis }
+        });
+      } else {
+        panel.webview.postMessage({
+          command: 'llmAnalysisResult',
+          payload: { runId, ...analysis }
+        });
+      }
+    } catch (e: any) {
+      const msg = e?.message ?? String(e);
+      panel.webview.postMessage({ command: 'error', payload: `LLM 분석 실패: ${msg}` });
+      vscode.window.showErrorMessage(`❌ 분석 실패: ${msg}`);
+    }
+  }
+);
 
                     } catch (error) {
                         console.error('LLM 분석 시작 중 오류 발생:', error);
@@ -328,85 +382,6 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
     // Store the panel and send the initial page message
     panels[page] = panel;
     panel.webview.postMessage({ command: 'changePage', page });
-}
-
-
-/* LLM 분석을 트리거하는 공통 함수 */
-// TODO : 해당 함수 대체 (analyzeRun)에서 사용 중
-async function triggerLlmAnalysis(context: vscode.ExtensionContext, repo: RepoRef, runId: number) {
-    const logMode = 'all'; // 또는 'error' 등 필요에 따라 설정
-    // TODO : 해당 함수는 사라진 상태 -> 원래 해당 함수 코드를 찾아서 적절하게 교체
-    const SERVER_BASE = resolveServerBase(context);
-
-    if (!/^https?:\/\//.test(SERVER_BASE) || SERVER_BASE.includes('YOUR-DEPLOYED-API')) {
-        vscode.window.showErrorMessage(`SERVER_BASE가 올바르지 않습니다: ${SERVER_BASE}`);
-        return;
-    }
-
-    await vscode.window.withProgress(
-        { location: vscode.ProgressLocation.Notification, title: `Run #${runId} 분석 중...` },
-        async (progress) => {
-            try {
-                progress.report({ message: '서버에 분석 요청 전송' });
-
-                console.log("[EXT] 📤 서버로 분석 요청 전송", {
-                    url: `${SERVER_BASE}/api/analyze-run`,
-                    owner: repo.owner,
-                    name: repo.repo,
-                    runId: runId,
-                    logMode
-                });
-
-                const res = await fetch(`${SERVER_BASE}/api/analyze-run`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        repo: { owner: repo.owner, name: repo.repo },
-                        runId: runId,
-                        logMode
-                    })
-                });
-                
-                console.log("[EXT] 📥 서버 응답 수신", res.status, res.statusText);
-                
-                if (!res.ok) {
-                    const err = await res.json().catch(() => null);
-                    printToOutput('analyze-run FAIL', [`${res.status} ${res.statusText}`, err || '(no body)']);
-                    throw new Error(err?.error ?? res.statusText);
-                }
-
-                progress.report({ message: 'LLM 응답 수신' });
-                const data: any = await res.json();
-                const analysis = data?.analysis;
-
-                if (!analysis) {
-                    vscode.window.showInformationMessage('분석할 실패 Step이 없습니다.');
-                    return;
-                }
-
-                printToOutput('LLM 분석 결과', [JSON.stringify(analysis, null, 2)]);
-
-                if (panels['dashboard']) {
-                    panels['dashboard'].webview.postMessage({
-                        command: 'llmAnalysisResult',
-                        payload: analysis
-                    });
-                    vscode.window.showInformationMessage('LLM 분석 결과가 대시보드에 표시되었습니다.');
-                } else {
-                    const summary = analysis.summary ?? 'LLM 분석이 완료되었습니다.';
-                    const choice = await vscode.window.showInformationMessage(`🧠 ${summary}`, '출력창 열기', '요약 복사');
-                    if (choice === '출력창 열기') {
-                        vscode.commands.executeCommand('workbench.action.output.toggleOutput');
-                    } else if (choice === '요약 복사') {
-                        await vscode.env.clipboard.writeText(summary);
-                        vscode.window.showInformationMessage('📋 요약을 클립보드에 복사했어요.');
-                    }
-                }
-            } catch (e: any) {
-                vscode.window.showErrorMessage(`❌ 분석 실패: ${e?.message ?? e}`);
-            }
-        }
-    );
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -505,8 +480,6 @@ await vscode.window.withProgress(
       // 출력창에 결과 덤프(선택)
       printToOutput('LLM 분석 결과', [JSON.stringify(analysis, null, 2)]);
 
-
-// --- 교체 끝 ---
 
           // 웹뷰로 LLM 분석 결과 전송
           if (panels['dashboard']) {
