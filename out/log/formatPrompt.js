@@ -1,8 +1,25 @@
 "use strict";
-// src/log/formatPrompt.ts
-// 지피티한테 넘기자
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.formatPrompt = formatPrompt;
-function formatPrompt(label, snippet) {
-    return `너는 GitHub Actions 로그 분석 도우미야. 아래는 실패한 로그 파일 "${label}"의 내용이야. 실패 원인을 추론해서 설명해줘.\n\n\`\`\`\n${snippet}\n\`\`\``;
+// src/log/formatPrompt.ts
+function formatPrompt(params) {
+    const { stepName, filename, logSnippet } = params;
+    return [
+        `너는 GitHub Actions 로그 분석 도우미야.`,
+        `아래는 실패(또는 의심) 구간을 발췌한 로그야.`,
+        stepName ? `대상 Step: ${stepName}` : undefined,
+        `파일: ${filename}`,
+        ``,
+        `다음 형식의 JSON으로만 답해:`,
+        `{`,
+        `  "summary": "로그 전체 요약",`,
+        `  "rootCause": "실패의 핵심 원인",`,
+        `  "suggestion": "해결 방법"`,
+        `}`,
+        ``,
+        `로그 ↓`,
+        '```log',
+        logSnippet,
+        '```',
+    ].filter(Boolean).join('\n');
 }
