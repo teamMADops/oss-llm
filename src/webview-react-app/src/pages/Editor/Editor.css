@@ -49,7 +49,7 @@
   right: 37.5%; /* YAML 뷰어 왼쪽에 고정 */
   top: 0;
   height: 100%;
-  padding: 20px; /* 고정 패딩 - 사이드바 전환 시 변하지 않음 */
+  padding: 0 20px 20px 20px; /* 고정 패딩 - 사이드바 전환 시 변하지 않음 */
   overflow: hidden; /* 메인 섹션 자체는 스크롤 없음 */
   display: flex;
   flex-direction: column;
@@ -65,7 +65,7 @@
 .editor-container.sidebar-open .editor-main {
   right: 37.5% !important; /* YAML 뷰어 왼쪽에 고정 유지 (오른쪽 고정) */
   width: 37.5% !important; /* 사이드바 열림 후: 37.5% */
-  padding: 20px !important; /* 패딩 일관성 유지 */
+  padding: 0 20px 20px 20px !important; /* 패딩 일관성 유지 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-sizing: border-box !important; /* 박스 모델 강제 적용 */
   /* 오른쪽 부분 고정, 왼쪽에서 resize */
@@ -75,7 +75,7 @@
 .editor-container.sidebar-closed .editor-main {
   right: 50% !important; /* 전체 화면의 절반 지점에 고정 (오른쪽 고정) */
   width: 50% !important; /* 전체 화면의 50% */
-  padding: 20px !important; /* 패딩 일관성 유지 */
+  padding: 0 20px 20px 20px !important; /* 패딩 일관성 유지 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-sizing: border-box !important; /* 박스 모델 강제 적용 */
   /* 오른쪽 부분 고정, 왼쪽에서 resize */

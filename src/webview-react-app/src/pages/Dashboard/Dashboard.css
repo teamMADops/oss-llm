@@ -19,7 +19,7 @@
   right: 37.5%; /* LLM 분석 패널 왼쪽에 고정 */
   top: 0;
   height: 100%;
-  padding: 20px; /* 고정 패딩 - 사이드바 전환 시 변하지 않음 */
+  padding: 0 20px 20px 20px; /* 고정 패딩 - 사이드바 전환 시 변하지 않음 */
   overflow: hidden; /* 메인 섹션 자체는 스크롤 없음 */
   min-width: 0; /* flexbox에서 축소 허용 */
   display: flex;
@@ -39,10 +39,18 @@
 
 /* 메인 콘텐츠 영역의 제목(Run Log) */
 .main-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24pt;
+  line-height: 60px;
+  color: var(--color-white);
   margin: 0;
-  color: var(--text-color);
+  transition: opacity 0.3s ease;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* 대시보드 콘텐츠(패널 선택 버튼 및 패널 내용)를 감싸는 영역 */
@@ -56,37 +64,98 @@
 /* 'Run Info', 'Run Log' 등 패널을 선택하는 버튼들의 컨테이너 */
 .panel-selector {
   display: flex;
-  padding: 16px 24px 0;
-  border-bottom: 1px solid var(--border-color);
+  padding: 0; /* 패딩 제거하여 탭이 연결되도록 */
+  border-bottom: none; /* 기존 구분선 제거 */
   background-color: var(--header-background);
+  position: relative; /* 하단 구분선을 위한 상대 위치 */
 }
+
+
 
 /* 개별 패널 선택 버튼 */
 .panel-btn {
-  padding: 12px 20px; /* 패딩 증가 */
-  margin-right: 12px; /* 마진 증가 */
-  border: 2px solid var(--border-color); /* 테두리 두께 증가 */
-  border-bottom: none;
+  padding: 12px 24px; /* 패딩 조정 */
+  margin: 0; /* 마진 제거하여 탭이 연결되도록 */
+  border: 1px solid var(--border-color); /* 테두리 두께 조정 */
+  border-bottom: none; /* 하단 테두리 제거 */
   background-color: var(--background-color);
   color: var(--text-color);
-  border-radius: 8px 8px 0 0; /* 모서리 둥글게 */
+  border-radius: 8px 8px 0 0; /* 상단 모서리만 둥글게 */
   cursor: pointer;
-  transition: all 0.3s ease; /* 전환 효과 개선 */
-  font-weight: 500; /* 폰트 굵기 증가 */
-  min-width: 100px; /* 최소 너비 설정 */
-  text-align: center; /* 텍스트 중앙 정렬 */
+  transition: all 0.3s ease; /* 전환 효과 */
+  font-weight: 500;
+  min-width: 120px; /* 최소 너비 설정 */
+  text-align: center;
+  position: relative; /* 하단 구분선을 위한 상대 위치 */
+  z-index: 1; /* 기본 z-index */
 }
 
 /* 패널 선택 버튼에 마우스를 올렸을 때 */
 .panel-btn:hover {
   background-color: var(--hover-color);
+  z-index: 2; /* 호버 시 위로 올림 */
 }
 
-/* 활성화된(선택된) 패널 선택 버튼 */
-.panel-btn.active {
-  background-color: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
+/* 활성화된(선택된) 패널 선택 버튼 - 강력한 선택자로 덮어쓰기 */
+.dashboard-container .panel-selector .panel-btn.active,
+.dashboard-container .panel-selector .panel-btn.active:hover {
+  background-color: #ffffff !important; /* 하얀색 배경 강제 적용 */
+  color: #000000 !important; /* 검은색 텍스트 강제 적용 */
+  border-color: var(--border-color) !important;
+  border-bottom: 2px solid #ffffff !important; /* 하단에 하얀색 구분선으로 탭 내용과 연결 */
+  z-index: 3 !important; /* 활성 탭을 최상위로 */
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1) !important; /* 위쪽 그림자로 입체감 */
+  margin-bottom: -2px !important; /* 하단 구분선과 겹치도록 마진 조정 */
+}
+
+/* panel-selector 아래쪽 길게 구분선 - 더 명확하게 */
+.dashboard-container .panel-selector::after {
+  content: '';
+  position: absolute;
+  bottom: -8px; /* 구분선을 더 아래로 이동 */
+  left: 0;
+  right: 0;
+  height: 3px; /* 구분선 두께 */
+  background-color: #ffffff !important; /* 하얀색 구분선 */
+  z-index: 1;
+  width: 100%;
+  display: block !important; /* 강제 표시 */
+}
+
+/* Run Info 패널 스크롤 없이 위치 고정 - 최강력한 선택자 */
+.dashboard-container .panel-content > div:first-child,
+.dashboard-container .panel-content > div:first-child * {
+  overflow: hidden !important; /* 스크롤 완전 제거 */
+  overflow-y: hidden !important; /* 세로 스크롤 강제 제거 */
+  overflow-x: hidden !important; /* 가로 스크롤도 강제 제거 */
+}
+
+/* Run Info 패널의 panel-content 스크롤 완전 제거 */
+.dashboard-container .panel-content > div:first-child .panel-content,
+.dashboard-container .panel-content > div:first-child {
+  overflow: hidden !important; /* 스크롤 완전 제거 */
+  overflow-y: hidden !important; /* 세로 스크롤 강제 제거 */
+}
+
+/* Run Info 패널의 모든 하위 요소 스크롤 제거 - 최종 보장 */
+.dashboard-container .panel-content > div:first-child,
+.dashboard-container .panel-content > div:first-child .panel-content,
+.dashboard-container .panel-content > div:first-child .panel-section,
+.dashboard-container .panel-content > div:first-child .run-info-card,
+.dashboard-container .panel-content > div:first-child .section-title {
+  overflow: hidden !important;
+  overflow-y: hidden !important;
+  overflow-x: hidden !important;
+  scrollbar-width: none !important; /* Firefox 스크롤바 제거 */
+  -ms-overflow-style: none !important; /* IE/Edge 스크롤바 제거 */
+}
+
+/* Run Info 패널의 webkit 스크롤바 완전 제거 */
+.dashboard-container .panel-content > div:first-child .panel-content::-webkit-scrollbar,
+.dashboard-container .panel-content > div:first-child::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 /* 선택된 패널의 내용이 표시되는 영역 */
@@ -122,8 +191,11 @@
 
 /* 각 섹션의 제목 */
 .section-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24pt;
+  line-height: 60px;
   margin: 0 0 24px 0; /* 구분선 아래 마진 증가: 16px → 24px */
   color: var(--text-color);
   text-transform: uppercase; /* 대문자로 변환 */
@@ -260,24 +332,29 @@
 
 /* 로그 내용이 표시되는 영역 */
 .log-content {
-  max-height: 400px;
-  overflow-y: auto;
-  padding: 16px; /* 패딩 추가 */
+  flex: 1;
+  overflow: auto !important;
+  padding: 0;
+  background: #0d1117;
+  position: relative;
+  min-height: 0;
+  scroll-behavior: auto;
+  transition: all 0.3s ease;
 }
 
 /* 로그 내용의 스크롤바 스타일 */
 .log-content::-webkit-scrollbar {
-  width: 8px;
+  width: 12px;
 }
 
 .log-content::-webkit-scrollbar-track {
-  background: #21262d;
-  border-radius: 4px;
+  background: #0d1117;
+  border-radius: 6px;
 }
 
 .log-content::-webkit-scrollbar-thumb {
   background: #30363d;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .log-content::-webkit-scrollbar-thumb:hover {
@@ -286,37 +363,49 @@
 
 /* 로그 내용 중 코드 부분을 감싸는 컨테이너 */
 .log-code-container {
-  background: #0d1117; /* YAML viewer와 동일한 배경색 */
-  border: 1px solid #30363d; /* YAML viewer와 동일한 테두리 */
-  border-radius: 6px; /* YAML viewer와 동일한 모서리 */
-  margin: 0;
-  padding: 12px 16px; /* YAML viewer와 동일한 패딩 */
-  font-family: 'Consolas', 'Monaco', 'Menlo', monospace; /* YAML viewer와 동일한 폰트 */
+  padding: 0;
+  font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
   font-size: 13px;
-  line-height: 1.5;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 1.6;
+  color: #f0f6fc;
+  white-space: pre;
+  word-wrap: normal;
+  tab-size: 2;
+  min-width: max-content;
 }
 
 /* 로그의 각 한 줄 */
 .log-line {
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 2px;
+  min-height: 20.8px;
+  position: relative;
 }
 
 /* 로그 줄 번호 */
 .line-number {
-  min-width: 40px;
-  color: var(--text-secondary);
+  width: 50px;
+  padding: 0 14px 0 22px;
+  background: #161b22;
+  color: #8b949e;
+  text-align: right;
   user-select: none;
-  margin-right: 16px;
+  flex-shrink: 0;
+  border-right: 1px solid #30363d;
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 /* 로그 줄 내용 */
 .line-content {
   flex: 1;
-  color: var(--text-color);
-  word-break: break-all;
+  padding: 2px 16px 2px 16px;
+  min-width: 0;
+  white-space: pre;
+  overflow: visible;
 }
 
 /* 패널 내용이 비어있을 때 표시되는 플레이스홀더 */
@@ -605,7 +694,7 @@
 .dashboard-container.sidebar-closed .dashboard-main {
   right: 50% !important; /* 전체 화면의 절반 지점에 고정 (오른쪽 고정) */
   width: 50% !important; /* 전체 화면의 50% */
-  padding: 20px !important; /* 패딩 일관성 유지 */
+  padding: 0px 20px 20px 20px !important; /* 패딩 일관성 유지 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-sizing: border-box !important; /* 박스 모델 강제 적용 */
 }
@@ -623,7 +712,7 @@
 .dashboard-container.sidebar-open .dashboard-main {
   right: 37.5% !important; /* LLM 분석 패널 왼쪽에 고정 유지 */
   width: 37.5% !important; /* 사이드바 열림 후: 37.5% */
-  padding: 20px !important; /* 패딩 일관성 유지 */
+  padding: 0px 20px 20px 20px !important; /* 패딩 일관성 유지 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-sizing: border-box !important; /* 박스 모델 강제 적용 */
 }
@@ -634,6 +723,47 @@
   right: 0;
   margin-left: 0 !important; /* 왼쪽 마진 명시적 제거 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important; /* 일관된 전환 효과 */
+}
+
+/* 로그의 첫 번째 줄 내용 패딩 */
+.log-line:first-child .line-content {
+  padding-top: 16px;
+}
+
+/* 로그의 마지막 줄 내용 패딩 */
+.log-line:last-child .line-content {
+  padding-bottom: 16px;
+}
+
+/* 패널 1, 2 이름 변경 */
+.panel-btn:nth-child(1) {
+  font-size: 0; /* 원래 텍스트 숨기기 */
+}
+
+.panel-btn:nth-child(1)::after {
+  content: "Run Info";
+  font-size: 14px; /* 새로운 이름 표시 */
+}
+
+.panel-btn:nth-child(2) {
+  font-size: 0; /* 원래 텍스트 숨기기 */
+}
+
+.panel-btn:nth-child(2)::after {
+  content: "Run Log";
+  font-size: 14px; /* 새로운 이름 표시 */
+}
+
+/* 패널 3, 4 숨기기 */
+.panel-btn:nth-child(3),
+.panel-btn:nth-child(4) {
+  display: none;
+}
+
+/* 패널 3, 4 내용 숨기기 */
+.panel-content > div:nth-child(3),
+.panel-content > div:nth-child(4) {
+  display: none;
 }
 
 
