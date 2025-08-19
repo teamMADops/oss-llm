@@ -35,26 +35,17 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
 exports.deactivate = deactivate;
-// 수정 예정
 const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
 const getRepoInfo_1 = require("./github/getRepoInfo");
 const githubSession_1 = require("./auth/githubSession");
 const getRunList_1 = require("./github/getRunList");
 const printToOutput_1 = require("./output/printToOutput");
-// import { spawn } from 'child_process';
-// import * as crypto from 'crypto';
-function resolveServerBase(context) {
-    const cfg = vscode.workspace.getConfiguration('oss');
-    const fromSetting = cfg.get('serverBase');
-    if (fromSetting)
-        return fromSetting;
-    if (process.env.SERVER_BASE)
-        return process.env.SERVER_BASE;
-    return context.extensionMode === vscode.ExtensionMode.Development
-        ? 'http://localhost:4310'
-        : 'https://YOUR-DEPLOYED-API.example.com';
-}
+const getFailedLogs_1 = require("./log/getFailedLogs");
+const analyze_1 = require("./llm/analyze");
+const fs = __importStar(require("fs"));
+const dotenv = __importStar(require("dotenv"));
+dotenv.config();
 // Webview panel management - Keep track of panels to prevent duplicates
 const panels = {};
 // 맨 위 유틸 추가: 숫자 여부 체크
@@ -120,12 +111,6 @@ function createAndShowWebview(context, page) {
                         });
                         return;
                     }
-                    // 기존 workflow id 조회 방식
-                    // const actions = workflows.workflows.map(workflow => ({
-                    //     id: workflow.id.toString(),
-                    //     name: workflow.name,
-                    //     status: workflow.state === 'active' ? 'success' : 'failed'
-                    // }));
                     // ✅ 경로 기반 키 사용 (경로가 없으면 id 문자열 fallback)
                     const actions = (workflows.workflows ?? []).map(w => {
                         const key = w.path || String(w.id);
@@ -252,12 +237,6 @@ function createAndShowWebview(context, page) {
                         });
                         return;
                     }
-                    // 워크플로우 파일 내용 가져오기
-                    // const { data: workflow } = await octokit.actions.getWorkflow({
-                    //     owner: repo.owner,
-                    //     repo: repo.repo,
-                    //     workflow_id: parseInt(actionId)
-                    // });
                     const workflowIdOrPath = String(actionId);
                     // ✅ getWorkflow도 경로/ID 모두 허용
                     const { data: workflow } = await octokit.actions.getWorkflow({
@@ -307,6 +286,11 @@ function createAndShowWebview(context, page) {
     panel.webview.postMessage({ command: 'changePage', page });
 }
 function activate(context) {
+    // 🔑 .env를 확실히 로드 (package.json이 있는 확장 루트)
+    const envPath = path.join(context.extensionPath, '.env');
+    if (fs.existsSync(envPath)) {
+        dotenv.config({ path: envPath });
+    }
     // 레포 등록/수정
     const cmdSetRepo = vscode.commands.registerCommand('extension.setRepository', async () => {
         await (0, getRepoInfo_1.promptAndSaveRepo)(context);
@@ -348,67 +332,21 @@ function activate(context) {
         });
         const logMode = mode === '전체 로그' ? 'all' : 'error';
         console.log(`[5] 📄 로그 추출 방식: ${logMode}`);
-        //   const { failedSteps, prompts } = await getFailedStepsAndPrompts(
-        //     octokit,
-        //     repo.owner,
-        //     repo.repo,
-        //     run_id,
-        //     logMode
-        //   );
-        //   console.log(`[6] 📛 실패한 Step 개수: ${failedSteps.length}`);
-        //   console.log(`[7] ✨ 프롬프트 생성 완료 (${prompts.length}개)`);
-        //   printToOutput(`Run #${run_id} 실패한 Step 목록`, failedSteps);
-        //   printToOutput(`Run #${run_id} → LLM 프롬프트`, prompts);
-        //   vscode.window.showInformationMessage(`✅ 분석 완료: ${failedSteps.length}개 실패 step`); // 웹뷰에 띄워주는건감
-        // 서버로 분석 요청 (LLM 분석은 서버에서 수행)
-        const SERVER_BASE = resolveServerBase(context);
-        // 로그 찍는겨 
-        (0, printToOutput_1.printToOutput)('SERVER_BASE', [resolveServerBase(context)]);
-        if (!/^https?:\/\//.test(SERVER_BASE) || SERVER_BASE.includes('YOUR-DEPLOYED-API')) {
-            vscode.window.showErrorMessage(`SERVER_BASE가 올바르지 않습니다: ${SERVER_BASE}`);
-            return;
-        }
         await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: `Run #${run_id} 분석 중...` }, async (progress) => {
             try {
-                progress.report({ message: '서버에 분석 요청 전송' });
-                // 로그 찍는거
-                console.log("[EXT] 📤 서버로 분석 요청 전송", {
-                    url: `${SERVER_BASE}/api/analyze-run`,
-                    owner: repo.owner,
-                    name: repo.repo,
-                    runId: run_id,
-                    logMode
-                });
-                const res = await fetch(`${SERVER_BASE}/api/analyze-run`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        // 서버 스키마 주의: repo.name이어야 함
-                        repo: { owner: repo.owner, name: repo.repo },
-                        runId: run_id,
-                        logMode
-                    })
-                });
-                // 로그 찍는거
-                console.log("[EXT] 📥 서버 응답 수신", res.status, res.statusText);
-                if (!res.ok) {
-                    const err = await res.json().catch(() => null);
-                    // 로그용
-                    (0, printToOutput_1.printToOutput)('analyze-run FAIL', [
-                        `${res.status} ${res.statusText}`,
-                        err || '(no body)'
-                    ]);
-                    throw new Error(err?.error ?? res.statusText);
-                }
-                progress.report({ message: 'LLM 응답 수신' });
-                const data = await res.json(); // { correlationId?, runId, analysis, ... }
-                const analysis = data?.analysis;
-                if (!analysis) {
-                    vscode.window.showInformationMessage('분석할 실패 Step이 없습니다.');
+                progress.report({ message: '로그 ZIP 다운로드 및 프롬프트 생성 중' });
+                const { failedSteps, prompts } = await (0, getFailedLogs_1.getFailedStepsAndPrompts)(octokit, repo.owner, repo.repo, run_id, logMode);
+                (0, printToOutput_1.printToOutput)(`Run #${run_id} 실패한 Step 목록`, failedSteps);
+                (0, printToOutput_1.printToOutput)(`Run #${run_id} → LLM 프롬프트`, prompts);
+                if (prompts.length === 0) {
+                    vscode.window.showInformationMessage('분석할 로그가 없습니다.');
                     return;
                 }
-                // 출력창에 전체 결과(JSON) 덤프
+                progress.report({ message: 'LLM 호출 중' });
+                const analysis = await (0, analyze_1.analyzePrompts)(prompts); // { summary, rootCause, suggestion }
+                // 출력창에 결과 덤프(선택)
                 (0, printToOutput_1.printToOutput)('LLM 분석 결과', [JSON.stringify(analysis, null, 2)]);
+                // --- 교체 끝 ---
                 // 웹뷰로 LLM 분석 결과 전송
                 if (panels['dashboard']) {
                     panels['dashboard'].webview.postMessage({
