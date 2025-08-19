@@ -22,6 +22,8 @@ function resolveServerBase(context: vscode.ExtensionContext) {
 
 // Webview panel management - Keep track of panels to prevent duplicates
 const panels: { [key: string]: vscode.WebviewPanel } = {};
+// 맨 위 유틸 추가: 숫자 여부 체크
+const isNumeric = (s: any) => typeof s === 'string' && /^\d+$/.test(s);
 
 /**
  * Creates and shows a new webview panel, or reveals an existing one.
@@ -61,6 +63,15 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
     // Handle messages from the webview
     panel.webview.onDidReceiveMessage(
         async message => {
+            
+          //github auto auth-login
+            const octokit = await getOctokitViaVSCodeAuth();
+            if (!octokit) {
+            vscode.window.showErrorMessage('GitHub 로그인에 실패했습니다.');
+            return;
+            }
+            console.log('[3] 🔑 VS Code GitHub 세션 확보');
+
             // All messages from the webview will be handled here.
             // This is where the API layer described in structure.md is implemented on the extension side.
             const repo = await getSavedRepo(context);
@@ -68,14 +79,6 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                 panel.webview.postMessage({ command: 'error', payload: 'GitHub 리포지토리 정보를 찾을 수 없습니다.' });
                 return;
             }
-            
-            //github auto auth-login
-            const octokit = await getOctokitViaVSCodeAuth();
-            if (!octokit) {
-            vscode.window.showErrorMessage('GitHub 로그인에 실패했습니다.');
-            return;
-            }
-            console.log('[3] 🔑 VS Code GitHub 세션 확보');
 
             switch (message.command) {
                 // These are placeholders for the API calls defined in structure.md
@@ -98,11 +101,25 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                             return;
                         }
                         
-                        const actions = workflows.workflows.map(workflow => ({
-                            id: workflow.id.toString(),
-                            name: workflow.name,
-                            status: workflow.state === 'active' ? 'success' : 'failed'
-                        }));
+                        // 기존 workflow id 조회 방식
+                        // const actions = workflows.workflows.map(workflow => ({
+                        //     id: workflow.id.toString(),
+                        //     name: workflow.name,
+                        //     status: workflow.state === 'active' ? 'success' : 'failed'
+                        // }));
+
+                        // ✅ 경로 기반 키 사용 (경로가 없으면 id 문자열 fallback)
+                        const actions = (workflows.workflows ?? []).map(w => {
+                          const key = w.path || String(w.id);
+                          return {
+                            // 프론트에서 기존 필드명(actionId)을 그대로 쓰되, 값은 "경로"로 보냄
+                            actionId: key,
+                            id: String(w.id),        // 참고용
+                            path: w.path ?? null,    // 참고용
+                            name: w.name ?? key,
+                            status: w.state === 'active' ? 'success' : 'failed'
+                          };
+                        });
                         
                         console.log(`[✅] 워크플로우 목록:`, actions);
                         
@@ -130,11 +147,15 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                             return;
                         }
                         
+                        // ✅ 경로 또는 숫자 id 모두 허용
+                        const workflowIdOrPath = String(actionId);
+
                         // 특정 워크플로우의 최신 실행 가져오기
                         const { data: runs } = await octokit.actions.listWorkflowRuns({
                             owner: repo.owner,
                             repo: repo.repo,
-                            workflow_id: parseInt(actionId),
+                            // GitHub API는 문자열 경로('.github/workflows/ci.yml') 또는 숫자 id 모두 허용
+                            workflow_id: isNumeric(workflowIdOrPath) ? Number(workflowIdOrPath) : (workflowIdOrPath as any),
                             per_page: 1
                         });
                         
@@ -224,25 +245,37 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                         }
                         
                         // 워크플로우 파일 내용 가져오기
-                        const { data: workflow } = await octokit.actions.getWorkflow({
-                            owner: repo.owner,
-                            repo: repo.repo,
-                            workflow_id: parseInt(actionId)
-                        });
+                        // const { data: workflow } = await octokit.actions.getWorkflow({
+                        //     owner: repo.owner,
+                        //     repo: repo.repo,
+                        //     workflow_id: parseInt(actionId)
+                        // });
                         
-                        // 워크플로우 파일의 YAML 내용을 가져오기 위해 추가 API 호출 필요
+                        
+                        const workflowIdOrPath = String(actionId);
+
+                        // ✅ getWorkflow도 경로/ID 모두 허용
+                        const { data: workflow } = await octokit.actions.getWorkflow({
+                          owner: repo.owner,
+                          repo: repo.repo,
+                          workflow_id: isNumeric(workflowIdOrPath) ? Number(workflowIdOrPath) : (workflowIdOrPath as any)
+                        });
+
                         // 여기서는 기본 정보만 반환
                         panel.webview.postMessage({ 
                             command: 'getWorkflowFileResponse', 
                             payload: workflow.path 
                         });
-                    } catch (error) {
+                        } catch (error: any) {
                         console.error('Error fetching workflow file:', error);
-                        panel.webview.postMessage({ 
-                            command: 'error', 
-                            payload: '워크플로우 파일을 가져오는데 실패했습니다.' 
+                        const hint = error?.status === 404
+                          ? ' (이 레포에 해당 워크플로가 없거나 권한 문제일 수 있습니다.)'
+                          : '';
+                        panel.webview.postMessage({
+                          command: 'error',
+                          payload: '워크플로우 파일을 가져오는데 실패했습니다.' + hint
                         });
-                    }
+                      }
                     break;
                     
                 case 'saveWorkflowFile':

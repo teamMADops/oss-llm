@@ -57,6 +57,8 @@ function resolveServerBase(context) {
 }
 // Webview panel management - Keep track of panels to prevent duplicates
 const panels = {};
+// 맨 위 유틸 추가: 숫자 여부 체크
+const isNumeric = (s) => typeof s === 'string' && /^\d+$/.test(s);
 /**
  * Creates and shows a new webview panel, or reveals an existing one.
  * Manages panel lifecycle and communication between the extension and the webview.
@@ -86,13 +88,6 @@ function createAndShowWebview(context, page) {
     panel.webview.html = getWebviewContent(context, panel);
     // Handle messages from the webview
     panel.webview.onDidReceiveMessage(async (message) => {
-        // All messages from the webview will be handled here.
-        // This is where the API layer described in structure.md is implemented on the extension side.
-        const repo = await (0, getRepoInfo_1.getSavedRepo)(context);
-        if (!repo) {
-            panel.webview.postMessage({ command: 'error', payload: 'GitHub 리포지토리 정보를 찾을 수 없습니다.' });
-            return;
-        }
         //github auto auth-login
         const octokit = await (0, githubSession_1.getOctokitViaVSCodeAuth)();
         if (!octokit) {
@@ -100,6 +95,13 @@ function createAndShowWebview(context, page) {
             return;
         }
         console.log('[3] 🔑 VS Code GitHub 세션 확보');
+        // All messages from the webview will be handled here.
+        // This is where the API layer described in structure.md is implemented on the extension side.
+        const repo = await (0, getRepoInfo_1.getSavedRepo)(context);
+        if (!repo) {
+            panel.webview.postMessage({ command: 'error', payload: 'GitHub 리포지토리 정보를 찾을 수 없습니다.' });
+            return;
+        }
         switch (message.command) {
             // These are placeholders for the API calls defined in structure.md
             case 'getActions':
@@ -118,11 +120,24 @@ function createAndShowWebview(context, page) {
                         });
                         return;
                     }
-                    const actions = workflows.workflows.map(workflow => ({
-                        id: workflow.id.toString(),
-                        name: workflow.name,
-                        status: workflow.state === 'active' ? 'success' : 'failed'
-                    }));
+                    // 기존 workflow id 조회 방식
+                    // const actions = workflows.workflows.map(workflow => ({
+                    //     id: workflow.id.toString(),
+                    //     name: workflow.name,
+                    //     status: workflow.state === 'active' ? 'success' : 'failed'
+                    // }));
+                    // ✅ 경로 기반 키 사용 (경로가 없으면 id 문자열 fallback)
+                    const actions = (workflows.workflows ?? []).map(w => {
+                        const key = w.path || String(w.id);
+                        return {
+                            // 프론트에서 기존 필드명(actionId)을 그대로 쓰되, 값은 "경로"로 보냄
+                            actionId: key,
+                            id: String(w.id), // 참고용
+                            path: w.path ?? null, // 참고용
+                            name: w.name ?? key,
+                            status: w.state === 'active' ? 'success' : 'failed'
+                        };
+                    });
                     console.log(`[✅] 워크플로우 목록:`, actions);
                     panel.webview.postMessage({
                         command: 'getActionsResponse',
@@ -147,11 +162,14 @@ function createAndShowWebview(context, page) {
                         });
                         return;
                     }
+                    // ✅ 경로 또는 숫자 id 모두 허용
+                    const workflowIdOrPath = String(actionId);
                     // 특정 워크플로우의 최신 실행 가져오기
                     const { data: runs } = await octokit.actions.listWorkflowRuns({
                         owner: repo.owner,
                         repo: repo.repo,
-                        workflow_id: parseInt(actionId),
+                        // GitHub API는 문자열 경로('.github/workflows/ci.yml') 또는 숫자 id 모두 허용
+                        workflow_id: isNumeric(workflowIdOrPath) ? Number(workflowIdOrPath) : workflowIdOrPath,
                         per_page: 1
                     });
                     if (runs.workflow_runs.length > 0) {
@@ -234,12 +252,18 @@ function createAndShowWebview(context, page) {
                         return;
                     }
                     // 워크플로우 파일 내용 가져오기
+                    // const { data: workflow } = await octokit.actions.getWorkflow({
+                    //     owner: repo.owner,
+                    //     repo: repo.repo,
+                    //     workflow_id: parseInt(actionId)
+                    // });
+                    const workflowIdOrPath = String(actionId);
+                    // ✅ getWorkflow도 경로/ID 모두 허용
                     const { data: workflow } = await octokit.actions.getWorkflow({
                         owner: repo.owner,
                         repo: repo.repo,
-                        workflow_id: parseInt(actionId)
+                        workflow_id: isNumeric(workflowIdOrPath) ? Number(workflowIdOrPath) : workflowIdOrPath
                     });
-                    // 워크플로우 파일의 YAML 내용을 가져오기 위해 추가 API 호출 필요
                     // 여기서는 기본 정보만 반환
                     panel.webview.postMessage({
                         command: 'getWorkflowFileResponse',
@@ -248,9 +272,12 @@ function createAndShowWebview(context, page) {
                 }
                 catch (error) {
                     console.error('Error fetching workflow file:', error);
+                    const hint = error?.status === 404
+                        ? ' (이 레포에 해당 워크플로가 없거나 권한 문제일 수 있습니다.)'
+                        : '';
                     panel.webview.postMessage({
                         command: 'error',
-                        payload: '워크플로우 파일을 가져오는데 실패했습니다.'
+                        payload: '워크플로우 파일을 가져오는데 실패했습니다.' + hint
                     });
                 }
                 break;
