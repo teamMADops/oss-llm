@@ -199,13 +199,14 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                             return;
                         }
                         
-                        console.log(`[🔍] 워크플로우 ID ${actionId}의 실행 기록을 가져오는 중...`);
-                        
+                        const workflowIdOrPath = String(actionId); // ← 그대로 사용
+                        console.log(`[🔍] 워크플로우 ${workflowIdOrPath} 실행 기록 조회 (owner=${repo.owner}, repo=${repo.repo})`);
+
                         // 특정 워크플로우의 실행 기록 가져오기
                         const { data: runs } = await octokit.actions.listWorkflowRuns({
                             owner: repo.owner,
                             repo: repo.repo,
-                            workflow_id: parseInt(actionId),
+                            workflow_id: isNumeric(workflowIdOrPath) ? Number(workflowIdOrPath) : (workflowIdOrPath as any),
                             per_page: 10
                         });
                         
