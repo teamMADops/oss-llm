@@ -108,7 +108,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, isSidebarOpen, 
           <div className="panel-content">
             {selectedPanel === 1 && (
               <div className="panel-section">
-                <h2 className="section-title">Run Information</h2>
+                <h2 className="dashboard-section-title">Run Information</h2>
                 <div className="run-info-card">
                   <div className="run-info-row">
                     <span className="run-info-label">Run ID:</span>
@@ -154,7 +154,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, isSidebarOpen, 
 
             {selectedPanel === 2 && (
               <div className="panel-section">
-                <h2 className="section-title">Detailed Log</h2>
+                <h2 className="dashboard-section-title">Detailed Log</h2>
                 <div className="log-viewer">
                   <div className="log-header">
                     <span className="log-title">build.log</span>

@@ -122,134 +122,60 @@
   display: block !important; /* 강제 표시 */
 }
 
-/* Run Info 패널 스크롤 없이 위치 고정 - 최강력한 선택자 */
-.dashboard-container .panel-content > div:first-child,
-.dashboard-container .panel-content > div:first-child * {
-  overflow: hidden !important; /* 스크롤 완전 제거 */
-  overflow-y: hidden !important; /* 세로 스크롤 강제 제거 */
-  overflow-x: hidden !important; /* 가로 스크롤도 강제 제거 */
-}
-
-/* Run Info 패널의 panel-content 스크롤 완전 제거 */
-.dashboard-container .panel-content > div:first-child .panel-content,
-.dashboard-container .panel-content > div:first-child {
-  overflow: hidden !important; /* 스크롤 완전 제거 */
-  overflow-y: hidden !important; /* 세로 스크롤 강제 제거 */
-}
-
-/* Run Info 패널의 모든 하위 요소 스크롤 제거 - 최종 보장 */
-.dashboard-container .panel-content > div:first-child,
-.dashboard-container .panel-content > div:first-child .panel-content,
-.dashboard-container .panel-content > div:first-child .panel-section,
-.dashboard-container .panel-content > div:first-child .run-info-card,
-.dashboard-container .panel-content > div:first-child .section-title {
-  overflow: hidden !important;
-  overflow-y: hidden !important;
-  overflow-x: hidden !important;
-  scrollbar-width: none !important; /* Firefox 스크롤바 제거 */
-  -ms-overflow-style: none !important; /* IE/Edge 스크롤바 제거 */
-}
-
-/* Run Info 패널의 webkit 스크롤바 완전 제거 */
-.dashboard-container .panel-content > div:first-child .panel-content::-webkit-scrollbar,
-.dashboard-container .panel-content > div:first-child::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
-
-/* 선택된 패널의 내용이 표시되는 영역 */
-.panel-content {
-  flex: 1;
-  padding: 24px;
-  overflow-y: auto;
-}
-
-/* 패널 내용의 스크롤바 스타일 */
-.panel-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.panel-content::-webkit-scrollbar-track {
-  background: #21262d;
-  border-radius: 4px;
-}
-
-.panel-content::-webkit-scrollbar-thumb {
-  background: #30363d;
-  border-radius: 4px;
-}
-
-.panel-content::-webkit-scrollbar-thumb:hover {
-  background: #484f58;
-}
-
-/* 패널 내용 안의 각 섹션(Run Information, Detailed Log 등) */
-.panel-section {
-  margin-bottom: 32px;
-}
-
-/* 각 섹션의 제목 */
-.section-title {
-  font-family: var(--font-family-base);
-  font-style: normal;
-  font-weight: 500;
-  font-size: 24pt;
-  line-height: 60px;
-  margin: 0 0 24px 0; /* 구분선 아래 마진 증가: 16px → 24px */
-  color: var(--text-color);
-  text-transform: uppercase; /* 대문자로 변환 */
-  letter-spacing: 0.5px; /* 글자 간격 추가 */
-  border-bottom: 2px solid #ffffff; /* 흰색 구분선 추가 */
-  padding-bottom: 8px; /* 구분선과 텍스트 사이 간격 */
-}
 
 
 
-/* 실행 정보(Run Information)를 보여주는 카드 */
+
+
+
+
+
+
+
+/* Run Info 카드 스타일 */
 .run-info-card {
-  background: #161b22; /* History와 동일한 배경색 */
-  border: 1px solid #30363d; /* History와 동일한 테두리 */
-  border-radius: 12px; /* 더 둥근 모서리 */
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
   padding: 20px;
-  margin-top: 16px; /* 소제목과의 간격 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
-  border-left: 4px solid var(--primary-color); /* 왼쪽에 강조 색상 추가 */
-  transition: all 0.2s ease; /* 부드러운 전환 효과 */
+  margin-top: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid var(--primary-color);
+  transition: all 0.2s ease;
 }
 
 .run-info-card:hover {
-  background: #21262d; /* 호버 시 배경색 변경 */
-  border-color: var(--primary-color); /* 호버 시 테두리 색상 변경 */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 호버 시 그림자 강화 */
+  background: #21262d;
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 실행 정보 카드 안의 각 행(row) */
+/* Run Info 카드 안의 각 행(row) */
 .run-info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px; /* History와 동일한 패딩 */
-  border-bottom: 1px solid #30363d; /* History와 동일한 테두리 색상 */
-  transition: all 0.2s ease; /* 부드러운 전환 효과 */
+  padding: 12px 16px;
+  border-bottom: 1px solid #30363d;
+  transition: all 0.2s ease;
 }
 
 .run-info-row:hover {
-  background: #21262d; /* History와 동일한 호버 배경색 */
-  border-radius: 6px; /* 둥근 모서리 */
+  background: #21262d;
+  border-radius: 6px;
 }
 
 .run-info-row:last-child {
-  border-bottom: none; /* 마지막 행은 하단 테두리 제거 */
+  border-bottom: none;
 }
 
-/* 실행 정보의 레이블(Run ID, Status 등) */
+/* Run Info 레이블(Run ID, Status 등) */
 .run-info-label {
   font-weight: 500;
   color: var(--text-secondary);
 }
 
-/* 실행 정보의 값(1234, success 등) */
+/* Run Info 값(1234, success 등) */
 .run-info-value {
   font-weight: 600;
   color: var(--text-color);
@@ -270,7 +196,7 @@
   color: var(--warning-color);
 }
 
-/* 상세 로그(Detailed Log) 뷰어 */
+/* Run Log 뷰어 */
 .log-viewer {
   background-color: var(--card-background);
   border: 1px solid var(--border-color);
@@ -278,7 +204,6 @@
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-top: 16px;
-  /* 원래 위치로 복원 */
 }
 
 /* 로그 뷰어의 헤더 */
@@ -333,18 +258,20 @@
 /* 로그 내용이 표시되는 영역 */
 .log-content {
   flex: 1;
-  overflow: auto !important;
+  overflow: auto !important; /* YAML viewer와 동일하게 !important 추가 */
   padding: 0;
   background: #0d1117;
   position: relative;
   min-height: 0;
   scroll-behavior: auto;
   transition: all 0.3s ease;
+  max-height: 416px; /* 17줄 * 20.8px (line-height) */
 }
 
 /* 로그 내용의 스크롤바 스타일 */
 .log-content::-webkit-scrollbar {
   width: 12px;
+  height: 12px; /* 가로 스크롤바 높이 */
 }
 
 .log-content::-webkit-scrollbar-track {
@@ -361,6 +288,27 @@
   background: #484f58;
 }
 
+/* 가로 스크롤바 스타일 */
+.log-content::-webkit-scrollbar:horizontal {
+  height: 12px;
+}
+
+.log-content::-webkit-scrollbar-corner {
+  background: #0d1117;
+}
+
+/* 가로 스크롤바 핸들 */
+.log-content::-webkit-scrollbar-thumb:horizontal {
+  background: #30363d;
+  border-radius: 6px;
+  border: 2px solid #0d1117;
+}
+
+/* 가로 스크롤바 핸들에 마우스를 올렸을 때 */
+.log-content::-webkit-scrollbar-thumb:horizontal:hover {
+  background: #484f58;
+}
+
 /* 로그 내용 중 코드 부분을 감싸는 컨테이너 */
 .log-code-container {
   padding: 0;
@@ -372,6 +320,8 @@
   word-wrap: normal;
   tab-size: 2;
   min-width: max-content;
+  overflow: auto; /* 가로/세로 스크롤 모두 허용 (YAML viewer와 동일) */
+  position: relative; /* sticky를 위한 상대 위치 */
 }
 
 /* 로그의 각 한 줄 */
@@ -379,6 +329,7 @@
   display: flex;
   min-height: 20.8px;
   position: relative;
+  min-width: max-content; /* 줄 내용이 잘리지 않도록 */
 }
 
 /* 로그 줄 번호 */
@@ -389,14 +340,15 @@
   color: #8b949e;
   text-align: right;
   user-select: none;
-  flex-shrink: 0;
+  flex-shrink: 0; /* YAML viewer와 동일하게 설정 */
   border-right: 1px solid #30363d;
-  position: sticky !important;
-  left: 0 !important;
+  position: sticky !important; /* YAML viewer와 동일하게 !important 추가 */
+  left: 0 !important; /* YAML viewer와 동일하게 !important 추가 */
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  background: #161b22;
 }
 
 /* 로그 줄 내용 */
@@ -406,6 +358,14 @@
   min-width: 0;
   white-space: pre;
   overflow: visible;
+  /* margin-left 제거 - YAML viewer와 동일하게 */
+}
+
+/* 로그 내용에 마우스를 올렸을 때 줄 번호의 sticky 속성 유지 (YAML viewer와 동일) */
+.log-content:hover .line-number,
+.log-content:focus .line-number {
+  position: sticky !important;
+  left: 0 !important;
 }
 
 /* 패널 내용이 비어있을 때 표시되는 플레이스홀더 */
@@ -760,10 +720,109 @@
   display: none;
 }
 
-/* 패널 3, 4 내용 숨기기 */
-.panel-content > div:nth-child(3),
-.panel-content > div:nth-child(4) {
-  display: none;
+/* ===== PANEL 1: RUN INFO ===== */
+
+/* Run Info 패널 컨테이너 */
+.run-info-panel {
+  flex: 1;
+  padding: 24px;
+  overflow: hidden; /* 스크롤 완전 제거 */
+  background: transparent;
+}
+
+/* Run Info 패널의 각 섹션 */
+.run-info-section {
+  margin-bottom: 32px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Run Info 섹션 제목 */
+.run-info-section-title {
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24pt;
+  line-height: 60px;
+  margin: 0 0 24px 0;
+  color: var(--text-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #ffffff;
+  padding-bottom: 8px;
+  background: #0d1117;
+  padding: 16px 20px;
+  margin: -20px -20px 24px -20px;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 2px solid #30363d;
+}
+
+/* Run Info 섹션 내용 */
+.run-info-section-content {
+  padding: 0;
+  background: transparent;
+}
+
+/* ===== PANEL 2: RUN LOG ===== */
+
+/* Run Log 패널 컨테이너 */
+.run-log-panel {
+  flex: 1;
+  padding: 24px;
+  overflow: auto; /* 스크롤 허용 */
+  background: transparent;
+}
+
+/* Run Log 패널의 각 섹션 */
+.run-log-section {
+  margin-bottom: 32px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Run Log 섹션 제목 */
+.run-log-section-title {
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24pt;
+  line-height: 60px;
+  margin: 0 0 24px 0;
+  color: var(--text-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #ffffff;
+  padding-bottom: 8px;
+  background: #0d1117;
+  padding: 16px 20px;
+  margin: -20px -20px 24px -20px;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 2px solid #30363d;
+}
+
+/* Run Log 섹션 내용 */
+.run-log-section-content {
+  padding: 0;
+  background: transparent;
+  overflow: auto; /* 스크롤 허용 */
+}
+
+/* 공통 섹션 제목 스타일 (Dashboard 전용) */
+.dashboard-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 32px 0 24px 0; /* 위쪽 마진을 20px에서 32px로 증가 */
+  color: var(--text-color);
+  text-transform: uppercase; /* 대문자로 변환 */
+  letter-spacing: 0.5px; /* 글자 간격 추가 */
+  padding-bottom: 8px; /* 구분선과 텍스트 사이 간격 */
+  border-bottom: 1px solid #30363d; /* sidebar와 같은 스타일의 구분선 */
 }
 
 
