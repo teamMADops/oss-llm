@@ -3,23 +3,34 @@
 /* 대시보드 페이지 전체를 감싸는 최상위 컨테이너 */
 .dashboard-container {
   display: flex;
-  height: 100vh;
-  background-color: var(--background-color);
-  color: var(--text-color);
+  width: 100%;
+  height: 100%;
+  background: var(--color-black);
+  font-family: var(--font-family-base);
+  overflow: hidden;
+  gap: 0; /* 두 패널을 서로 붙이기 */
+  position: relative; /* 절대 배치된 LLM 분석 패널의 기준 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
 }
 
 /* 대시보드의 메인 콘텐츠 영역(중앙 패널) */
 .dashboard-main {
-  flex: 1;
+  position: relative;
+  height: 100%;
+  padding: 20px;
+  overflow: hidden; /* 메인 섹션 자체는 스크롤 없음 */
+  min-width: 0; /* flexbox에서 축소 허용 */
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--border-color);
-  overflow: hidden;
+  width: 50%; /* 사이드바 열림 시: 37.5% */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
+  margin-right: 0; /* 기본 오른쪽 마진 */
+  box-sizing: border-box; /* 패딩과 보더를 포함한 크기 계산 */
 }
 
 /* 메인 콘텐츠 영역의 헤더 */
 .main-header {
-  padding: 20px 24px;
+  padding: 20px 20px 20px 0; /* 오른쪽 패딩 제거 */
   border-bottom: 1px solid var(--border-color);
   background-color: var(--header-background);
 }
@@ -89,8 +100,12 @@
 .section-title {
   font-size: 18px;
   font-weight: 600;
-  margin: 0 0 16px 0;
+  margin: 0 0 24px 0; /* 구분선 아래 마진 증가: 16px → 24px */
   color: var(--text-color);
+  text-transform: uppercase; /* 대문자로 변환 */
+  letter-spacing: 0.5px; /* 글자 간격 추가 */
+  border-bottom: 2px solid #ffffff; /* 흰색 구분선 추가 */
+  padding-bottom: 8px; /* 구분선과 텍스트 사이 간격 */
 }
 
 /* 실행 정보(Run Information)를 보여주는 카드 */
@@ -146,8 +161,9 @@
 .log-viewer {
   background-color: var(--card-background);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px; /* 더 둥근 모서리 */
   overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
 }
 
 /* 로그 뷰어의 헤더 */
@@ -158,12 +174,21 @@
   padding: 12px 16px;
   background-color: var(--header-background);
   border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0; /* 하단 마진 제거 */
 }
 
 /* 로그 뷰어의 제목(build.log) */
 .log-title {
   font-weight: 600;
   color: var(--text-color);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.log-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: block;
 }
 
 /* 로그 뷰어 헤더의 액션 버튼(Copy, Search) 컨테이너 */
@@ -197,10 +222,15 @@
 
 /* 로그 내용 중 코드 부분을 감싸는 컨테이너 */
 .log-code-container {
+  background: #161b22; /* Run Information과 동일한 배경색 */
+  border: 1px solid #30363d; /* Run Information과 동일한 테두리 */
+  border-radius: 8px; /* 둥근 모서리 */
+  margin: 0; /* 마진 제거 */
   padding: 16px;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 13px;
   line-height: 1.5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
 }
 
 /* 로그의 각 한 줄 */
@@ -237,11 +267,19 @@
 
 /* LLM 분석 결과를 보여주는 우측 패널 컨테이너 */
 .llm-analysis-container {
-  width: 400px;
+  width: 37.5%; /* 사이드바 열림 시: 37.5% */
+  max-width: 50%;
+  min-width: 400px; /* 최소 너비 보장 */
+  height: 100%;
+  flex-shrink: 0; /* 축소 방지 */
+  position: fixed; /* 오른쪽 고정 */
+  right: 0;
+  top: 0;
   display: flex;
   flex-direction: column;
   border-left: 1px solid var(--border-color);
   background-color: var(--card-background);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
 }
 
 /* LLM 분석 패널의 헤더 */
@@ -352,6 +390,113 @@
   color: var(--text-secondary);
 }
 
+/* History 리스트와 동일한 스타일 - Run Information */
+.run-item {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px; /* 더 둥근 모서리 */
+  padding: 16px 16px 16px 16px; /* 상단 패딩 줄임 */
+  padding-top: 8px; /* 상단 패딩을 8px로 줄임 */
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  margin-top: 16px; /* 구분선과 카드 사이 마진 추가 */
+}
+
+/* Run Information 헤더 */
+.run-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #21262d;
+  border-bottom: 1px solid #30363d;
+  border-radius: 12px 12px 0 0; /* 상단 모서리만 둥글게 */
+  margin: -16px -16px 16px -16px; /* 상단 마진을 -8px로 조정 (카드 상단 패딩과 맞춤) */
+}
+
+.run-info-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin: 0;
+}
+
+.run-info-subtitle {
+  font-size: 12px;
+  color: #8b949e;
+  margin: 0;
+}
+
+.run-item:hover {
+  background: #21262d;
+  border-color: #58a6ff;
+}
+
+.run-row {
+  display: grid;
+  grid-template-columns: 80px 140px 180px 120px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.run-id {
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f6fc;
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
+}
+
+.run-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.status-success {
+  background: #238636;
+  color: #ffffff;
+}
+
+.status-badge.status-failure {
+  background: #da3633;
+  color: #ffffff;
+}
+
+.status-badge.status-cancelled {
+  background: #9e6a03;
+  color: #ffffff;
+}
+
+.run-timestamp {
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  color: #8b949e;
+}
+
+.run-branch {
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  color: #8b949e;
+  text-align: center;
+}
+
+.run-reason {
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  color: #f0f6fc;
+}
+
 /* 사이드바 상태에 따른 대시보드 메인 영역의 반응형 스타일 */
 /* Responsive Design */
 @media (max-width: 1200px) {
@@ -379,11 +524,53 @@
   }
 }
 
-/* Sidebar Responsive */
-.dashboard-container.sidebar-closed .dashboard-main {
-  margin-left: 0;
+/* 사이드바가 열려있을 때의 대시보드 컨테이너 */
+.dashboard-container.sidebar-open {
+  /* 사이드바가 열려있을 때: 메인 패널과 LLM 분석 패널 반반 분할 */
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0; /* 두 패널을 서로 붙이기 */
 }
 
-.dashboard-container.sidebar-open .dashboard-main {
+/* 사이드바가 닫혔을 때의 대시보드 컨테이너 */
+.dashboard-container.sidebar-closed {
+  /* 사이드바가 닫혀있을 때: 메인 패널과 LLM 분석 패널 반반 분할 (전체 화면) */
+  width: 100vw;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100vh;
+}
+
+/* 사이드바가 닫혔을 때 대시보드 메인 패널의 너비 조정 */
+.dashboard-container.sidebar-closed .dashboard-main {
+  width: 50% !important; /* 전체 화면의 50% */
   margin-left: 0;
+  margin-right: 0; /* 오른쪽 마진 제거 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 자연스러운 이동 */
+  box-sizing: border-box !important; /* 박스 모델 강제 적용 */
+}
+
+/* 사이드바가 닫혔을 때 LLM 분석 패널의 너비 조정 */
+.dashboard-container.sidebar-closed .llm-analysis-container {
+  width: 50% !important; /* 전체 화면의 50% */
+  right: 0;
+}
+
+/* 사이드바가 열렸을 때 메인 패널의 너비 조정 */
+.dashboard-container.sidebar-open .dashboard-main {
+  width: 50% !important; /* 사이드바 열림 후: 37.5% */
+  margin: 0 !important;
+  padding-right: 20px !important; /* 오른쪽 마진 명시적 제거 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important; /* 박스 모델 강제 적용 */
+}
+
+/* 사이드바가 열렸을 때 LLM 분석 패널의 너비 조정 */
+.dashboard-container.sidebar-open .llm-analysis-container {
+  width: 37.5% !important; /* 사이드바 열림 후: 37.5% */
+  right: 0;
+  margin-left: 0 !important; /* 왼쪽 마진 명시적 제거 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
