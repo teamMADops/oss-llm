@@ -5,6 +5,7 @@ import './HistoryTable.css';
 interface HistoryTableProps {
   runs: WorkflowRun[];
   isSidebarOpen: boolean;
+  onRunClick: (runId: string) => void; // [ADD] 실행(run) 클릭 시 호출될 함수
 }
 
 // Sidebar와 동일한 StatusIndicator 컴포넌트
@@ -49,7 +50,7 @@ const StatusIndicator: React.FC<{ status: string, conclusion: string | null }> =
   );
 };
 
-const HistoryTable: React.FC<HistoryTableProps> = ({ runs }) => {
+const HistoryTable: React.FC<HistoryTableProps> = ({ runs, onRunClick }) => { // [MOD] onRunClick prop 추가
   const getStatusClass = (status: string, conclusion: string | null) => {
     if (conclusion === 'success') {
       return 'status-success';
@@ -118,7 +119,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ runs }) => {
       {sortedRuns.length > 0 ? (
         <div className="runs-list">
           {sortedRuns.map((run) => (
-            <div key={run.id} className={`run-item ${getStatusClass(run.status, run.conclusion)}`}>
+            <div key={run.id} className={`run-item ${getStatusClass(run.status, run.conclusion)}`} onClick={() => onRunClick(run.id)}> {/* [ADD] onClick 핸들러 추가 */}
               <div className="run-row">
                 <div className="run-id">#{run.id}</div>
                 <div className="run-status">

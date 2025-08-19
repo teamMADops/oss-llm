@@ -1,4 +1,3 @@
-// 수정 예정
 import * as vscode from 'vscode';
 import * as path from 'path';
 
@@ -6,7 +5,8 @@ import { getSavedRepo, promptAndSaveRepo,deleteSavedRepo, type RepoRef} from './
 import { getOctokitViaVSCodeAuth } from './auth/githubSession';
 
 import { getRunIdFromQuickPick } from './github/getRunList';
-import { printToOutput } from './output/printToOutput';       
+import { printToOutput } from './output/printToOutput'; 
+// TODO : 이건 왜/누가 추가한거야?      
 // import { spawn } from 'child_process';
 // import * as crypto from 'crypto';
 
@@ -287,6 +287,39 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                     });
                     break;
                     
+                // [ADD] Webview로부터 LLM 분석 요청 처리
+                case 'analyzeRun':
+                    try {
+                        const runIdStr = message.payload?.runId;
+                        if (typeof runIdStr !== 'string') {
+                            panel.webview.postMessage({ 
+                                command: 'error', 
+                                payload: 'Run ID가 문자열이 아닙니다.' 
+                            });
+                            return;
+                        }
+
+                        const runId = parseInt(runIdStr, 10);
+                        if (isNaN(runId)) {
+                            panel.webview.postMessage({ 
+                                command: 'error', 
+                                payload: `잘못된 Run ID 형식입니다: ${runIdStr}` 
+                            });
+                            return;
+                        }
+                        
+                        console.log(`[🚀] Webview로부터 LLM 분석 요청 수신 (Run ID: ${runId})`);
+                        await triggerLlmAnalysis(context, repo, runId);
+
+                    } catch (error) {
+                        console.error('LLM 분석 시작 중 오류 발생:', error);
+                        panel.webview.postMessage({ 
+                            command: 'error', 
+                            payload: 'LLM 분석을 시작하는 데 실패했습니다.' 
+                        });
+                    }
+                    break;
+
                 case 'analyzeLog':
                     // TODO: LLM을 사용한 로그 분석 로직 구현
                     panel.webview.postMessage({ 
@@ -314,6 +347,82 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
     panel.webview.postMessage({ command: 'changePage', page });
 }
 
+
+/* LLM 분석을 트리거하는 공통 함수 */
+async function triggerLlmAnalysis(context: vscode.ExtensionContext, repo: RepoRef, runId: number) {
+    const logMode = 'all'; // 또는 'error' 등 필요에 따라 설정
+    const SERVER_BASE = resolveServerBase(context);
+
+    if (!/^https?:\/\//.test(SERVER_BASE) || SERVER_BASE.includes('YOUR-DEPLOYED-API')) {
+        vscode.window.showErrorMessage(`SERVER_BASE가 올바르지 않습니다: ${SERVER_BASE}`);
+        return;
+    }
+
+    await vscode.window.withProgress(
+        { location: vscode.ProgressLocation.Notification, title: `Run #${runId} 분석 중...` },
+        async (progress) => {
+            try {
+                progress.report({ message: '서버에 분석 요청 전송' });
+
+                console.log("[EXT] 📤 서버로 분석 요청 전송", {
+                    url: `${SERVER_BASE}/api/analyze-run`,
+                    owner: repo.owner,
+                    name: repo.repo,
+                    runId: runId,
+                    logMode
+                });
+
+                const res = await fetch(`${SERVER_BASE}/api/analyze-run`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        repo: { owner: repo.owner, name: repo.repo },
+                        runId: runId,
+                        logMode
+                    })
+                });
+                
+                console.log("[EXT] 📥 서버 응답 수신", res.status, res.statusText);
+                
+                if (!res.ok) {
+                    const err = await res.json().catch(() => null);
+                    printToOutput('analyze-run FAIL', [`${res.status} ${res.statusText}`, err || '(no body)']);
+                    throw new Error(err?.error ?? res.statusText);
+                }
+
+                progress.report({ message: 'LLM 응답 수신' });
+                const data: any = await res.json();
+                const analysis = data?.analysis;
+
+                if (!analysis) {
+                    vscode.window.showInformationMessage('분석할 실패 Step이 없습니다.');
+                    return;
+                }
+
+                printToOutput('LLM 분석 결과', [JSON.stringify(analysis, null, 2)]);
+
+                if (panels['dashboard']) {
+                    panels['dashboard'].webview.postMessage({
+                        command: 'llmAnalysisResult',
+                        payload: analysis
+                    });
+                    vscode.window.showInformationMessage('LLM 분석 결과가 대시보드에 표시되었습니다.');
+                } else {
+                    const summary = analysis.summary ?? 'LLM 분석이 완료되었습니다.';
+                    const choice = await vscode.window.showInformationMessage(`🧠 ${summary}`, '출력창 열기', '요약 복사');
+                    if (choice === '출력창 열기') {
+                        vscode.commands.executeCommand('workbench.action.output.toggleOutput');
+                    } else if (choice === '요약 복사') {
+                        await vscode.env.clipboard.writeText(summary);
+                        vscode.window.showInformationMessage('📋 요약을 클립보드에 복사했어요.');
+                    }
+                }
+            } catch (e: any) {
+                vscode.window.showErrorMessage(`❌ 분석 실패: ${e?.message ?? e}`);
+            }
+        }
+    );
+}
 
 export function activate(context: vscode.ExtensionContext) {
 

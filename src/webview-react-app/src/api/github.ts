@@ -148,3 +148,14 @@ export const saveWorkflowFile = (actionId: string, content: string): Promise<voi
     });
   });
 };
+
+export const analyzeRun = (runId: string) => {
+  if (!vscode) {
+    console.warn('Not in a VSCode environment, skipping analyzeRun.');
+    return;
+  }
+  vscode.postMessage({
+    command: 'analyzeRun',
+    payload: { runId },
+  });
+};

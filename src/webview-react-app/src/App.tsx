@@ -5,7 +5,7 @@ import EditorPage from './pages/Editor/Editor';
 import HistoryPage from './pages/History/History';
 import { LLMResult } from '../../llm/analyze'; // Import LLMResult type
 import { Action } from './components/Sidebar/types'; // Import Action type
-import { getActions } from './api/github'; // Import getActions
+import { getActions, analyzeRun } from './api/github'; // [MOD] analyzeRun import
 import './styles/theme.css';
 
 function App() {
@@ -83,6 +83,18 @@ function App() {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
+  // [ADD] 실행(run) 분석을 시작하는 함수
+  const handleRunAnalysis = (runId: string) => {
+    console.log(`[App.tsx] Run 분석 시작: ${runId}`);
+    // LLM 분석 요청
+    analyzeRun(runId);
+    // 분석 결과를 표시하기 위해 대시보드 페이지로 전환
+    setCurrentPage('dashboard');
+    // 분석 요청 후 기존 선택 상태 초기화
+    setDropdownActive(false);
+    setActionHighlighted(false);
+  };
+
   return (
     <div className="app-container">
       <Sidebar
@@ -99,7 +111,7 @@ function App() {
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-closed' : 'sidebar-open'}`}>
         {currentPage === 'dashboard' && <DashboardPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} llmAnalysisResult={llmAnalysisResult} />}
         {currentPage === 'editor' && <EditorPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />}
-        {currentPage === 'history' && <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />}
+        {currentPage === 'history' && <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} onRunClick={handleRunAnalysis} />} {/* [MOD] onRunClick prop 전달 */}
       </main>
     </div>
   );

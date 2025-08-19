@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
 import { LLMResult } from '../../../../llm/analyze';
+import { getLatestRun, analyzeRun } from '@/api/github';
 
 interface DashboardPageProps {
   actionId: string | null;
@@ -23,6 +24,7 @@ const mockRunInfo = {
   author: 'sungwoncho'
 };
 
+// TODO : 이거 실제 로그랑 연결해야함!!!
 const mockDetailedLog = `2025-08-15T12:00:34.123Z [INFO] Starting workflow run
 2025-08-15T12:00:35.456Z [INFO] Triggered by push to main branch
 2025-08-15T12:00:36.789Z [INFO] Setting up job: build
@@ -46,6 +48,20 @@ const mockDetailedLog = `2025-08-15T12:00:34.123Z [INFO] Starting workflow run
 
 const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, isSidebarOpen, llmAnalysisResult }) => {
   const [selectedPanel, setSelectedPanel] = useState<number>(1);
+
+  useEffect(() => {
+    if (actionId) {
+      console.log(`Dashboard: actionId 변경됨 → ${actionId}, 최신 실행 분석을 시작합니다.`);
+      getLatestRun(actionId).then(latestRun => {
+        if (latestRun && latestRun.conclusion === 'failure') {
+          console.log(`실패한 최신 실행 발견 (ID: ${latestRun.id}). LLM 분석을 요청합니다.`);
+          analyzeRun(latestRun.id);
+        } else {
+          console.log('실패한 최신 실행이 없으므로, 분석을 건너뜁니다.');
+        }
+      });
+    }
+  }, [actionId]);
 
   if (!actionId) {
     return (

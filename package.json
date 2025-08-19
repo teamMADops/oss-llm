@@ -35,11 +35,6 @@
         "title": "GitHub Actions: 실패 Step 분석 및 LLM 프롬프트 생성"
       },
       {
-
-        "command": "extension.helloWorld",
-        "title": "Dev: Hello World Webview 열기"
-      },
-      {
         "command": "extension.openDashboard",
         "title": "MAD Ops: 대시보드 열기"
 
