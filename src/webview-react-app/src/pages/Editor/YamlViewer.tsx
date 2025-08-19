@@ -99,7 +99,7 @@ jobs:
         <div className="yaml-header">
           <span className="yaml-title">workflow.yml</span>
           <div className="yaml-actions">
-            <button className="yaml-btn yaml-btn-copy">Copy</button>
+            <button className="yaml-btn yaml-btn-copy">Save</button>
             <button className="yaml-btn yaml-btn-format">Format</button>
           </div>
         </div>

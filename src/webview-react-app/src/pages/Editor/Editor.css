@@ -35,44 +35,50 @@
   height: 100vh;
 }
 
-/* 사이드바가 닫혔을 때 에디터 메인 패널의 너비 조정 */
-.editor-container.sidebar-closed .editor-main {
-  width: 50% !important; /* 전체 화면의 50% */
-  margin-left: 0;
-  margin-right: 0; /* 오른쪽 마진 제거 */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 자연스러운 이동 */
-  box-sizing: border-box !important; /* 박스 모델 강제 적용 */
-}
-
 /* 사이드바가 닫혔을 때 YAML 뷰어 컨테이너의 너비 조정 */
 .editor-container.sidebar-closed .yaml-viewer-container {
   width: 50% !important; /* 전체 화면의 50% */
-  right: 0;
+  right: 0 !important; /* 오른쪽 고정 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important; /* 일관된 전환 효과 */
+  /* 오른쪽 부분 고정, 왼쪽에서 resize */
 }
 
-/* 에디터의 메인 패널 (왼쪽 영역) */
+/* 에디터의 메인 패널 (오른쪽 영역에 고정) */
 .editor-main {
-  position: relative;
+  position: fixed;
+  right: 37.5%; /* YAML 뷰어 왼쪽에 고정 */
+  top: 0;
   height: 100%;
-  padding: 20px;
+  padding: 20px; /* 고정 패딩 - 사이드바 전환 시 변하지 않음 */
   overflow: hidden; /* 메인 섹션 자체는 스크롤 없음 */
   display: flex;
   flex-direction: column;
-  width: 37.5%; /* 사이드바 열림 시: 37.5% */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
-  margin-right: 0; /* 기본 오른쪽 마진 */
+  width: 37.5%; /* 기본 너비: 37.5% */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
   box-sizing: border-box; /* 패딩과 보더를 포함한 크기 계산 */
+  z-index: 10; /* YAML 뷰어 위에 표시 */
 }
 
 
 
-/* 사이드바가 열렸을 때 메인 패널의 너비 조정 */
+/* 사이드바가 열렸을 때 메인 패널의 위치 조정 */
 .editor-container.sidebar-open .editor-main {
+  right: 37.5% !important; /* YAML 뷰어 왼쪽에 고정 유지 (오른쪽 고정) */
   width: 37.5% !important; /* 사이드바 열림 후: 37.5% */
-  margin: 0 !important;
-  padding-right: 20px !important; /* 오른쪽 마진 명시적 제거 */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  padding: 20px !important; /* 패딩 일관성 유지 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-sizing: border-box !important; /* 박스 모델 강제 적용 */
+  /* 오른쪽 부분 고정, 왼쪽에서 resize */
+}
+
+/* 사이드바가 닫혔을 때 에디터 메인 패널의 너비 조정 */
+.editor-container.sidebar-closed .editor-main {
+  right: 50% !important; /* 전체 화면의 절반 지점에 고정 (오른쪽 고정) */
+  width: 50% !important; /* 전체 화면의 50% */
+  padding: 20px !important; /* 패딩 일관성 유지 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important; /* 박스 모델 강제 적용 */
+  /* 오른쪽 부분 고정, 왼쪽에서 resize */
 }
 
 /* 사이드바가 열렸을 때 YAML 뷰어 컨테이너의 너비 조정 */
@@ -80,7 +86,7 @@
   width: 37.5% !important; /* 사이드바 열림 후: 37.5% */
   right: 0;
   margin-left: 0 !important; /* 왼쪽 마진 명시적 제거 */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important; /* 일관된 전환 효과 */
 }
 
 /* 메인 콘텐츠 영역의 기본 패딩 제거 */
@@ -90,8 +96,8 @@
 
 /* 워크플로우 에디터 영역 (스크롤 가능) */
 .workflow-editor {
-  padding-right: 20px; /* 스크롤바 공간 확보 */
-  margin-right: -20px; /* 부모 패딩 상쇄 */
+  padding: 0; /* 모든 패딩 제거 */
+  margin: 0; /* 모든 마진 제거 */
   overflow-y: auto;
   flex: 1;
 }
@@ -325,3 +331,4 @@
   margin: 0 !important;
   padding: 0 !important;
 }
+

@@ -9,7 +9,7 @@
   background: #0d1117;
   font-family: var(--font-family-base);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   padding: 0;
   margin: 0;
@@ -32,39 +32,44 @@
 
 /* 히스토리 페이지의 메인 콘텐츠 영역 */
 .history-main {
-  position: relative;
+  position: fixed;
+  right: 0; /* 오른쪽에 고정 */
+  top: 0;
   height: 100%;
   padding: 20px; /* 메인 패널과 동일한 padding */
   overflow: hidden;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box; /* padding이 width에 포함되도록 */
+  z-index: 10; /* 다른 요소 위에 표시 */
 }
 
 /* 사이드바가 열려있을 때의 히스토리 메인 영역 */
 .history-container.sidebar-open .history-main {
-  /* 사이드바 열림: 히스토리는 YAML 뷰어 없이 남은 영역 전체 사용 */
-  flex: 1;
-  width: 100%;
-  margin-right: 0;
-  padding: 20px; /* padding 값 유지 */
+  /* 사이드바 열림: 오른쪽에 고정, 왼쪽에서 resize */
+  right: 0 !important; /* 오른쪽 고정 */
+  width: 75% !important; /* 사이드바 제외한 공간 전체 사용 */
+  padding: 20px !important; /* 패딩 일관성 유지 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important; /* 박스 모델 강제 적용 */
 }
 
 /* 사이드바가 닫혔을 때의 히스토리 메인 영역 */
 .history-container.sidebar-closed .history-main {
-  /* 사이드바 닫힘: 히스토리는 전체 화면 사용 */
-  flex: 1;
-  width: 100%;
-  margin-right: 0;
-  padding: 20px; /* padding 값 유지 */
+  /* 사이드바 닫힘: 오른쪽에 고정, 전체 화면 사용 */
+  right: 0 !important; /* 오른쪽 고정 */
+  width: 100% !important; /* 전체 화면 사용 */
+  padding: 20px !important; /* 패딩 일관성 유지 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important; /* 박스 모델 강제 적용 */
 }
 
 /* 히스토리 테이블을 감싸는 에디터 형식의 컨테이너 */
 .history-editor {
-  padding: 0 0 20px 0; /* 좌우 패딩 제거 (메인 패널에서 처리), 하단만 유지 */
-  margin-right: 0; /* 오른쪽 마진 제거 */
+  padding: 0; /* 모든 패딩 제거 */
+  margin: 0; /* 모든 마진 제거 */
   overflow-y: auto;
   flex: 1;
 }
