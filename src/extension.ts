@@ -222,10 +222,28 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                         });
                     }
                     break;
-                    
+
+                // helpers: 파일 내용/sha 유틸을 위에 추가
+                async function getFileText(octokit: any, repo: RepoRef, filePath: string, ref = 'main') {
+                  const r = await octokit.repos.getContent({ owner: repo.owner, repo: repo.repo, path: filePath, ref });
+                  if (Array.isArray(r.data)) return '';
+                  const base64 = (r.data as any).content?.replace(/\n/g, '') ?? '';
+                  return Buffer.from(base64, 'base64').toString('utf8');
+                }
+
+                function isNumericId(s: string) {
+                  return /^\d+$/.test(s);
+                }
+
+                function ensureWorkflowPathFromWorkflow(wf: any) {
+                  if (!wf?.path) throw new Error('워크플로우 경로를 찾을 수 없습니다.');
+                  return wf.path as string;
+                }
+
                 case 'getWorkflowFile':
                     try {
-                        const actionId = message.payload?.actionId;
+                        //const actionId = message.payload?.actionId;
+                        const actionId = String(message.payload?.actionId);
                         if (!actionId) {
                             panel.webview.postMessage({ 
                                 command: 'error', 
@@ -234,21 +252,39 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                             return;
                         }
 
-                        
-                        const workflowIdOrPath = String(actionId);
+                        let workflowPath: string;
+                        if (isNumericId(actionId)) {
+                          // 숫자 ID → workflow 메타 조회 → path 추출
+                          const { data: wf } = await octokit.actions.getWorkflow({
+                            owner: repo.owner, repo: repo.repo, workflow_id: Number(actionId)
+                          });
+                          workflowPath = ensureWorkflowPathFromWorkflow(wf);
+                        } else {
+                          // 경로(.github/workflows/xxx.yml) 그대로 사용 가능
+                          workflowPath = actionId;
+                        }
 
-                        // ✅ getWorkflow도 경로/ID 모두 허용
-                        const { data: workflow } = await octokit.actions.getWorkflow({
-                          owner: repo.owner,
-                          repo: repo.repo,
-                          workflow_id: isNumeric(workflowIdOrPath) ? Number(workflowIdOrPath) : (workflowIdOrPath as any)
+                        // 파일 내용 읽어오기
+                        const content = await getFileText(octokit, repo, workflowPath, 'main');
+
+                        panel.webview.postMessage({
+                          command: 'getWorkflowFileResponse',
+                          payload: content
                         });
+                        // const workflowIdOrPath = String(actionId);
+
+                        // // ✅ getWorkflow도 경로/ID 모두 허용
+                        // const { data: workflow } = await octokit.actions.getWorkflow({
+                        //   owner: repo.owner,
+                        //   repo: repo.repo,
+                        //   workflow_id: isNumeric(workflowIdOrPath) ? Number(workflowIdOrPath) : (workflowIdOrPath as any)
+                        // });
 
                         // 여기서는 기본 정보만 반환
-                        panel.webview.postMessage({ 
-                            command: 'getWorkflowFileResponse', 
-                            payload: workflow.path 
-                        });
+                        // panel.webview.postMessage({ 
+                        //     command: 'getWorkflowFileResponse', 
+                        //     payload: workflow.path 
+                        // });
                         } catch (error: any) {
                         console.error('Error fetching workflow file:', error);
                         const hint = error?.status === 404
@@ -260,17 +296,67 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                         });
                       }
                     break;
-                    
-                case 'saveWorkflowFile':
-                    // TODO: 워크플로우 파일 저장 로직 구현
-                    panel.webview.postMessage({ 
-                        command: 'error', 
-                        payload: '워크플로우 파일 저장은 아직 구현되지 않았습니다.' 
+                
+                // helpers: sha 조회 + 업서트 유틸 추가
+                async function getFileShaIfExists(octokit: any, repo: RepoRef, filePath: string, ref='main') {
+                  try {
+                    const r = await octokit.repos.getContent({ owner: repo.owner, repo: repo.repo, path: filePath, ref });
+                    if (Array.isArray(r.data)) return undefined;
+                    return (r.data as any).sha as string;
+                  } catch (e: any) {
+                    if (e?.status === 404) return undefined;
+                    throw e;
+                  }
+                }
+
+                async function upsertFile(octokit: any, repo: RepoRef, filePath: string, contentUtf8: string, branch='main', message?: string) {
+                  const sha = await getFileShaIfExists(octokit, repo, filePath, branch);
+                  await octokit.repos.createOrUpdateFileContents({
+                    owner: repo.owner,
+                    repo: repo.repo,
+                    path: filePath,
+                    message: message ?? `chore(ci): update ${filePath}`,
+                    content: Buffer.from(contentUtf8, 'utf8').toString('base64'),
+                    branch,
+                    sha, // 있으면 업데이트, 없으면 생성
+                    committer: { name: 'MAD Bot', email: 'mad@team-madops.local' },
+                    author:    { name: 'MAD Bot', email: 'mad@team-madops.local' },
+                  });
+                }
+
+                // --- case 'saveWorkflowFile' 교체 ---
+                case 'saveWorkflowFile': {
+                  try {
+                    const actionId = String(message.payload?.actionId);
+                    const content = String(message.payload?.content ?? '');
+                    if (!actionId) throw new Error('Action ID가 필요합니다.');
+
+                    let workflowPath: string;
+                    if (isNumericId(actionId)) {
+                      const { data: wf } = await octokit.actions.getWorkflow({
+                        owner: repo.owner, repo: repo.repo, workflow_id: Number(actionId)
+                      });
+                      workflowPath = ensureWorkflowPathFromWorkflow(wf);
+                    } else {
+                      workflowPath = actionId; // 이미 경로로 넘어옴 (.github/workflows/xxx.yml)
+                    }
+
+                    await upsertFile(octokit, repo, workflowPath, content, 'main');
+
+                    panel.webview.postMessage({
+                      command: 'saveWorkflowFileResponse',
+                      payload: { ok: true, path: workflowPath }
                     });
-                    break;
-                    
-                // [ADD] Webview로부터 LLM 분석 요청 처리
-                // TODO : 추가한 webview에서 LLM 분석을 위해 요청하는 case
+                  } catch (error: any) {
+                    // TODO: 보호 브랜치면 여기서 feature 브랜치/PR 폴백 추가 가능 : ?? 먼솔 
+                    panel.webview.postMessage({
+                      command: 'saveWorkflowFileResponse',
+                      payload: { ok: false, error: error?.message ?? String(error) }
+                    });
+                  }
+                  break;
+                }
+                
                 case 'analyzeRun':
                     try {
                         const runIdStr = message.payload?.runId;
