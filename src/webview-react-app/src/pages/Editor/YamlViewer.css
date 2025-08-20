@@ -31,7 +31,7 @@
   font-family: var(--font-family-base);
   font-size: 14px;
   font-weight: 600;
-  color: #f0f6fc;
+  color: #DBE8F2;
 }
 
 /* YAML 뷰어 헤더의 액션 버튼 컨테이너 */
@@ -46,7 +46,7 @@
   background: #21262d;
   border: 1px solid #30363d;
   border-radius: 4px;
-  color: #f0f6fc;
+  color: #DBE8F2;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -89,7 +89,7 @@
   font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
   font-size: 13px;
   line-height: 1.6;
-  color: #f0f6fc;
+  color: #DBE8F2;
   white-space: pre;
   word-wrap: normal;
   tab-size: 2;

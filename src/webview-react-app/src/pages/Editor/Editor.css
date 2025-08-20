@@ -125,7 +125,7 @@
 .section-title {
   font-size: 16px;
   font-weight: 600;
-  color: #f0f6fc;
+  color: #DBE8F2;
   margin: 0;
 }
 
@@ -168,7 +168,7 @@
 .trigger-name {
   flex: 1;
   font-weight: 500;
-  color: #f0f6fc;
+  color: #DBE8F2;
 }
 
 /* 드롭다운 화살표 아이콘 */
@@ -199,7 +199,7 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #f0f6fc;
+  color: #DBE8F2;
 }
 
 /* 입력 필드 (input, select) */
@@ -210,7 +210,7 @@
   background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 4px;
-  color: #f0f6fc;
+  color: #DBE8F2;
   font-size: 14px;
 }
 
@@ -220,7 +220,7 @@
   background: #238636;
   border: 1px solid #238636;
   border-radius: 4px;
-  color: #ffffff;
+  color: #DBE8F2;
   font-size: 12px;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -253,7 +253,7 @@
 .job-name {
   flex: 1;
   font-weight: 500;
-  color: #f0f6fc;
+  color: #DBE8F2;
 }
 
 /* Job 상세 설정 영역 */
@@ -282,7 +282,7 @@
   background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 6px;
-  color: #f0f6fc;
+  color: #DBE8F2;
   font-size: 14px;
   font-family: var(--font-family-base);
   transition: border-color 0.2s ease;
@@ -301,7 +301,7 @@
   background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 6px;
-  color: #f0f6fc;
+  color: #DBE8F2;
   font-size: 14px;
   font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
   resize: vertical;
@@ -355,6 +355,12 @@
   font-weight: 600;
   color: var(--text-color);
   margin: 0;
+  transition: margin-left 0.3s ease; /* 부드러운 전환 효과 */
+}
+
+/* 사이드바가 닫혔을 때 메인 타이틀을 오른쪽으로 밀기 */
+.editor-container.sidebar-closed .main-title {
+  margin-left: 30px; /* 오른쪽으로 밀기 */
 }
 
 /* 워크플로우 저장 버튼 (Copy 버튼과 동일한 스타일) */

@@ -46,11 +46,16 @@
   line-height: 60px;
   color: var(--color-white);
   margin: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, margin-left 0.3s ease; /* 부드러운 전환 효과 */
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* 사이드바가 닫혔을 때 메인 타이틀을 오른쪽으로 밀기 */
+.dashboard-container.sidebar-closed .main-title {
+  margin-left: 30px; /* 오른쪽으로 밀기 */
 }
 
 /* 대시보드 콘텐츠(패널 선택 버튼 및 패널 내용)를 감싸는 영역 */
@@ -82,7 +87,7 @@
   color: var(--text-color);
   border-radius: 8px 8px 0 0; /* 상단 모서리만 둥글게 */
   cursor: pointer;
-  transition: all 0.3s ease; /* 전환 효과 */
+  /* transition 제거 */
   font-weight: 500;
   min-width: 120px; /* 최소 너비 설정 */
   text-align: center;
@@ -91,32 +96,35 @@
 }
 
 /* 패널 선택 버튼에 마우스를 올렸을 때 */
-.panel-btn:hover {
-  background-color: var(--hover-color);
+.panel-btn:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.1); /* sidebar action item과 동일한 hover 색상 */
+  border-radius: 8px; /* 네 귀퉁이 모두 둥글게 */
+  transform: scale(0.9); /* hover 시 크기를 10% 줄임 */
   z-index: 2; /* 호버 시 위로 올림 */
 }
 
 /* 활성화된(선택된) 패널 선택 버튼 - 강력한 선택자로 덮어쓰기 */
 .dashboard-container .panel-selector .panel-btn.active,
 .dashboard-container .panel-selector .panel-btn.active:hover {
-  background-color: #ffffff !important; /* 하얀색 배경 강제 적용 */
+  background-color: #DBE8F2 !important; /* theme.css의 white 색상으로 통일 */
   color: #000000 !important; /* 검은색 텍스트 강제 적용 */
   border-color: var(--border-color) !important;
-  border-bottom: 2px solid #ffffff !important; /* 하단에 하얀색 구분선으로 탭 내용과 연결 */
+  border-bottom: 2px solid #DBE8F2 !important; /* 하단에 theme.css의 white 색상 구분선으로 탭 내용과 연결 */
   z-index: 3 !important; /* 활성 탭을 최상위로 */
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1) !important; /* 위쪽 그림자로 입체감 */
   margin-bottom: -2px !important; /* 하단 구분선과 겹치도록 마진 조정 */
+  transform: none !important; /* 선택된 상태에서는 hover 효과 비활성화 */
 }
 
 /* panel-selector 아래쪽 길게 구분선 - 더 명확하게 */
 .dashboard-container .panel-selector::after {
   content: '';
   position: absolute;
-  bottom: -8px; /* 구분선을 더 아래로 이동 */
+  bottom: -3px; /* 구분선을 바로 아래로 이동 */
   left: 0;
   right: 0;
-  height: 3px; /* 구분선 두께 */
-  background-color: #ffffff !important; /* 하얀색 구분선 */
+  height: 1px; /* 구분선 두께 */
+  background-color: #30363D !important; /* #30363D 색상으로 변경 */
   z-index: 1;
   width: 100%;
   display: block !important; /* 강제 표시 */
@@ -138,10 +146,10 @@
   border: 1px solid #30363d; /* 원래 회색 테두리로 복원 */
   border-radius: 12px;
   padding: 20px;
-  margin-top: 16px;
+  margin-top: 0; /* 상단 마진 제거로 구분선과 붙임 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-left: 1px solid #30363d; /* 왼쪽 테두리도 1px로 통일 */
-  transition: all 0.2s ease;
+  /* transition 제거 */
 }
 
 /* hover 효과 비활성화 */
@@ -158,7 +166,7 @@
   align-items: center;
   padding: 12px 16px;
   border-bottom: 1px solid #30363d; /* 행 간 테두리 */
-  transition: all 0.2s ease;
+  /* transition 제거 */
 }
 
 .run-info-row:hover {
@@ -243,14 +251,14 @@
 /* 로그 뷰어 헤더의 개별 버튼 */
 .log-btn {
   padding: 8px 20px;
-  border: 1px solid var(--color-white); /* theme.css의 white 색상, 1px 테두리 */
+  border: 1px solid #DBE8F2; /* #DBE8F2 색상으로 변경 */
   background: var(--background-color);
   color: var(--text-color);
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  transition: all 0.3s ease;
+  /* transition 제거 */
   position: relative; /* z-index를 위한 상대 위치 */
   z-index: 10; /* 다른 요소들 위에 표시되도록 */
   text-transform: uppercase;
@@ -259,10 +267,10 @@
 
 /* 로그 뷰어 버튼에 마우스를 올렸을 때 */
 .log-btn:hover {
-  background: var(--color-white); /* theme.css의 white 색상 */
+  background: #DBE8F2; /* #DBE8F2 색상으로 변경 */
   color: #000000; /* 검은색 텍스트 */
-  border-color: var(--color-white); /* theme.css의 white 색상 */
-  transform: translateY(-2px); /* 위로 살짝 올라가는 효과 */
+  border-color: #DBE8F2; /* #DBE8F2 색상으로 변경 */
+  /* transform 제거 */
 }
 
 /* 로그 뷰어 전체를 감싸는 컨테이너 */
@@ -271,7 +279,7 @@
   border: 1px solid #30363d; /* Run Info와 동일한 테두리 스타일 */
   border-radius: 12px;
   padding: 20px;
-  margin-top: 16px;
+  margin-top: 0; /* 상단 마진 제거로 구분선과 붙임 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -283,7 +291,7 @@
   position: relative;
   min-height: 0;
   scroll-behavior: auto;
-  transition: all 0.3s ease;
+  /* transition 제거 */
   max-height: 416px; /* 17줄 * 20.8px (line-height) */
   /* 줄 번호 고정을 위한 추가 설정 */
   contain: layout;
@@ -337,7 +345,7 @@
   font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
   font-size: 13px;
   line-height: 1.6;
-  color: #f0f6fc;
+  color: #DBE8F2;
   white-space: pre;
   word-wrap: normal;
   tab-size: 2;
@@ -423,7 +431,7 @@
   top: 0;
   display: flex;
   flex-direction: column;
-  border-left: 3px solid var(--border-color); /* 더 두꺼운 구분선 */
+  border-left: 1px solid var(--border-color); /* 1px 구분선 */
   background-color: var(--card-background);
   box-shadow: -3px 0 12px rgba(0, 0, 0, 0.25); /* 더 진한 왼쪽 그림자로 구분선 강조 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
@@ -565,7 +573,7 @@
 .run-info-title {
   font-size: 16px;
   font-weight: 600;
-  color: #f0f6fc;
+  color: #DBE8F2;
   margin: 0;
 }
 
@@ -591,7 +599,7 @@
   font-family: var(--font-family-base);
   font-size: 14px;
   font-weight: 600;
-  color: #f0f6fc;
+  color: #DBE8F2;
   font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
 }
 
@@ -612,17 +620,17 @@
 
 .status-badge.status-success {
   background: #238636;
-  color: #ffffff;
+  color: #DBE8F2;
 }
 
 .status-badge.status-failure {
   background: #da3633;
-  color: #ffffff;
+  color: #DBE8F2;
 }
 
 .status-badge.status-cancelled {
   background: #9e6a03;
-  color: #ffffff;
+  color: #DBE8F2;
 }
 
 .run-timestamp {
@@ -641,7 +649,7 @@
 .run-reason {
   font-family: var(--font-family-base);
   font-size: 14px;
-  color: #f0f6fc;
+  color: #DBE8F2;
 }
 
 /* 사이드바 상태에 따른 대시보드 메인 영역의 반응형 스타일 */
@@ -785,7 +793,7 @@
   color: var(--text-color);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #ffffff;
+  border-bottom: 2px solid #DBE8F2;
   padding-bottom: 8px;
   background: #0d1117;
   padding: 16px 20px;
@@ -831,7 +839,7 @@
   color: var(--text-color);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #ffffff;
+  border-bottom: 2px solid #DBE8F2;
   padding-bottom: 8px;
   background: #0d1117;
   padding: 16px 20px;

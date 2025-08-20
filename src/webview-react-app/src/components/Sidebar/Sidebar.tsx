@@ -1,6 +1,9 @@
 import React from 'react';
 import './Sidebar.css';
 import { Action, ActionStatus } from './types';
+import EditorIcon from '../../assets/Editor_default.svg';
+import HistoryIcon from '../../assets/history_default.svg';
+import ActionIcon from '../../assets/action.svg';
 
 // SidebarProps 정의: App.tsx로부터 받는 props
 interface SidebarProps {
@@ -15,35 +18,7 @@ interface SidebarProps {
   onSidebarToggle: () => void;
 }
 
-const getStatusText = (status: ActionStatus) => {
-  switch (status) {
-    case 'success': return 'Success';
-    case 'failed': return 'Failed';
-    case 'running': return 'Running';
-    default: return 'Unknown';
-  }
-};
 
-const StatusIndicator: React.FC<{ status: ActionStatus }> = ({ status }) => {
-    if (status === 'failed') {
-        return (
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <circle cx="7" cy="7" r="6.5" stroke="#FF0000" strokeWidth="1" fill="none"/>
-                <path d="M4.5 4.5L9.5 9.5M9.5 4.5L4.5 9.5" stroke="#FF0000" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-        );
-    }
-    if (status === 'running') {
-        return (
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <circle cx="3" cy="8" r="2" fill="#FF8800" opacity="0.3"/>
-                <circle cx="8" cy="8" r="2" fill="#FF8800" opacity="0.6"/>
-                <circle cx="13" cy="8" r="2" fill="#FF8800" opacity="1"/>
-            </svg>
-        );
-    }
-    return <div className={`status-dot status-${status}`}></div>;
-};
 
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -80,12 +55,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                   onSelectAction(action.id)
                 }}
               >
-                <div className="action-status-indicator">
-                    <StatusIndicator status={action.status} />
-                </div>
+                <span className="action-file-icon">
+                  <img src={ActionIcon} alt="action" />
+                </span>
                 <span className="action-name">{action.name}</span>
-                <span className={`action-status status-${action.status}`}>
-                  {getStatusText(action.status)}
+                <span className={`action-arrow ${selectedActionId === action.id && dropdownActive ? 'up' : 'down'}`}>
+                  ▼
                 </span>
               </div>
               
@@ -99,8 +74,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onSelectPage('editor');
                       }}
                     >
-                      {/* TODO : 아이콘은 나중에 SVG 파일로 교체 */}
-                      <span className="dropdown-icon">🔧</span>
+                      <span className="dropdown-icon">
+                        <img src={EditorIcon} alt="editor" />
+                      </span>
                       <span>Editor</span>
                     </div>
                     <div 
@@ -110,7 +86,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                         onSelectPage('history');
                       }}
                     >
-                      <span className="dropdown-icon">📋</span>
+                      <span className="dropdown-icon">
+                        <img src={HistoryIcon} alt="history" />
+                      </span>
                       <span>Run History</span>
                     </div>
                   </div>

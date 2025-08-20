@@ -56,10 +56,10 @@
   min-width: 280px;
   max-width: 400px;
   height: 100%;
-  background: var(--color-background);
+  background: #0F1A24; /* 명시적으로 불투명한 배경색 설정 */
   border-right: 1px solid #30363d;
   transition: transform 0.3s ease; /* transform으로 이동 */
-  overflow: hidden;
+  overflow: visible; /* white bar가 잘리지 않도록 visible로 변경 */
   flex-shrink: 0;
   /* 사이드바 내부 스크롤만 허용 */
   overscroll-behavior: contain;
@@ -197,7 +197,7 @@
   position: relative;
   width: 100%;
   min-height: 40px;
-  margin: 8px 0;
+  margin: 4px 0; /* action item과 dropdown 사이 간격 줄임 */
   padding: 8px 12px;
   display: flex;
   align-items: center;
@@ -211,17 +211,38 @@
 }
 
 /* 액션 아이템에 마우스를 올렸을 때 */
-.action-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+.action-item:hover:not(.selected) {
+  background: var(--color-surface-hover); /* dropdown과 동일한 색상 */
   border-color: #30363d;
+  border-radius: 8px; /* round 더 줄임 */
+  padding-left: 20px; /* white bar 공간 확보 */
+  margin: 4px 0; /* 기본 margin과 동일하게 유지 */
 }
 
 /* 선택된 액션 아이템 */
 .action-item.selected {
-  background: var(--color-white);
-  border-color: var(--color-accent);
-  border-radius: 20px;
+  background: var(--color-surface-hover); /* dropdown과 동일한 색상 */
+  border: none; /* 테두리 제거 */
+  border-radius: 8px; /* round 더 줄임 */
   transition: none;
+  position: relative; /* 왼쪽 bar를 위한 상대 위치 */
+  padding-left: 20px; /* white bar 공간 확보 */
+}
+
+/* 선택된 액션 아이템의 왼쪽 white bar */
+.action-item.selected::before {
+  content: '' !important;
+  position: absolute !important;
+  left: -8px !important; /* 사각형 바깥쪽 왼쪽에 white bar 표시 */
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 4px !important;
+  height: 24px !important;
+  background-color: var(--color-white) !important; /* theme.css의 white 색상 */
+  border-radius: 2px !important;
+  display: block !important; /* 강제로 표시 */
+  z-index: 999 !important; /* 최고 우선순위 */
+  pointer-events: none !important; /* 클릭 이벤트 방해 방지 */
 }
 
 /* 액션 상태 아이콘(점, SVG 등)을 감싸는 영역 */
@@ -235,16 +256,40 @@
   flex-shrink: 0;
 }
 
+/* 액션 아이템 파일 아이콘 */
+.action-file-icon {
+  width: 10px;
+  height: 10px;
+  margin-right: 15px;
+  padding-bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-text-secondary); /* 보조 텍스트 색상 */
+  transition: color 0.2s ease; /* 색상 전환 효과 */
+}
+
+/* 액션 아이템 hover 시 파일 아이콘 색상 */
+.action-item:hover .action-file-icon {
+  color: var(--color-text-primary); /* 주요 텍스트 색상으로 변경 */
+}
+
+/* 액션 아이템 selected 시 파일 아이콘 색상 */
+.action-item.selected .action-file-icon {
+  color: var(--color-white); /* 흰색으로 변경 */
+}
+
 /* 액션 이름 */
 .action-name {
   flex: 1;
   font-family: var(--font-family-base);
   font-style: normal;
-  font-weight: 400;
+  font-weight: 600; /* 더 bold하게 변경 */
   font-size: 12pt;
   line-height: 29px;
   color: var(--color-white);
-  margin-right: 12px;
+  margin-right: 8px; /* 화살표를 위한 공간 확보 */
   /* 가로 스크롤 차단 */
   max-width: 100%;
   overflow: hidden;
@@ -252,9 +297,32 @@
   white-space: nowrap;
 }
 
+/* 액션 아이템 화살표 */
+.action-arrow {
+  font-size: 10px;
+  color: var(--color-white);
+  transition: transform 0.3s ease; /* 화살표 회전 애니메이션 */
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+/* 화살표 방향 (기본: 아래쪽) */
+.action-arrow.down {
+  transform: rotate(0deg);
+}
+
+/* 화살표 방향 (dropdown 열림: 위쪽) */
+.action-arrow.up {
+  transform: rotate(180deg);
+}
+
 /* 선택된 액션 아이템의 이름 */
 .action-item.selected .action-name {
-  color: var(--color-black);
+  color: var(--color-white); /* 항상 white로 유지 */
 }
 
 /* 액션 상태 텍스트 (Success, Failed 등) */
@@ -281,9 +349,24 @@
   border: none;
   border-radius: 0;
   box-shadow: none;
-  overflow: visible;
-  margin-top: 8px;
-  margin-bottom: 8px;
+  overflow: visible; /* white bar가 잘리지 않도록 visible로 변경 */
+  margin-top: 0; /* action item 아래쪽 margin 제거 */
+  margin-bottom: 4px; /* gap 절반으로 줄임 */
+  animation: dropdownExpand 0.3s ease-out; /* 위에서부터 펴지는 애니메이션 */
+}
+
+/* dropdown 펴지는 애니메이션 */
+@keyframes dropdownExpand {
+  0% {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    max-height: 200px; /* 충분한 높이 */
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 드롭다운 메뉴의 각 아이템 (Editor, Run History) */
@@ -291,66 +374,82 @@
   padding: 12px 16px;
   cursor: pointer;
   transition: none;
-  font-size: 14px;
+  font-size: 14px; /* 원래 폰트 사이즈로 복원 */
+  font-weight: 400; /* action-item보다 얇게 */
   color: var(--color-text-primary);
   display: flex;
   align-items: center;
   gap: 12px;
   border-radius: 0;
   /* 오른쪽으로 이동 */
-  padding-left: 36px;
+  padding-left: 24px;
   /* 기본 상태에서는 투명 배경 */
   background: transparent;
   border: none;
+  margin: 4px 0; /* dropdown 아이템들 사이 간격을 8px로 변경 */
+  position: relative; /* ::before를 위한 상대 위치 강제 설정 */
 }
 
 /* 드롭다운 아이템에 마우스를 올렸을 때 */
 .dropdown-item:hover {
   /* hover 시에만 배경과 테두리 표시 */
   background: var(--color-surface-hover);
-  border-radius: 8px;
-  margin: 0 8px;
-  padding-left: 28px;
+  border-radius: 8px; /* action-item과 동일하게 통일 */
+  padding-left: 30px; /* white bar 공간 확보 (기본 36px + 8px) */
 }
 
 /* 선택된 드롭다운 아이템 */
 .dropdown-item.selected {
-  background: var(--color-white);
-  border: 1px solid var(--color-accent);
-  border-radius: 20px !important; /* 우선순위 강제 적용 */
-  color: var(--color-black);
-  /* 선택된 상태에서는 가로 크기 조정 */
-  margin: 0 8px;
-  padding-left: 24px;
+  background: var(--color-surface-hover); /* hover와 동일한 배경색 */
+  border: none; /* 테두리 제거 */
+  border-radius: 8px !important; /* action-item과 동일하게 통일 */
+  color: var(--color-white); /* 항상 white로 유지 */
   transition: none;
+  position: relative; /* 왼쪽 bar를 위한 상대 위치 */
+  padding-left: 30px; /* white bar 공간 확보 (기본 36px + 8px) */
+}
+
+/* 선택된 드롭다운 아이템의 왼쪽 white bar */
+.dropdown-item.selected::before {
+  content: '' !important;
+  position: absolute !important;
+  left: -8px !important; /* 사각형 바깥쪽 왼쪽에 white bar 표시 */
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 4px !important;
+  height: 24px !important;
+  background-color: var(--color-white) !important; /* theme.css의 white 색상 */
+  border-radius: 2px !important;
+  display: block !important; /* 강제로 표시 */
+  pointer-events: none !important; /* 클릭 이벤트 방해 방지 */
 }
 
 /* 선택된 드롭다운 아이템에 마우스를 올렸을 때 */
 .dropdown-item.selected:hover {
   /* 선택된 상태에서 hover 시에도 동일한 스타일 유지 */
-  background: var(--color-white);
-  border-color: var(--color-accent);
-  border-radius: 20px !important; /* 우선순위 강제 적용 */
+  background: var(--color-surface-hover); /* hover와 동일한 배경색 */
+  border: none; /* 테두리 제거 */
+  border-radius: 8px !important; /* action-item과 동일하게 통일 */
 }
 
 /* 선택된 드롭다운 아이템의 첫 번째 자식 */
 .dropdown-item.selected:first-child {
-  border-radius: 20px !important;
+  border-radius: 8px !important; /* action-item과 동일하게 통일 */
 }
 
 /* 선택된 드롭다운 아이템의 마지막 자식 */
 .dropdown-item.selected:last-child {
-  border-radius: 20px !important;
+  border-radius: 8px !important; /* action-item과 동일하게 통일 */
 }
 
 /* 드롭다운 아이템의 첫 번째 자식 */
 .dropdown-item:first-child {
-  border-radius: 20px;
+  border-radius: 8px; /* action-item과 동일하게 통일 */
 }
 
 /* 드롭다운 아이템의 마지막 자식 */
 .dropdown-item:last-child {
-  border-radius: 20px;
+  border-radius: 8px; /* action-item과 동일하게 통일 */
 }
 
 /* 드롭다운 아이템 사이의 구분선 제거 */
@@ -363,8 +462,9 @@
   flex-shrink: 0;
   color: var(--color-text-secondary);
   /* 아이콘 크기 조정 */
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+  margin-bottom: 5px;
 }
 
 /* 드롭다운 아이템에 마우스를 올렸을 때 아이콘 색상 변경 */
@@ -374,43 +474,51 @@
 
 /* 선택된 드롭다운 아이템의 아이콘 색상 */
 .dropdown-item.selected .dropdown-icon {
-  filter: brightness(0); /* 검은색으로 변경 */
+  /* hover와 동일한 아이콘 사용 */
 }
 
 /* 사이드바가 접혔을 때 나타나는 화살표 버튼 */
 .sidebar-collapsed-arrow {
   position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 40px;
-  background: #58a6ff;
-  border-radius: 0 4px 4px 0;
+  left: 0px; /* 더 오른쪽으로 밀어서 전체가 보이도록 */
+  top: 34px; /* sidebar-toggle-btn과 동일한 Y축 위치 */
+  width: 32px; /* sidebar-toggle-btn과 동일한 크기 */
+  height: 32px; /* sidebar-toggle-btn과 동일한 크기 */
+  background: transparent; /* sidebar-toggle-btn과 동일한 배경 */
+  border: 1px solid #30363d; /* sidebar-toggle-btn과 동일한 테두리 */
+  border-radius: 0 6px 6px 0; /* sidebar-toggle-btn과 동일한 모서리 */
   cursor: pointer;
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   transition: all 0.3s ease;
-  /* 화살표만 튀어나오기 */
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  /* 가로 스크롤 차단 */
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
+
+
 
 /* 화살표 버튼에 마우스를 올렸을 때 */
 .sidebar-collapsed-arrow:hover {
-  background: #79c0ff;
-  width: 24px;
+  background: #30363d; /* sidebar-toggle-btn과 동일한 hover 색상 */
+  border-color: #58a6ff; /* sidebar-toggle-btn과 동일한 hover 테두리 색상 */
 }
+
+
 
 /* 사이드바가 접혔을 때만 화살표 버튼을 표시 */
 .editor-sidebar.collapsed ~ .sidebar-collapsed-arrow {
   display: flex;
 }
 
+
+
 /* 화살표 버튼 안의 SVG 아이콘 */
 .sidebar-collapsed-arrow svg {
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   fill: white;
 }
