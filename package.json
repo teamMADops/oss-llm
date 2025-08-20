@@ -48,7 +48,7 @@
     "watch": "tsc -watch -p ./"
   },
   "dependencies": {
-    "@octokit/rest": "^22.0.0",
+    "@octokit/rest": "^19.0.13",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "eventsource": "^4.0.0",

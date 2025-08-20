@@ -5,12 +5,13 @@ import EditorPage from './pages/Editor/Editor';
 import HistoryPage from './pages/History/History';
 import { LLMResult } from '../../llm/analyze'; // Import LLMResult type
 import { Action } from './components/Sidebar/types'; // Import Action type
-import { getActions, analyzeRun } from './api/github'; // [MOD] analyzeRun import
+import { getActions } from './api/github'; // [MOD] analyzeRun import 제거
 import './styles/theme.css';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<string>('dashboard');
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null); // [ADD] 선택된 run ID
   const [llmAnalysisResult, setLlmAnalysisResult] = useState<LLMResult | null>(null);
   const [actions, setActions] = useState<Action[]>([]); // New state for actions
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false); // New state for sidebar collapsed
@@ -40,6 +41,15 @@ function App() {
       try {
         const fetchedActions = await getActions();
         setActions(fetchedActions);
+        
+        // [ADD] 첫 번째 action 자동 선택
+        if (fetchedActions.length > 0) {
+          const firstAction = fetchedActions[0];
+          console.log(`[App.tsx] 첫 번째 action 자동 선택: ${firstAction.id}`);
+          setSelectedActionId(firstAction.id);
+          // 대시보드로 이동하여 가장 최근 run 정보 표시
+          setCurrentPage('dashboard');
+        }
       } catch (error) {
         console.error('Failed to fetch actions:', error);
       }
@@ -54,6 +64,8 @@ function App() {
     setActionHighlighted(false);
     // dropdown은 열린 상태 유지
     setDropdownActive(true);
+    // [ADD] 페이지 변경 시 선택된 run ID 초기화
+    setSelectedRunId(null);
   };
 
   const onSelectAction = (actionId: string) => {
@@ -77,18 +89,20 @@ function App() {
     }
     // 항상 dashboard로 이동
     setCurrentPage('dashboard');
+    // [ADD] 새로운 action 선택 시 선택된 run ID 초기화
+    setSelectedRunId(null);
   };
 
   const onSidebarToggle = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
-  // [ADD] 실행(run) 분석을 시작하는 함수
-  const handleRunAnalysis = (runId: string) => {
-    console.log(`[App.tsx] Run 분석 시작: ${runId}`);
-    // LLM 분석 요청
-    analyzeRun(runId);
-    // 분석 결과를 표시하기 위해 대시보드 페이지로 전환
+  // [MOD] 실행(run) 분석을 시작하는 함수 - runId를 Dashboard로 전달
+  const handleRunClick = (runId: string) => {
+    console.log(`[App.tsx] Run 클릭됨: ${runId}`);
+    // 선택된 run ID 설정
+    setSelectedRunId(runId);
+    // 대시보드로 이동
     setCurrentPage('dashboard');
     // 분석 요청 후 기존 선택 상태 초기화
     setDropdownActive(false);
@@ -109,9 +123,9 @@ function App() {
         onSidebarToggle={onSidebarToggle}
       />
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-closed' : 'sidebar-open'}`}>
-        {currentPage === 'dashboard' && <DashboardPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} llmAnalysisResult={llmAnalysisResult} />}
+        {currentPage === 'dashboard' && <DashboardPage actionId={selectedActionId} runId={selectedRunId} isSidebarOpen={!sidebarCollapsed} llmAnalysisResult={llmAnalysisResult} />}
         {currentPage === 'editor' && <EditorPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />}
-        {currentPage === 'history' && <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} onRunClick={handleRunAnalysis} />} {/* [MOD] onRunClick prop 전달 */}
+        {currentPage === 'history' && <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} onRunClick={handleRunClick} />} {/* [MOD] onRunClick prop 전달 */}
       </main>
     </div>
   );

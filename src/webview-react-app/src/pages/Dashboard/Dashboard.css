@@ -266,6 +266,9 @@
   scroll-behavior: auto;
   transition: all 0.3s ease;
   max-height: 416px; /* 17줄 * 20.8px (line-height) */
+  /* 줄 번호 고정을 위한 추가 설정 */
+  contain: layout;
+  transform: translateZ(0); /* 하드웨어 가속 활성화 */
 }
 
 /* 로그 내용의 스크롤바 스타일 */
@@ -320,7 +323,7 @@
   word-wrap: normal;
   tab-size: 2;
   min-width: max-content;
-  overflow: auto; /* 가로/세로 스크롤 모두 허용 (YAML viewer와 동일) */
+  /* overflow: auto 제거 - YamlViewer와 동일하게 */
   position: relative; /* sticky를 위한 상대 위치 */
 }
 
@@ -336,7 +339,7 @@
 .line-number {
   width: 50px;
   padding: 0 14px 0 22px;
-  background: #161b22;
+  background: #161b22 !important;
   color: #8b949e;
   text-align: right;
   user-select: none;
@@ -344,11 +347,13 @@
   border-right: 1px solid #30363d;
   position: sticky !important; /* YAML viewer와 동일하게 !important 추가 */
   left: 0 !important; /* YAML viewer와 동일하게 !important 추가 */
-  z-index: 100;
+  z-index: 1000; /* 더 높은 z-index로 설정 */
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  background: #161b22;
+  /* 줄 번호 고정을 위한 추가 설정 */
+  will-change: transform;
+  transform: translateZ(0); /* 하드웨어 가속 활성화 */
 }
 
 /* 로그 줄 내용 */
@@ -366,6 +371,15 @@
 .log-content:focus .line-number {
   position: sticky !important;
   left: 0 !important;
+}
+
+/* 줄 번호 고정을 위한 추가 강화 규칙 */
+.log-code-container .line-number {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 1000 !important;
+  background: #161b22 !important;
+  border-right: 1px solid #30363d !important;
 }
 
 /* 패널 내용이 비어있을 때 표시되는 플레이스홀더 */

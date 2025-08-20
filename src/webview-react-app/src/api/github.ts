@@ -159,3 +159,110 @@ export const analyzeRun = (runId: string) => {
     payload: { runId },
   });
 };
+
+// [ADD] 모든 actions 중 가장 최근 run 가져오기
+export const getLatestRunFromAllActions = (): Promise<any> => {
+  if (!vscode) {
+    // 브라우저 환경에서는 mock 데이터 반환
+    return Promise.resolve({
+      id: 'latest-run-1',
+      status: 'completed',
+      conclusion: 'success',
+      timestamp: '2025-08-20 12:00:34',
+      reason: 'Push to main',
+      actionId: 'action1'
+    });
+  }
+
+  return new Promise((resolve) => {
+    const messageHandler = (event: MessageEvent) => {
+      if (event.data.command === 'getLatestRunFromAllActionsResponse') {
+        window.removeEventListener('message', messageHandler);
+        resolve(event.data.payload);
+      }
+    };
+
+    window.addEventListener('message', messageHandler);
+    vscode.postMessage({
+      command: 'getLatestRunFromAllActions'
+    });
+  });
+};
+
+// [ADD] Run 상세 정보 가져오기
+export const getRunDetails = (runId: string): Promise<any> => {
+  if (!vscode) {
+    // 브라우저 환경에서는 mock 데이터 반환
+    return Promise.resolve({
+      id: runId,
+      status: 'completed',
+      conclusion: 'success',
+      timestamp: '2025-08-15 12:00:34',
+      reason: 'Push to main',
+      branch: 'main',
+      workflow: 'CI/CD Workflow',
+      runNumber: 42,
+      duration: '5m 23s',
+      commit: 'a1b2c3d4e5f6',
+      author: 'sungwoncho',
+      jobs: []
+    });
+  }
+
+  return new Promise((resolve) => {
+    const messageHandler = (event: MessageEvent) => {
+      if (event.data.command === 'getRunDetailsResponse') {
+        window.removeEventListener('message', messageHandler);
+        resolve(event.data.payload);
+      }
+    };
+
+    window.addEventListener('message', messageHandler);
+    vscode.postMessage({
+      command: 'getRunDetails',
+      payload: { runId }
+    });
+  });
+};
+
+// [ADD] Run 로그 가져오기
+export const getRunLogs = (runId: string): Promise<string> => {
+  if (!vscode) {
+    // 브라우저 환경에서는 mock 데이터 반환
+    return Promise.resolve(`2025-08-15T12:00:34.123Z [INFO] Starting workflow run
+2025-08-15T12:00:35.456Z [INFO] Triggered by push to main branch
+2025-08-15T12:00:36.789Z [INFO] Setting up job: build
+2025-08-15T12:00:37.012Z [INFO] Running on runner: ubuntu-latest
+2025-08-15T12:00:38.345Z [INFO] Checking out code...
+2025-08-15T12:00:39.678Z [INFO] Code checkout completed
+2025-08-15T12:00:40.901Z [INFO] Setting up Node.js environment
+2025-08-15T12:00:41.234Z [INFO] Node.js version: 20.x
+2025-08-15T12:00:42.567Z [INFO] Installing dependencies...
+2025-08-15T12:00:43.890Z [INFO] npm ci --prefer-offline --no-audit
+2025-08-15T12:00:45.123Z [INFO] Dependencies installed successfully
+2025-08-15T12:00:46.456Z [INFO] Running linting checks...
+2025-08-15T12:00:47.789Z [INFO] ESLint: No issues found
+2025-08-15T12:00:48.012Z [INFO] Running tests...
+2025-08-15T12:00:49.345Z [INFO] Test suite completed: 127 tests passed
+2025-08-15T12:00:50.678Z [INFO] Building application...
+2025-08-15T12:00:51.901Z [INFO] Build completed successfully
+2025-08-15T12:00:52.234Z [INFO] Uploading build artifacts...
+2025-08-15T12:00:53.567Z [INFO] Artifacts uploaded successfully
+2025-08-15T12:00:54.890Z [INFO] Workflow completed successfully`);
+  }
+
+  return new Promise((resolve) => {
+    const messageHandler = (event: MessageEvent) => {
+      if (event.data.command === 'getRunLogsResponse') {
+        window.removeEventListener('message', messageHandler);
+        resolve(event.data.payload);
+      }
+    };
+
+    window.addEventListener('message', messageHandler);
+    vscode.postMessage({
+      command: 'getRunLogs',
+      payload: { runId }
+    });
+  });
+};

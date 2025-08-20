@@ -227,6 +227,151 @@ function createAndShowWebview(context, page) {
                     });
                 }
                 break;
+            case 'getLatestRunFromAllActions':
+                try {
+                    console.log(`[🔍] 모든 actions 중 가장 최근 run 조회 (owner=${repo.owner}, repo=${repo.repo})`);
+                    // 모든 워크플로우 가져오기
+                    const { data: workflows } = await octokit.actions.listRepoWorkflows({
+                        owner: repo.owner,
+                        repo: repo.repo
+                    });
+                    let latestRun = null;
+                    let latestTimestamp = 0;
+                    // 각 워크플로우의 최신 실행을 확인
+                    for (const workflow of workflows.workflows) {
+                        try {
+                            const { data: runs } = await octokit.actions.listWorkflowRuns({
+                                owner: repo.owner,
+                                repo: repo.repo,
+                                workflow_id: workflow.id,
+                                per_page: 1
+                            });
+                            if (runs.workflow_runs.length > 0) {
+                                const run = runs.workflow_runs[0];
+                                const runTimestamp = new Date(run.created_at).getTime();
+                                if (runTimestamp > latestTimestamp) {
+                                    latestTimestamp = runTimestamp;
+                                    latestRun = {
+                                        id: run.id.toString(),
+                                        status: run.status,
+                                        conclusion: run.conclusion,
+                                        timestamp: run.created_at,
+                                        reason: run.head_commit?.message || 'Unknown',
+                                        actionId: workflow.path || workflow.id.toString()
+                                    };
+                                }
+                            }
+                        }
+                        catch (workflowError) {
+                            console.log(`워크플로우 ${workflow.id} 실행 기록 조회 실패:`, workflowError);
+                        }
+                    }
+                    console.log(`[✅] 가장 최근 run:`, latestRun);
+                    panel.webview.postMessage({
+                        command: 'getLatestRunFromAllActionsResponse',
+                        payload: latestRun
+                    });
+                }
+                catch (error) {
+                    console.error('Error fetching latest run from all actions:', error);
+                    panel.webview.postMessage({
+                        command: 'error',
+                        payload: '가장 최근 실행 정보를 가져오는데 실패했습니다.'
+                    });
+                }
+                break;
+            case 'getRunDetails':
+                try {
+                    const runId = message.payload?.runId;
+                    if (!runId) {
+                        panel.webview.postMessage({
+                            command: 'error',
+                            payload: 'Run ID가 필요합니다.'
+                        });
+                        return;
+                    }
+                    console.log(`[🔍] Run 상세 정보 조회: ${runId} (owner=${repo.owner}, repo=${repo.repo})`);
+                    // 특정 run의 상세 정보 가져오기
+                    const { data: run } = await octokit.actions.getWorkflowRun({
+                        owner: repo.owner,
+                        repo: repo.repo,
+                        run_id: Number(runId)
+                    });
+                    // Run의 jobs 정보도 가져오기
+                    const { data: jobs } = await octokit.actions.listJobsForWorkflowRun({
+                        owner: repo.owner,
+                        repo: repo.repo,
+                        run_id: Number(runId)
+                    });
+                    const runDetails = {
+                        id: run.id.toString(),
+                        status: run.status,
+                        conclusion: run.conclusion,
+                        timestamp: run.created_at,
+                        reason: run.head_commit?.message || 'Unknown',
+                        branch: run.head_branch || 'Unknown',
+                        workflow: run.name || 'Unknown',
+                        runNumber: run.run_number,
+                        duration: 'Unknown', // GitHub API에서 duration을 직접 제공하지 않음
+                        commit: run.head_sha?.substring(0, 7) || 'Unknown',
+                        author: run.head_commit?.author?.name || 'Unknown',
+                        jobs: jobs.jobs
+                    };
+                    console.log(`[✅] Run 상세 정보:`, runDetails);
+                    panel.webview.postMessage({
+                        command: 'getRunDetailsResponse',
+                        payload: runDetails
+                    });
+                }
+                catch (error) {
+                    console.error('Error fetching run details:', error);
+                    panel.webview.postMessage({
+                        command: 'error',
+                        payload: 'Run 상세 정보를 가져오는데 실패했습니다.'
+                    });
+                }
+                break;
+            case 'getRunLogs':
+                try {
+                    const runId = message.payload?.runId;
+                    if (!runId) {
+                        panel.webview.postMessage({
+                            command: 'error',
+                            payload: 'Run ID가 필요합니다.'
+                        });
+                        return;
+                    }
+                    console.log(`[🔍] Run 로그 다운로드: ${runId} (owner=${repo.owner}, repo=${repo.repo})`);
+                    // Run의 로그 ZIP 다운로드
+                    const { data: logs } = await octokit.request('GET /repos/{owner}/{repo}/actions/runs/{run_id}/logs', {
+                        owner: repo.owner,
+                        repo: repo.repo,
+                        run_id: Number(runId),
+                        request: { responseType: 'arraybuffer' }
+                    });
+                    // ZIP 파일을 파싱하여 로그 내용 추출
+                    const JSZip = require('jszip');
+                    const zip = await JSZip.loadAsync(logs);
+                    let allLogs = '';
+                    const txtFiles = Object.values(zip.files).filter((f) => !f.dir && f.name.endsWith('.txt'));
+                    for (const file of txtFiles) {
+                        const content = await file.async('string');
+                        allLogs += `=== ${file.name} ===\n${content}\n\n`;
+                    }
+                    console.log(`[✅] Run 로그 다운로드 완료: ${txtFiles.length}개 파일`);
+                    panel.webview.postMessage({
+                        command: 'getRunLogsResponse',
+                        payload: allLogs
+                    });
+                }
+                catch (error) {
+                    console.error('Error fetching run logs:', error);
+                    panel.webview.postMessage({
+                        command: 'error',
+                        payload: 'Run 로그를 가져오는데 실패했습니다.'
+                    });
+                }
+                break;
                 // helpers: 파일 내용/sha 유틸을 위에 추가
                 async function getFileText(octokit, repo, filePath, ref = 'main') {
                     const r = await octokit.repos.getContent({ owner: repo.owner, repo: repo.repo, path: filePath, ref });
