@@ -114,7 +114,7 @@
   font-size: 24pt;
   line-height: 60px;
   color: var(--color-white);
-  margin: 0;
+  margin-left: 10px;
   transition: opacity 0.3s ease; /* 부드러운 투명도 전환 */
   /* 가로 스크롤 차단 */
   max-width: 100%;
@@ -258,8 +258,8 @@
 
 /* 액션 아이템 파일 아이콘 */
 .action-file-icon {
-  width: 10px;
-  height: 10px;
+  width: 16px;
+  height: 13px;
   margin-right: 15px;
   padding-bottom: 2px;
   display: flex;

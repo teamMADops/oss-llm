@@ -57,6 +57,7 @@
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
   box-sizing: border-box; /* 패딩과 보더를 포함한 크기 계산 */
   z-index: 10; /* YAML 뷰어 위에 표시 */
+  border-right: 1px solid #30363d; /* 메인 패널과 YAML 뷰어 사이 구분선 */
 }
 
 

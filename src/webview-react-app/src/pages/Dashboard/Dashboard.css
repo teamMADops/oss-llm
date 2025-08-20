@@ -28,6 +28,7 @@
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
   box-sizing: border-box; /* 패딩과 보더를 포함한 크기 계산 */
   z-index: 10; /* LLM 분석 패널 위에 표시 */
+  border-right: 1px solid #30363d; /* 메인 패널과 LLM Analysis 사이 구분선 */
 }
 
 /* 메인 콘텐츠 영역의 헤더 */
@@ -433,7 +434,7 @@
   flex-direction: column;
   border-left: 1px solid var(--border-color); /* 1px 구분선 */
   background-color: var(--card-background);
-  box-shadow: -3px 0 12px rgba(0, 0, 0, 0.25); /* 더 진한 왼쪽 그림자로 구분선 강조 */
+  /* box-shadow 제거 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
 }
 

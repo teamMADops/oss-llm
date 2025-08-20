@@ -63,21 +63,27 @@ export const getLatestRun = (actionId: string): Promise<LatestRun> => {
 
 export const getRunHistory = (actionId: string): Promise<WorkflowRun[]> => {
   if (!vscode) {
-    // 브라우저 환경에서는 mock 데이터 반환
+    // 브라우저 환경에서는 mock 데이터 반환 (getRunDetails와 동일한 구조)
     return Promise.resolve([
       { 
         id: 'run1', 
         status: 'completed', 
         conclusion: 'success',
         timestamp: '2025-08-15 12:00:34',
-        reason: 'Push to main'
+        reason: 'Push to main',
+        branch: 'main',
+        commit: 'a1b2c3d4e5f6',
+        author: 'sungwoncho'
       },
       { 
         id: 'run2', 
         status: 'completed', 
         conclusion: 'failure',
         timestamp: '2025-08-15 11:30:22',
-        reason: 'Pull request #123'
+        reason: 'Pull request #123',
+        branch: 'develop',
+        commit: 'b2c3d4e5f6g7',
+        author: 'angkmfirefoxygal'
       }
     ]);
   }

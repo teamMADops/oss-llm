@@ -207,7 +207,9 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                             conclusion: run.conclusion || 'unknown',
                             timestamp: run.created_at,
                             reason: run.head_commit?.message || 'Unknown',
-                            branch: run.head_branch
+                            branch: run.head_branch,
+                            commit: run.head_sha?.substring(0, 7) || 'Unknown',
+                            author: run.head_commit?.author?.name || 'Unknown'
                         }));
                         
                         panel.webview.postMessage({ 

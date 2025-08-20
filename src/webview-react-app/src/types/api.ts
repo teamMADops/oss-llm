@@ -31,6 +31,8 @@ export interface WorkflowRun {
   workflow_id?: string;
   run_number?: number;
   html_url?: string;
+  author?: string; // Dashboard RunDetails와 동일한 필드명 사용
+  commit?: string; // Dashboard RunDetails와 동일한 필드명 사용 (commit_hash 대신)
 }
 
 // 최신 실행 정보 타입

@@ -6,7 +6,7 @@
   display: flex;
   width: 100%;
   height: 100%;
-  background: #0d1117;
+  background: var(--color-black);
   font-family: var(--font-family-base);
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -36,7 +36,7 @@
   right: 0; /* 오른쪽에 고정 */
   top: 0;
   height: 100%;
-  padding: 20px; /* 메인 패널과 동일한 padding */
+  padding: 0 20px 20px 20px; /* 메인 패널과 동일한 padding */
   overflow: hidden;
   min-width: 0;
   display: flex;
@@ -51,7 +51,7 @@
   /* 사이드바 열림: 오른쪽에 고정, 왼쪽에서 resize */
   right: 0 !important; /* 오른쪽 고정 */
   width: 75% !important; /* 사이드바 제외한 공간 전체 사용 */
-  padding: 20px !important; /* 패딩 일관성 유지 */
+  padding: 0 20px 20px 20px !important; /* 패딩 일관성 유지 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-sizing: border-box !important; /* 박스 모델 강제 적용 */
 }
@@ -61,9 +61,37 @@
   /* 사이드바 닫힘: 오른쪽에 고정, 전체 화면 사용 */
   right: 0 !important; /* 오른쪽 고정 */
   width: 100% !important; /* 전체 화면 사용 */
-  padding: 20px !important; /* 패딩 일관성 유지 */
+  padding: 0 20px 20px 20px !important; /* 패딩 일관성 유지 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-sizing: border-box !important; /* 박스 모델 강제 적용 */
+}
+
+/* 메인 콘텐츠 영역의 헤더 */
+.main-header {
+  padding: 20px 20px 20px 0; /* 오른쪽 패딩 제거 */
+  border-bottom: 1px solid var(--border-color);
+  background-color: transparent; /* 배경을 투명하게 만들어 다른 패널들과 동일하게 */
+}
+
+/* 메인 콘텐츠 영역의 제목(Workflow Run History) */
+.main-title {
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24pt;
+  line-height: 60px;
+  color: var(--color-white);
+  margin: 0;
+  transition: opacity 0.3s ease, margin-left 0.3s ease; /* 부드러운 전환 효과 */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 사이드바가 닫혔을 때 메인 타이틀을 오른쪽으로 밀기 */
+.history-container.sidebar-closed .main-title {
+  margin-left: 30px; /* 오른쪽으로 밀기 */
 }
 
 /* 히스토리 테이블을 감싸는 에디터 형식의 컨테이너 */

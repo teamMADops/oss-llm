@@ -4,84 +4,304 @@
 /* 전체 히스토리 테이블을 감싸는 래퍼 */
 .history-table-wrapper {
   width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-/* 실행 기록 목록 전체를 감싸는 컨테이너 */
+/* GitHub Actions 스타일의 런 컨테이너 */
+.github-runs-container {
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  overflow: hidden; /* 둥근 모서리 유지 */
+  background: #161b22;
+  margin: 0;
+  padding: 0;
+}
+
+/* GitHub Actions 스타일 헤더 - 이전 헤더 색상으로 변경 */
+.github-runs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #21262d; /* 이전 헤더 색상으로 변경 */
+  border-bottom: 1px solid #30363d;
+  overflow: visible; /* 드롭다운이 잘리지 않도록 */
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #DBE8F2;
+}
+
+.header-filters {
+  display: flex;
+  gap: 12px;
+  margin-left: auto; /* 오른쪽 정렬 */
+}
+
+.history-filter-dropdown {
+  position: relative;
+}
+
+.history-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #DBE8F2;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.history-filter-btn:hover {
+  background: #30363d;
+}
+
+.history-filter-arrow {
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+.history-filter-arrow.up {
+  transform: rotate(180deg);
+}
+
+.history-dropdown-menu {
+  position: fixed; /* fixed로 변경하여 어떤 컨테이너에도 잘리지 않도록 */
+  min-width: 200px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 9999; /* 더 높은 z-index로 설정 */
+  margin-top: 4px;
+}
+
+.history-dropdown-search {
+  padding: 8px;
+  border-bottom: 1px solid #30363d;
+}
+
+.history-dropdown-search input {
+  width: 100%;
+  padding: 6px 8px; /* 원래 패딩으로 복원 */
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #DBE8F2;
+  font-size: 12px;
+}
+
+.history-dropdown-search input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.history-dropdown-item {
+  padding: 8px 12px;
+  color: #DBE8F2;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.history-dropdown-item:hover {
+  background: #30363d;
+}
+
+/* 체크 아이콘 */
+.check-icon {
+  color: #58a6ff;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.history-dropdown-item.checked .check-icon {
+  opacity: 1;
+}
+
+.header-count {
+  margin-left: 16px;
+  font-size: 12px;
+  color: #8b949e;
+}
+
+/* 빈 상태 메시지 */
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: #8b949e;
+  font-size: 14px;
+}
+
+/* 실행 기록 목록 - 표 컨테이너 내부의 본문 부분 */
 .runs-list {
   display: flex;
   flex-direction: column;
+  gap: 0; /* 마진 완전 제거하여 표처럼 연결 */
+  margin: 0; /* 마진 완전 제거 */
+  padding: 0; /* 패딩 완전 제거 */
+  /* 테두리와 배경은 상위 컨테이너에서 처리 */
+}
+
+/* GitHub Actions 스타일의 개별 런 아이템 */
+.github-run-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px;
+  border-bottom: 1px solid #30363d;
+  background: transparent;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
+.github-run-item:hover {
+  background: #21262d;
+}
+
+.github-run-item:last-child {
+  border-bottom: none;
+}
+
+/* 왼쪽 상태 아이콘 영역 */
+.run-status-icon {
+  margin-right: 12px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* 오른쪽 메인 콘텐츠 영역 */
+.run-main-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 첫 번째 줄: 제목과 메타 정보 */
+.run-title-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.run-title {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-/* 실행 기록 테이블의 헤더(머리글) */
-.runs-header {
-  display: grid;
-  grid-template-columns: 80px 140px 180px 120px 1fr;
-  gap: 16px;
-  align-items: center;
-  padding: 12px 16px;
-  background: #21262d;
-  border-radius: 6px;
-  border: 1px solid #30363d;
-  margin-bottom: 12px;
-}
-
-/* 헤더의 각 컬럼(ID, Status 등) 텍스트 스타일 */
-.runs-header > div {
-  font-family: var(--font-family-base);
-  font-size: 12px;
+.run-name {
+  font-size: 14px;
   font-weight: 600;
+  color: #DBE8F2;
+}
+
+.run-id {
+  font-size: 12px;
   color: #8b949e;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
 }
 
-/* 헤더의 'ID' 컬럼 */
-.header-id {
-  text-align: left;
+.run-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto; /* 오른쪽으로 더 이동 */
 }
 
-/* 헤더의 'Status' 컬럼 */
-.header-status {
-  text-align: center;
-}
-
-/* 헤더의 'Timestamp' 컬럼 */
-.header-timestamp {
-  text-align: left;
-}
-
-/* 헤더의 'Branch' 컬럼 */
-.header-branch {
-  text-align: center;
-}
-
-/* 헤더의 'Reason' 컬럼 */
-.header-reason {
-  text-align: left;
-}
-
-/* 개별 실행 기록 아이템 */
-.run-item {
-  background: #161b22;
+.run-branch-tag {
+  background: #21262d;
+  color: #58a6ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
   border: 1px solid #30363d;
-  border-radius: 8px;
-  padding: 16px;
+  white-space: nowrap;
+}
+
+.no-branch {
+  color: #8b949e;
+  font-size: 12px;
+}
+
+.branch-separator {
+  color: #8b949e;
+  font-size: 12px;
+  margin: 0 4px;
+}
+
+.run-time-ago {
+  font-size: 12px;
+  color: #8b949e;
+  white-space: nowrap;
+}
+
+/* 두 번째 줄: 커밋 정보 */
+.run-commit-line {
+  margin-top: 2px;
+}
+
+.run-commit-info {
+  font-size: 12px;
+  color: #8b949e;
+}
+
+.commit-hash {
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
+  color: #DBE8F2;
+}
+
+.commit-author {
+  color: #DBE8F2;
+}
+
+/* 개별 실행 기록 아이템 - 표의 행으로 변경 */
+.run-item {
+  background: transparent; /* 전체 표 배경과 동일하게 */
+  border: none; /* 개별 테두리 제거 */
+  border-radius: 0; /* 둥근 모서리 제거 */
+  padding: 16px; /* 상하 패딩을 8px로 줄여서 더 촘촘한 표 스타일 */
+  margin: 0 !important; /* Dashboard.css의 margin-top: 16px 강제 덮어쓰기 */
   transition: all 0.2s ease;
   cursor: pointer;
+  border-bottom: 1px solid #30363d; /* 행 사이 구분선만 유지 */
+  box-shadow: none !important; /* Dashboard.css의 box-shadow 강제 제거 */
 }
 
 /* 실행 기록 아이템에 마우스를 올렸을 때의 스타일 */
 .run-item:hover {
-  background: #21262d;
-  border-color: #58a6ff;
+  background: #21262d; /* hover 시 배경색만 변경 */
+}
+
+/* 마지막 행의 구분선 제거 */
+.run-item:last-child {
+  border-bottom: none;
 }
 
 /* 실행 기록 아이템 내부의 한 줄(row) */
 .run-row {
   display: grid;
   grid-template-columns: 80px 140px 180px 120px 1fr;
-  gap: 16px;
   align-items: center;
 }
 
