@@ -135,34 +135,36 @@
 /* Run Info 카드 스타일 */
 .run-info-card {
   background: #161b22;
-  border: 1px solid #30363d;
+  border: 1px solid #30363d; /* 원래 회색 테두리로 복원 */
   border-radius: 12px;
   padding: 20px;
   margin-top: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid var(--primary-color);
+  border-left: 1px solid #30363d; /* 왼쪽 테두리도 1px로 통일 */
   transition: all 0.2s ease;
 }
 
-.run-info-card:hover {
+/* hover 효과 비활성화 */
+/* .run-info-card:hover {
   background: #21262d;
-  border-color: var(--primary-color);
+  border-color: #58a6ff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+} */
 
 /* Run Info 카드 안의 각 행(row) */
 .run-info-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* 원래대로 양쪽 끝 정렬로 복원 */
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #30363d;
+  border-bottom: 1px solid #30363d; /* 행 간 테두리 */
   transition: all 0.2s ease;
 }
 
 .run-info-row:hover {
   background: #21262d;
   border-radius: 6px;
+  /* 테두리 없음 */
 }
 
 .run-info-row:last-child {
@@ -211,7 +213,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px; /* 패딩 증가 */
+  padding: 0 0 16px 20px; /* 위쪽과 오른쪽 패딩 제거, 아래쪽과 왼쪽만 유지 */
   background-color: var(--header-background);
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 0; /* 하단 마진 제거 */
@@ -232,27 +234,45 @@
   display: block;
 }
 
-/* 로그 뷰어 헤더의 액션 버튼(Copy, Search) 컨테이너 */
+/* 로그 뷰어 헤더의 액션 버튼(Copy) 컨테이너 */
 .log-actions {
   display: flex;
-  gap: 8px;
+  justify-content: flex-end; /* 오른쪽 정렬로 Copy 버튼을 Search 위치로 */
 }
 
 /* 로그 뷰어 헤더의 개별 버튼 */
 .log-btn {
-  padding: 4px 12px;
-  border: 1px solid var(--border-color);
-  background-color: var(--background-color);
+  padding: 8px 20px;
+  border: 1px solid var(--color-white); /* theme.css의 white 색상, 1px 테두리 */
+  background: var(--background-color);
   color: var(--text-color);
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative; /* z-index를 위한 상대 위치 */
+  z-index: 10; /* 다른 요소들 위에 표시되도록 */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* 로그 뷰어 버튼에 마우스를 올렸을 때 */
 .log-btn:hover {
-  background-color: var(--hover-color);
+  background: var(--color-white); /* theme.css의 white 색상 */
+  color: #000000; /* 검은색 텍스트 */
+  border-color: var(--color-white); /* theme.css의 white 색상 */
+  transform: translateY(-2px); /* 위로 살짝 올라가는 효과 */
+}
+
+/* 로그 뷰어 전체를 감싸는 컨테이너 */
+.log-viewer {
+  background: #161b22;
+  border: 1px solid #30363d; /* Run Info와 동일한 테두리 스타일 */
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* 로그 내용이 표시되는 영역 */
@@ -260,7 +280,6 @@
   flex: 1;
   overflow: auto !important; /* YAML viewer와 동일하게 !important 추가 */
   padding: 0;
-  background: #0d1117;
   position: relative;
   min-height: 0;
   scroll-behavior: auto;
@@ -314,7 +333,7 @@
 
 /* 로그 내용 중 코드 부분을 감싸는 컨테이너 */
 .log-code-container {
-  padding: 0;
+  background: #0d1117; /* YamlViewer와 동일한 까만색 배경 */
   font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
   font-size: 13px;
   line-height: 1.6;
@@ -404,8 +423,9 @@
   top: 0;
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--border-color);
+  border-left: 3px solid var(--border-color); /* 더 두꺼운 구분선 */
   background-color: var(--card-background);
+  box-shadow: -3px 0 12px rgba(0, 0, 0, 0.25); /* 더 진한 왼쪽 그림자로 구분선 강조 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
 }
 

@@ -274,7 +274,6 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
                     <span className="log-title">build.log</span>
                     <div className="log-actions">
                       <button className="log-btn log-btn-copy">Copy</button>
-                      <button className="log-btn log-btn-search">Search</button>
                     </div>
                   </div>
                   <div className="log-content">

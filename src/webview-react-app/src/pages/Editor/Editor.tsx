@@ -317,11 +317,11 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
           </div>
           <div className="header-right">
             <button 
-              className="btn btn-primary"
+              className="workflow-save-btn"
               onClick={handleSave}
               disabled={isSaving}
             >
-              {isSaving ? '저장 중...' : '저장'}
+              {isSaving ? 'Saving...' : 'Save'}
             </button>
           </div>
         </div>
