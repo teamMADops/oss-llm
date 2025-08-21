@@ -72,7 +72,7 @@
   display: flex;
   padding: 0; /* 패딩 제거하여 탭이 연결되도록 */
   border-bottom: none; /* 기존 구분선 제거 */
-  background-color: var(--header-background);
+  background-color: var(--background-color);
   position: relative; /* 하단 구분선을 위한 상대 위치 */
 }
 
