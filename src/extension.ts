@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 
 import { getSavedRepo, promptAndSaveRepo,deleteSavedRepo, type RepoRef} from './github/getRepoInfo';
-import { getOctokitViaVSCodeAuth } from './auth/githubSession';
+import { getOctokitViaVSCodeAuth, getExistingGitHubSession,signOutGitHub } from './auth/githubSession';
 
 import { getRunIdFromQuickPick } from './github/getRunList';
 import { printToOutput } from './output/printToOutput';       
@@ -663,7 +663,36 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.showInformationMessage(`현재 레포: ${cur ? cur.owner + '/' + cur.repo : '(none)'}`);
   });
 
-  context.subscriptions.push(cmdSetRepo, cmdClearRepo, cmdShowRepo);
+  // ✅ 로그인: 세션 없으면 브라우저로 리디렉션되어 로그인 진행
+  const cmdLoginGithub = vscode.commands.registerCommand('extension.loginGithub', async () => {
+    const before = await getExistingGitHubSession();
+    const ok = await getOctokitViaVSCodeAuth();
+    if (ok) {
+      // 세션 변경 이벤트는 따로 발생하지만, 사용자 피드백을 즉시 제공
+      const after = await getExistingGitHubSession();
+      const who = after?.account?.label ?? 'GitHub';
+      vscode.window.showInformationMessage(
+        before ? `이미 로그인되어 있습니다: ${who}` : `로그인 완료: ${who}`
+      );
+    } else {
+      vscode.window.showErrorMessage('GitHub 로그인에 실패했습니다.');
+    }
+  });
+
+  // ✅ 로그아웃: GitHub 인증 제공자의 signout 명령 호출
+  const cmdLogoutGithub = vscode.commands.registerCommand('extension.logoutGithub', async () => {
+    const session = await getExistingGitHubSession();
+    if (!session) {
+      vscode.window.showInformationMessage('이미 로그아웃 상태입니다.');
+      return;
+    }
+    const ok = await signOutGitHub();
+    if (ok) {
+      vscode.window.showInformationMessage('GitHub 로그아웃 완료.');
+    }
+  });
+
+  context.subscriptions.push(cmdSetRepo, cmdClearRepo, cmdShowRepo, cmdLoginGithub, cmdLogoutGithub,);
 
   const disposable = vscode.commands.registerCommand
   ('extension.analyzeGitHubActions', 
