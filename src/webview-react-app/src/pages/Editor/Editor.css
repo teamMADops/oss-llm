@@ -1,194 +1,1243 @@
-/* Editor 페이지 스타일 - 완전 반응형, 섹션별 스크롤, 가로 스크롤 차단 */
+/* EditorPage 컴포넌트의 스타일을 정의합니다. 이 페이지는 워크플로우의 YAML 설정 파일을 확인하고 수정하는 화면입니다. */
+
+/* theme.css에서 전역 스타일 변수 및 워크플로우 에디터 관련 스타일을 가져옵니다. */
+@import '../../styles/theme.css';
+
+/* Editor 페이지 전체를 감싸는 컨테이너 */
 .editor-container {
   display: flex;
   width: 100%;
   height: 100%;
-  background: #0d1117;
+  background: var(--color-black);
   font-family: var(--font-family-base);
   overflow: hidden;
+  gap: 0; /* 두 패널을 서로 붙이기 */
+  position: relative; /* 절대 배치된 YAML 뷰어의 기준 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
 }
 
-/* 중앙 Build 섹션 */
+/* 사이드바가 열려있을 때의 에디터 컨테이너 */
+.editor-container.sidebar-open {
+  /* 사이드바가 열려있을 때: 메인 패널과 YAML 뷰어 반반 분할 */
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0; /* 두 패널을 서로 붙이기 */
+}
+
+/* 사이드바가 닫혔을 때의 에디터 컨테이너 */
+.editor-container.sidebar-closed {
+  /* 사이드바가 닫혀있을 때: 메인 패널과 YAML 뷰어 반반 분할 (전체 화면) */
+  width: 100vw;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100vh;
+}
+
+/* 사이드바가 닫혔을 때 YAML 뷰어 컨테이너의 너비 조정 */
+.editor-container.sidebar-closed .yaml-viewer-container {
+  width: 50% !important; /* 전체 화면의 50% */
+  right: 0 !important; /* 오른쪽 고정 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important; /* 일관된 전환 효과 */
+  /* 오른쪽 부분 고정, 왼쪽에서 resize */
+}
+
+/* 에디터의 메인 패널 (오른쪽 영역에 고정) */
 .editor-main {
-  position: relative;
-  flex: 1;
+  position: fixed;
+  right: 37.5%; /* YAML 뷰어 왼쪽에 고정 */
+  top: 0;
   height: 100%;
-  padding: 20px;
+  padding: 0 20px 20px 20px; /* 고정 패딩 - 사이드바 전환 시 변하지 않음 */
   overflow: hidden; /* 메인 섹션 자체는 스크롤 없음 */
-  min-width: 0; /* flexbox에서 축소 허용 */
   display: flex;
   flex-direction: column;
+  width: 37.5%; /* 기본 너비: 37.5% */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
+  box-sizing: border-box; /* 패딩과 보더를 포함한 크기 계산 */
+  z-index: 10; /* YAML 뷰어 위에 표시 */
+  border-right: 1px solid #30363d; /* 메인 패널과 YAML 뷰어 사이 구분선 */
 }
 
-.main-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0;
-  margin-bottom: 20px;
-  flex-shrink: 0; /* 헤더는 고정 */
+
+
+/* 사이드바가 열렸을 때 메인 패널의 위치 조정 */
+.editor-container.sidebar-open .editor-main {
+  right: 37.5% !important; /* YAML 뷰어 왼쪽에 고정 유지 (오른쪽 고정) */
+  width: 37.5% !important; /* 사이드바 열림 후: 37.5% */
+  padding: 0 20px 20px 20px !important; /* 패딩 일관성 유지 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important; /* 박스 모델 강제 적용 */
+  /* 오른쪽 부분 고정, 왼쪽에서 resize */
 }
 
-.header-left {
-  flex: 1;
+/* 사이드바가 닫혔을 때 에디터 메인 패널의 너비 조정 */
+.editor-container.sidebar-closed .editor-main {
+  right: 50% !important; /* 전체 화면의 절반 지점에 고정 (오른쪽 고정) */
+  width: 50% !important; /* 전체 화면의 50% */
+  padding: 0 20px 20px 20px !important; /* 패딩 일관성 유지 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important; /* 박스 모델 강제 적용 */
+  /* 오른쪽 부분 고정, 왼쪽에서 resize */
 }
 
-.header-right {
-  flex-shrink: 0;
+/* 사이드바가 열렸을 때 YAML 뷰어 컨테이너의 너비 조정 */
+.editor-container.sidebar-open .yaml-viewer-container {
+  width: 37.5% !important; /* 사이드바 열림 후: 37.5% */
+  right: 0;
+  margin-left: 0 !important; /* 왼쪽 마진 명시적 제거 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important; /* 일관된 전환 효과 */
 }
 
-.main-title {
-  font-family: var(--font-family-base);
-  font-style: normal;
-  font-weight: 600;
-  font-size: 32px;
-  line-height: 38px;
-  color: #ffffff;
-  margin: 0;
+/* 메인 콘텐츠 영역의 기본 패딩 제거 */
+.main-content {
+  padding: 0 !important;
 }
 
+/* 워크플로우 에디터 영역 (스크롤 가능) */
 .workflow-editor {
-  padding-right: 20px; /* 스크롤바 공간 확보 */
-  margin-right: -20px; /* 부모 패딩 상쇄 */
+  padding: 0; /* 모든 패딩 제거 */
+  margin: 0; /* 모든 마진 제거 */
   overflow-y: auto;
   flex: 1;
 }
 
+/* 워크플로우의 각 섹션 (Name, Triggers, Jobs) */
 .workflow-section {
-  margin-bottom: 24px;
-  background: #161b22;
-  border-radius: 8px;
-  border: 1px solid #30363d;
-  overflow: hidden;
+  margin-bottom: 0; /* 섹션 간 마진 완전 제거 */
+  border: 1px solid #30363d; /* 테두리 추가 */
+  border-radius: 8px; /* 둥근 모서리 */
+  background: #161b22; /* 배경색 추가 */
+  cursor: grab; /* 드래그 가능함을 표시 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-left-color 0.2s ease;
+  position: relative; /* 드래그 핸들 위치 기준 */
+  overflow: hidden; /* 드래그 핸들이 테두리를 벗어나지 않도록 */
 }
 
+/* 워크플로우 섹션 기본 스타일 */
+.workflow-section {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+/* Workflow Name 섹션 - 고정된 섹션 */
+.workflow-name-section {
+  background: #1c2128; /* 약간 더 진한 배경색으로 고정 섹션임을 표시 */
+  border-color: #484f58; /* 더 진한 테두리 */
+  cursor: default; /* 드래그 불가능함을 표시 */
+}
+
+.workflow-name-section:hover {
+  border-color: #484f58; /* hover 시에도 테두리 색상 유지 */
+  transform: none; /* hover 시 움직임 없음 */
+}
+
+/* 워크플로우 섹션에 마우스를 올렸을 때 */
+.workflow-section:hover {
+  border-color: #58a6ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 드래그 중일 때 */
+.workflow-section:active {
+  cursor: grabbing;
+}
+
+/* 드래그 중인 섹션 */
+.workflow-section.dragging {
+  opacity: 0.5;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* 드롭 가능한 영역 */
+.workflow-section.drag-over {
+  border-top: 2px solid #58a6ff;
+  margin-top: 8px;
+}
+
+/* 드롭 영역 스타일 - 섹션 사이 공간 채움 */
+.drop-zone {
+  height: 16px; /* 섹션 사이 공간을 최소화 */
+  margin: 0; /* 마진 제거 */
+  background-color: transparent;
+  border-radius: 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+/* 드롭 영역에 드래그 오버 시 */
+.drop-zone.drag-over {
+  background-color: #58a6ff !important;
+  box-shadow: 0 0 8px rgba(88, 166, 255, 0.5) !important;
+}
+
+/* 호버 효과는 제거 (드래그 중에만 활성화) */
+.drop-zone:hover {
+  background-color: rgba(88, 166, 255, 0.1);
+}
+
+/* 맨 위/맨 아래 드롭 영역 */
+.drop-zone-top,
+.drop-zone-bottom {
+  height: 16px; /* 맨 위/아래도 공간 최소화 */
+  margin: 0;
+}
+
+/* 맨 위/맨 아래 드롭 영역 드래그 오버 시 */
+.drop-zone-top.drag-over,
+.drop-zone-bottom.drag-over {
+  background-color: #58a6ff !important;
+  box-shadow: 0 0 12px rgba(88, 166, 255, 0.6) !important;
+}
+
+/* 맨 위/아래 호버 효과 */
+.drop-zone-top:hover,
+.drop-zone-bottom:hover {
+  background-color: rgba(88, 166, 255, 0.1);
+}
+
+/* 드래그 핸들 스타일 */
+.drag-handle {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  cursor: grab;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+/* 드래그 핸들 호버 시 */
+.drag-handle:hover {
+  opacity: 1;
+}
+
+/* 드래그 핸들 점들 */
+.drag-handle-dots {
+  display: flex;
+  gap: 2px;
+}
+
+.drag-handle-dot {
+  width: 3px;
+  height: 3px;
+  background-color: #8b949e;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+/* 드래그 핸들 호버 시 점들 색상 변경 */
+.drag-handle:hover .drag-handle-dot {
+  background-color: #58a6ff;
+}
+
+/* 섹션 헤더 왼쪽 여백 조정 (드래그 핸들 공간 확보) */
+.section-header {
+  padding-left: 44px; /* 드래그 핸들 공간 + 기존 패딩 */
+}
+
+/* 섹션 헤더 */
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  background: #21262d;
-  border-bottom: 1px solid #30363d;
+  padding: 16px 20px 12px 44px; /* 드래그 핸들 공간 확보 */
+  margin-left: 1px;
 }
 
+/* 섹션 제목 */
 .section-title {
-  font-size: 16px;
+  font-size: 14px; /* 더 작은 글씨 */
+  font-weight: 500; /* 약간 가벼운 굵기 */
+  color: #8b949e; /* 회색으로 변경 */
+  margin: 0;
+  text-transform: uppercase; /* 대문자로 */
+  letter-spacing: 0.5px; /* 글자 간격 */
+}
+
+/* 섹션 내용 */
+.section-content {
+  padding: 0 12px 0 44px; /* 드래그 핸들 공간 확보 */
+}
+
+/* 트리거 아이템 */
+.trigger-item {
+  margin-bottom: 16px;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* 트리거 아이템 헤더 (클릭하여 열고 닫기) */
+.trigger-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #21262d;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* 트리거 활성화 체크박스 영역 */
+.trigger-checkbox {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+}
+
+/* 체크박스 입력 필드 */
+.trigger-checkbox input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+/* 트리거 이름 */
+.trigger-name {
+  flex: 1;
+  font-weight: 500;
+  color: #8b949e; /* 회색으로 변경 */
+}
+
+/* 드롭다운 화살표 아이콘 */
+.dropdown-arrow {
+  color: #8b949e; /* 회색으로 변경 */
+  transition: transform 0.2s ease;
+}
+
+/* 열렸을 때의 드롭다운 화살표 */
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* 트리거 상세 설정 영역 */
+.trigger-details {
+  padding: 16px;
+  background: #161b22;
+  border-top: 1px solid #30363d;
+}
+
+/* 입력 필드 그룹 */
+.field-group {
+  margin-bottom: 16px;
+}
+
+/* 입력 필드 라벨 */
+.field-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #8b949e; /* 회색으로 변경 */
+}
+
+/* 입력 필드 (input, select) */
+.field-group input,
+.field-group select {
+  width: 100%;
+  padding: 8px 0; /* 좌우 패딩 제거, 상하만 유지 */
+  background: transparent; /* 배경 투명 */
+  border: none; /* 모든 테두리 제거 */
+  border-bottom: 2px solid #30363d; /* 밑줄만 표시 */
+  border-radius: 0; /* 둥근 모서리 제거 */
+  color: #DBE8F2; /* 입력 텍스트는 흰색 유지 */
+  font-size: 14px;
+  font-family: var(--font-family-base);
+  transition: border-bottom-color 0.2s ease;
+}
+
+/* 입력 필드에 포커스 시 */
+.field-group input:focus,
+.field-group select:focus {
+  outline: none;
+  border-bottom-color: #58a6ff; /* 밑줄 색상만 변경 */
+}
+
+/* Multiple Select 스타일 (Pull Request Types 등) */
+.field-group select[multiple] {
+  min-height: 80px;
+  padding: 8px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  border-bottom: 2px solid #30363d;
+}
+
+.field-group select[multiple]:focus {
+  border-color: #58a6ff;
+  border-bottom-color: #58a6ff;
+}
+
+/* Multiple Select 옵션 스타일 */
+.field-group select[multiple] option {
+  padding: 6px 8px;
+  margin: 2px 0;
+  background: #161b22;
+  color: #DBE8F2; /* 옵션 텍스트는 흰색 유지 */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.field-group select[multiple] option:hover {
+  background: #21262d;
+}
+
+.field-group select[multiple] option:checked {
+  background: rgba(88, 166, 255, 0.2);
+  color: #58a6ff;
+  font-weight: 500;
+}
+
+/* 일반 Select 스타일 (단일 선택) */
+.field-group select:not([multiple]) {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238b949e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 32px;
+}
+
+/* Pull Request Types 버튼들 */
+.pr-types-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pr-type-btn {
+  padding: 6px 12px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #8b949e;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: capitalize;
+  min-width: 80px;
+}
+
+.pr-type-btn:hover {
+  background: #30363d;
+  border-color: #58a6ff;
+  color: #DBE8F2;
+}
+
+.pr-type-btn.active {
+  background: rgba(88, 166, 255, 0.2);
+  border-color: #58a6ff;
+  color: #58a6ff;
   font-weight: 600;
-  color: #f0f6fc;
+}
+
+/* Permission 버튼들 */
+.permission-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.permission-btn {
+  padding: 6px 12px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #8b949e;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: capitalize;
+  min-width: 60px;
+}
+
+.permission-btn:hover {
+  background: #30363d;
+  border-color: #58a6ff;
+  color: #DBE8F2;
+}
+
+.permission-btn.active {
+  background: rgba(88, 166, 255, 0.2);
+  border-color: #58a6ff;
+  color: #58a6ff;
+  font-weight: 600;
+}
+
+/* Shell 버튼들 */
+.shell-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.shell-btn {
+  padding: 6px 12px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #8b949e;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: capitalize;
+  min-width: 80px;
+}
+
+.shell-btn:hover {
+  background: #30363d;
+  border-color: #58a6ff;
+  color: #DBE8F2;
+}
+
+.shell-btn.active {
+  background: rgba(88, 166, 255, 0.2);
+  border-color: #58a6ff;
+  color: #58a6ff;
+  font-weight: 600;
+}
+
+/* 체크박스 래퍼 */
+.checkbox-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  margin: 0;
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  accent-color: #58a6ff;
+}
+
+.checkbox-label {
+  color: #8b949e;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+  user-select: none;
+  flex: 1;
+}
+
+/* 매트릭스 입력 래퍼 */
+.matrix-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-hint {
+  color: #6e7681;
+  font-size: 11px;
+  font-style: italic;
   margin: 0;
 }
 
-.section-content {
-  padding: 20px;
+/* 'Add Job' 버튼 */
+.add-job-btn {
+  padding: 6px 12px;
+  background: rgba(35, 134, 54, 0.15); /* HistoryTable과 동일한 투명도 */
+  border: 1px solid rgba(35, 134, 54, 0.3); /* HistoryTable과 동일한 투명도 */
+  border-radius: 4px;
+  color: #238636; /* HistoryTable과 동일한 색상 */
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 32px; /* 고정 높이 설정 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -2px; /* 버튼 위치를 1px 위로 올림 */
 }
 
-/* ... (이하 dev/FE의 모든 스타일 유지) ... */
+/* 'Add Job' 버튼에 마우스를 올렸을 때 */
+.add-job-btn:hover {
+  background: rgba(35, 134, 54, 0.25); /* hover 시 투명도 증가 */
+  border-color: rgba(35, 134, 54, 0.4);
+  transform: translateY(-1px); /* Delete 버튼과 동일한 애니메이션 */
+}
 
+/* Job 아이템 */
+.job-item {
+  margin-bottom: 16px;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Job 헤더 (클릭하여 열고 닫기) */
+.job-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #21262d;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Job 이름 */
+.job-name {
+  flex: 1;
+  font-weight: 500;
+  color: #8b949e; /* 회색으로 변경 */
+}
+
+/* Job 상세 설정 영역 */
+.job-details {
+  padding: 16px;
+  background: #161b22;
+  border-top: 1px solid #30363d;
+}
+
+/* Step 아이템 */
+.step-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* Step 아이템의 입력 필드 */
+.step-item input {
+  flex: 1;
+  padding: 8px 0; /* 좌우 패딩 제거, 상하만 유지 */
+  background: transparent; /* 배경 투명 */
+  border: none; /* 모든 테두리 제거 */
+  border-bottom: 2px solid #30363d; /* 밑줄만 표시 */
+  border-radius: 0; /* 둥근 모서리 제거 */
+  color: #DBE8F2;
+  font-size: 14px;
+  font-family: var(--font-family-base);
+  transition: border-bottom-color 0.2s ease;
+}
+
+/* Step 아이템 입력 필드에 포커스 시 */
+.step-item input:focus {
+  outline: none;
+  border-bottom-color: #58a6ff; /* 밑줄 색상만 변경 */
+}
+
+/* 워크플로우 이름 입력 필드 */
 .workflow-name-input {
+  width: 100%;
+  padding: 8px 0; /* 좌우 패딩 제거, 상하만 유지 */
+  background: transparent; /* 배경 투명 */
+  border: none; /* 모든 테두리 제거 */
+  border-bottom: 2px solid #30363d; /* 밑줄만 표시 */
+  border-radius: 0; /* 둥근 모서리 제거 */
+  color: #DBE8F2; /* 입력 텍스트는 흰색 유지 */
+  font-size: 14px;
+  font-family: var(--font-family-base);
+  transition: border-bottom-color 0.2s ease;
+  margin-bottom: 20px;
+}
+
+/* 워크플로우 이름 입력 필드에 포커스 시 */
+.workflow-name-input:focus {
+  outline: none;
+  border-bottom-color: #58a6ff; /* 밑줄 색상만 변경 */
+}
+
+/* YAML 에디터 텍스트 영역 */
+.yaml-editor-textarea {
   width: 100%;
   padding: 12px 16px;
   background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 6px;
-  color: #f0f6fc;
+  color: #DBE8F2; /* YAML 텍스트는 흰색 유지 */
   font-size: 14px;
-  font-family: var(--font-family-base);
-  transition: border-color 0.2s ease;
-}
-
-.workflow-name-input:focus {
-  outline: none;
-  border-color: #58a6ff;
-}
-
-.trigger-item {
-  margin-bottom: 16px;
-}
-
-/* 우측 YAML 미리보기 */
-.yaml-viewer-container {
-  width: 40%;
-  min-width: 300px;
-  max-width: 600px;
-  height: 100%;
-  flex-shrink: 0;
-  resize: horizontal;
-  overflow: auto;
-  border-left: 1px solid #30363d;
-}
-
-.editor-placeholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  color: #8b949e;
-  font-size: 1.125rem;
-}
-
-.editor-main-content {
-  padding: var(--spacing-xlarge);
-  overflow-y: auto;
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
-  min-height: 100vh;
-}
-
-.editor-empty-state,
-.editor-loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 200px;
-  text-align: center;
-}
-
-.editor-empty-state p,
-.editor-loading p {
-  font-size: var(--font-size-body);
-  color: var(--color-text-muted);
-}
-
-.yaml-editor-textarea {
-  width: 100%;
-  min-height: 400px;
-  padding: 16px;
-  background: #0d1117;
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  color: #f0f6fc;
-  font-size: 14px;
-  font-family: 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', 'Liberation Mono', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', monospace;
-  line-height: 1.5;
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
   resize: vertical;
-  white-space: pre;
-  overflow-wrap: normal;
-  tab-size: 2;
+  min-height: 200px;
+  margin-bottom: 12px;
 }
 
+/* YAML 에디터 텍스트 영역에 포커스 시 */
 .yaml-editor-textarea:focus {
   outline: none;
   border-color: #58a6ff;
 }
 
-.yaml-editor-textarea::placeholder {
+/* 우측 YAML 뷰어 컨테이너 */
+.yaml-viewer-container {
+  width: 37.5%; /* 사이드바 열림 시: 37.5% */
+  min-width: 400px; /* 최소 너비 보장 */
+  height: 100%;
+  flex-shrink: 0; /* 축소 방지 */
+  position: fixed; /* 오른쪽 고정 */
+  right: 0;
+  top: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
+}
+
+/* 사이드바가 열려있을 때 메인 컨텐츠 영역 마진 조정 */
+.editor-container.sidebar-open .main-content {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 메인 헤더 스타일 */
+.main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0; /* 구분선 아래 컨트롤과의 간격 제거 */
+  background: var(--color-black); /* theme.css의 블랙 */
+}
+
+/* 헤더 왼쪽 영역 (타이틀) */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* 메인 타이틀 */
+.main-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+  transition: margin-left 0.3s ease; /* 부드러운 전환 효과 */
+}
+
+/* 사이드바가 닫혔을 때 메인 타이틀을 오른쪽으로 밀기 */
+.editor-container.sidebar-closed .main-title {
+  margin-left: 30px; /* 오른쪽으로 밀기 */
+}
+
+/* 에디터 컨트롤 영역 (구분선 아래) */
+.editor-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 16px 0; /* 위쪽 패딩 제거 */
+  margin-bottom: 0; /* 아래쪽 마진 제거 */
+  /* 아래 구분선 제거 */
+}
+
+/* 컨트롤 왼쪽 영역 */
+.controls-left {
+  /* 향후 확장을 위한 공간 */
+}
+
+/* 컨트롤 오른쪽 영역 */
+.controls-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* 고급 모드 컨트롤 영역 */
+.advanced-mode-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 토글 스위치 */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #30363d;
+  transition: 0.3s;
+  border-radius: 24px;
+  border: 1px solid #484f58;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #8b949e;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #58a6ff;
+  border-color: #58a6ff;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+  background-color: #ffffff;
+}
+
+/* 고급 모드 텍스트 */
+.advanced-mode-text {
+  font-size: 13px;
+  font-weight: 500;
   color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.workflow-editor::-webkit-scrollbar {
-  width: 8px;
+/* 워크플로우 저장 버튼 (Copy 버튼과 동일한 스타일) */
+.workflow-save-btn {
+  padding: 8px 20px;
+  border: 1px solid var(--color-white);
+  background: var(--background-color);
+  color: var(--text-color);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 10;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.workflow-editor::-webkit-scrollbar-track {
+/* 워크플로우 저장 버튼 hover 효과 */
+.workflow-save-btn:hover {
+  background: var(--color-white);
+  color: #000000;
+  border-color: var(--color-white);
+  transform: translateY(-2px);
+}
+
+/* 워크플로우 저장 버튼 비활성화 상태 */
+.workflow-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* HistoryTable과 동일한 상태 색상 변수 */
+:root {
+  --status-success: #238636; /* 성공 - 초록색 */
+  --status-failed: #ff0000; /* 실패 - 빨간색 */
+  --status-running: #ff8800; /* 실행 중 - 주황색 */
+  --status-pending: #8b949e; /* 대기 - 회색 */
+}
+
+/* 성공 상태 스타일 */
+.status-success {
+  color: var(--status-success);
+  border-color: var(--status-success);
+}
+
+/* 실패 상태 스타일 */
+.status-failed {
+  color: var(--status-failed);
+  border-color: var(--status-failed);
+}
+
+/* 실행 중 상태 스타일 */
+.status-running {
+  color: var(--status-running);
+  border-color: var(--status-running);
+}
+
+/* 대기 상태 스타일 */
+.status-pending {
+  color: var(--status-pending);
+  border-color: var(--status-pending);
+}
+
+/* YAML Content 섹션 특별 스타일 */
+.yaml-content-section {
+  border: 2px solid #f78166; /* 경고 색상으로 테두리 변경 */
+}
+
+/* 고급 모드 경고 메시지 */
+.advanced-warning {
+  font-size: 11px;
+  color: #f78166;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 13px 12px 45px;
+}
+
+/* 경고문 제목 */
+.warning-title {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* 경고문 내용 */
+.warning-content {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #f78166;
+}
+
+/* YAML 경고 박스 */
+.yaml-warning {
+  background: #1c2128;
+  border: 1px solid #f78166;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.yaml-warning p {
+  margin: 0;
+  font-size: 12px;
+  color: #f78166;
+  line-height: 1.4;
+}
+
+/* 섹션 액션 영역 (삭제 버튼과 추가 버튼을 함께 배치) */
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px; /* 고정 높이 설정 */
+}
+
+/* 섹션 삭제 버튼 */
+.delete-section-btn {
+  padding: 6px 12px;
+  background: rgba(255, 0, 0, 0.15); /* HistoryTable과 동일한 투명도 */
+  border: 1px solid rgba(255, 0, 0, 0.3); /* HistoryTable과 동일한 투명도 */
+  border-radius: 4px;
+  color: #ff0000; /* HistoryTable과 동일한 색상 */
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  height: 32px; /* 고정 높이 설정 */
+  min-width: 60px; /* 최소 너비 설정 */
+}
+
+/* 섹션 삭제 버튼 hover 효과 */
+.delete-section-btn:hover {
+  background: rgba(255, 0, 0, 0.25); /* hover 시 투명도 증가 */
+  border-color: rgba(255, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+/* 섹션 추가 영역 */
+.add-section-area {
+  margin-top: 0; /* 위쪽 마진 제거 */
+  position: relative;
+}
+
+/* 섹션 추가 트리거 버튼 */
+.add-section-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
   background: #21262d;
-  border-radius: 4px;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #DBE8F2;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.workflow-editor::-webkit-scrollbar-thumb {
+.add-section-trigger:hover {
   background: #30363d;
-  border-radius: 4px;
+  border-color: #58a6ff;
 }
 
-.workflow-editor::-webkit-scrollbar-thumb:hover {
-  background: #484f58;
+/* 섹션 추가 아이콘 */
+.add-section-icon {
+  font-size: 16px;
+  font-weight: bold;
+  color: #58a6ff;
 }
+
+/* 섹션 추가 텍스트 */
+.add-section-text {
+  color: #DBE8F2;
+}
+
+/* 드롭다운 화살표 */
+.dropdown-arrow {
+  color: #8b949e;
+  transition: transform 0.2s ease;
+  font-size: 10px;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* 섹션 추가 드롭다운 */
+.add-section-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+/* 섹션 추가 드롭다운 헤더 */
+.add-section-header {
+  padding: 12px 16px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  font-size: 12px;
+  font-weight: 500;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 섹션 추가 리스트 */
+.add-section-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* 섹션 추가 아이템 */
+.add-section-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #30363d;
+}
+
+.add-section-item:hover {
+  background: #30363d;
+}
+
+.add-section-item:last-child {
+  border-bottom: none;
+}
+
+/* 섹션 아이템 아이콘 */
+.section-item-icon {
+  width: 24px;
+  height: 24px;
+  background: rgba(88, 166, 255, 0.15);
+  border: 1px solid rgba(88, 166, 255, 0.3);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #58a6ff;
+  font-size: 14px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* 섹션 아이템 콘텐츠 */
+.section-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 섹션 아이템 이름 */
+.section-item-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #DBE8F2;
+  margin-bottom: 2px;
+}
+
+/* 섹션 아이템 설명 */
+.section-item-desc {
+  font-size: 11px;
+  color: #8b949e;
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 템플릿 콘텐츠 */
+.template-content {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.template-content pre {
+  margin: 0;
+  color: #DBE8F2;
+  font-size: 13px;
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 동적 섹션 스타일들 */
+
+/* Environment Variables 섹션 */
+.env-section .env-variable {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.env-section .env-variable input {
+  flex: 1;
+  padding: 6px 8px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #DBE8F2;
+  font-size: 12px;
+}
+
+.env-section .env-variable span {
+  color: #8b949e;
+  font-weight: 500;
+}
+
+.add-env-btn {
+  padding: 4px 8px;
+  background: rgba(88, 166, 255, 0.15);
+  border: 1px solid rgba(88, 166, 255, 0.3);
+  border-radius: 4px;
+  color: #58a6ff;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-env-btn:hover {
+  background: rgba(88, 166, 255, 0.25);
+  border-color: rgba(88, 166, 255, 0.4);
+}
+
+/* Permissions 섹션 */
+.permissions-section .field-group {
+  margin-bottom: 20px;
+}
+
+.permissions-section select {
+  width: 100%;
+  padding: 6px 8px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #DBE8F2;
+  font-size: 12px;
+}
+
+/* Concurrency 섹션 */
+.concurrency-section .field-group {
+  margin-bottom: 20px;
+}
+
+.concurrency-section input[type="text"] {
+  width: 100%;
+  padding: 6px 8px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #DBE8F2;
+  font-size: 12px;
+}
+
+.concurrency-section label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.concurrency-section input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Defaults 섹션 */
+.defaults-section .field-group {
+  margin-bottom: 20px;
+}
+
+.defaults-section select,
+.defaults-section input[type="text"] {
+  width: 100%;
+  padding: 6px 8px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #DBE8F2;
+  font-size: 12px;
+}
+
+/* Timeout 섹션 */
+.timeout-section input[type="number"] {
+  width: 100%;
+  padding: 6px 8px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #DBE8F2;
+  font-size: 12px;
+}
+
+/* Strategy 섹션 */
+.strategy-section .field-group {
+  margin-bottom: 20px;
+}
+
+.strategy-section input[type="text"] {
+  width: 100%;
+  padding: 6px 8px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #DBE8F2;
+  font-size: 12px;
+}
+

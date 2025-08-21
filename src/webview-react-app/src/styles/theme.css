@@ -1,13 +1,16 @@
+/* 웹뷰 전체의 디자인 테마를 정의하는 전역 스타일시트 */
+
 /* Pretendard Variable 폰트 import */
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css');
 
-/* 전역 CSS 리셋 */
+/* 전역 CSS 리셋: 모든 요소의 기본 마진, 패딩을 제거하고 box-sizing을 설정합니다. */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* html, body: 전체 페이지의 크기와 스크롤을 제어합니다. */
 html, body {
   margin: 0;
   padding: 0;
@@ -16,6 +19,7 @@ html, body {
   overflow: hidden;
 }
 
+/* #root: React 앱의 최상위 요소가 전체 화면을 차지하도록 설정합니다. */
 #root {
   width: 100%;
   height: 100%;
@@ -23,37 +27,33 @@ html, body {
   padding: 0;
 }
 
-/* CSS 변수 정의 */
+/* :root: 앱 전체에서 사용될 CSS 변수(색상, 폰트 등)를 정의합니다. */
 :root {
-  /* 색상 */
-  --color-background: #0F1A24;
-  --color-surface: #161b22;
-  --color-surface-secondary: #21262d;
-  --color-surface-hover: #30363d;
-  --color-border: #30363d;
-  --color-border-subtle: #21262d;
-  --color-text-primary: #f0f6fc;
-  --color-text-secondary: #8b949e;
-  --color-accent: #58a6ff;
-  --color-accent-hover: #79c0ff;
-  --color-accent-emphasis: #1f6feb;
-  --color-white: #DBE8F2;
-  --color-black: #0F1A24;
+  /* 색상 변수 */
+  --color-background: #0F1A24; /* 앱의 기본 배경색 */
+  --color-surface: #161b22; /* 카드 등 UI 요소의 표면색 */
+  --color-surface-secondary: #21262d; /* 보조 표면색 */
+  --color-surface-hover: #30363d; /* 마우스를 올렸을 때의 표면색 */
+  --color-border: #30363d; /* 테두리 색상 */
+  --color-border-subtle: #21262d; /* 옅은 테두리 색상 */
+  --color-text-primary: #DBE8F2; /* 주요 텍스트 색상 */
+  --color-text-secondary: #8b949e; /* 보조 텍스트 색상 */
+  --color-accent: #58a6ff; /* 강조 색상 (파란색 계열) */
+  --color-accent-hover: #79c0ff; /* 강조 색상에 마우스를 올렸을 때 */
+  --color-accent-emphasis: #1f6feb; /* 더 강한 강조 색상 */
+  --color-white: #DBE8F2; /* 흰색 계열 색상 */
+  --color-black: #0F1A24; /* 검은색 계열 색상 */
   
-  /* Pretendard Variable 폰트 - 모든 서체 */
-  --font-family-base: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
-  --font-family-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  /* 폰트 변수 */
+  --font-family-base: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif; /* 기본 폰트 */
+  --font-family-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; /* 고정폭 폰트 (코드 표시용) */
   
-  /* Pretendard Variable 폰트 굵기 (직접 숫자 사용) */
-  /* Thin: 100, Extra Light: 200, Light: 300, Regular: 400 */
-  /* Medium: 500, Semi Bold: 600, Bold: 700, Extra Bold: 800, Black: 900 */
+  /* 전환 효과 변수 */
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.4s ease;
+  --transition-slow: 0.6s ease;
   
-  /* 전환 효과 */
-  --transition-fast: 0.15s ease;
-  --transition-medium: 0.3s ease;
-  --transition-slow: 0.5s ease;
-  
-  /* Editor specific variables */
+  /* 에디터 페이지 전용 변수 */
   --bg-primary: var(--color-background);
   --bg-secondary: var(--color-surface);
   --bg-tertiary: var(--color-surface-secondary);
@@ -63,8 +63,15 @@ html, body {
   --accent-hover: var(--color-accent-hover);
   --accent-active: var(--color-accent-emphasis);
   --accent-bg: rgba(88, 166, 255, 0.1);
+  
+  /* History 패널 및 기타 패널에서 사용하는 변수들 */
+  --border-color: #30363d; /* 테두리 색상 */
+  --header-background: #161b22; /* 헤더 배경색 */
+  --color-text-muted: #8b949e; /* 흐린 텍스트 색상 */
+  --font-size-body: 14px; /* 기본 폰트 크기 */
 }
 
+/* body: 앱의 기본 폰트, 배경색, 글자색 등 전역 스타일을 설정합니다. */
 body {
   font-family: var(--font-family-base);
   background-color: var(--color-background);
@@ -75,21 +82,44 @@ body {
   line-height: 1.5;
 }
 
-/* App Layout */
+/* App.tsx의 최상위 레이아웃 컨테이너 */
 .app-container {
   display: flex;
   height: 100vh;
 }
 
+/* 사이드바를 제외한 메인 콘텐츠 영역 */
 .main-content {
   flex: 1;
   overflow: auto;
   padding: 20px;
+  transition: all 0.3s ease;
 }
 
-/* Common Component Styles */
+/* 사이드바가 열려있을 때의 메인 콘텐츠 영역 스타일 */
+.main-content.sidebar-open {
+  margin-left: 0;
+  padding: 0;
+  width: calc(100vw - 25%);
+  position: absolute;
+  left: 25%;
+  top: 0;
+  height: 100vh;
+  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-/* Buttons */
+/* 사이드바가 닫혀있을 때의 메인 콘텐츠 영역 스타일 */
+.main-content.sidebar-closed {
+  margin-left: 0;
+  width: 100vw;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1), width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 공용 버튼 기본 스타일 */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -106,6 +136,7 @@ body {
   white-space: nowrap;
 }
 
+/* 주요 버튼 스타일 (파란색 계열) */
 .btn-primary {
   background-color: var(--color-accent);
   color: var(--color-white);
@@ -117,6 +148,7 @@ body {
   border-color: var(--color-accent-hover);
 }
 
+/* 보조 버튼 스타일 (회색 계열) */
 .btn-secondary {
   background-color: var(--color-surface);
   color: var(--color-text-primary);
@@ -127,6 +159,7 @@ body {
   background-color: var(--color-surface-hover);
 }
 
+/* 성공 버튼 스타일 (초록색 계열) */
 .btn-success {
   background-color: var(--color-success);
   color: var(--color-white);
@@ -137,6 +170,7 @@ body {
   background-color: var(--color-success-hover);
 }
 
+/* 위험 버튼 스타일 (빨간색 계열) */
 .btn-danger {
   background-color: var(--color-danger);
   color: var(--color-white);
@@ -147,7 +181,7 @@ body {
   background-color: var(--color-danger-hover);
 }
 
-/* Status Indicators */
+/* 상태 표시기 기본 스타일 */
 .status {
   display: inline-flex;
   align-items: center;
@@ -160,37 +194,42 @@ body {
   letter-spacing: 0.025em;
 }
 
+/* 성공 상태 스타일 */
 .status-success {
   background-color: rgba(35, 134, 54, 0.1);
   color: var(--color-success);
   border: 1px solid rgba(35, 134, 54, 0.2);
 }
 
+/* 실패 상태 스타일 */
 .status-failed {
   background-color: rgba(218, 54, 51, 0.1);
   color: var(--color-danger);
   border: 1px solid rgba(218, 54, 51, 0.2);
 }
 
+/* 실행 중 상태 스타일 */
 .status-running {
   background-color: rgba(251, 133, 0, 0.1);
   color: var(--color-running);
   border: 1px solid rgba(251, 133, 0, 0.2);
 }
 
+/* 대기 중 상태 스타일 */
 .status-pending {
   background-color: rgba(210, 153, 34, 0.1);
   color: var(--color-pending);
   border: 1px solid rgba(210, 153, 34, 0.2);
 }
 
+/* 취소됨 상태 스타일 */
 .status-cancelled {
   background-color: rgba(139, 148, 158, 0.1);
   color: var(--color-cancelled);
   border: 1px solid rgba(139, 148, 158, 0.2);
 }
 
-/* Cards */
+/* 카드 UI 컴포넌트 기본 스타일 */
 .card {
   background-color: var(--color-surface);
   border: var(--border-width) solid var(--color-border);
@@ -198,23 +237,26 @@ body {
   overflow: hidden;
 }
 
+/* 카드 헤더 스타일 */
 .card-header {
   padding: var(--spacing-large);
   border-bottom: var(--border-width) solid var(--color-border);
   background-color: var(--color-surface-secondary);
 }
 
+/* 카드 본문 스타일 */
 .card-body {
   padding: var(--spacing-large);
 }
 
+/* 카드 푸터 스타일 */
 .card-footer {
   padding: var(--spacing-large);
   border-top: var(--border-width) solid var(--color-border);
   background-color: var(--color-surface-secondary);
 }
 
-/* Navigation */
+/* 네비게이션 메뉴 기본 스타일 */
 .nav {
   display: flex;
   list-style: none;
@@ -222,10 +264,12 @@ body {
   padding: 0;
 }
 
+/* 네비게이션 아이템 */
 .nav-item {
   display: flex;
 }
 
+/* 네비게이션 링크 */
 .nav-link {
   display: flex;
   align-items: center;
@@ -241,13 +285,14 @@ body {
   background-color: var(--color-surface-hover);
 }
 
+/* 활성화된 네비게이션 링크 */
 .nav-link.active {
   color: var(--color-text-primary);
   background-color: var(--color-surface-secondary);
   font-weight: var(--font-weight-medium);
 }
 
-/* Forms */
+/* 폼 컨트롤(input 등) 기본 스타일 */
 .form-control {
   display: block;
   width: 100%;
@@ -271,7 +316,7 @@ body {
   color: var(--color-text-placeholder);
 }
 
-/* Tables */
+/* 테이블 기본 스타일 */
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -295,7 +340,7 @@ body {
   background-color: var(--color-surface-hover);
 }
 
-/* Utility Classes */
+/* 유틸리티 클래스: 텍스트 색상 */
 .text-primary { color: var(--color-text-primary); }
 .text-secondary { color: var(--color-text-secondary); }
 .text-muted { color: var(--color-text-muted); }
@@ -303,43 +348,51 @@ body {
 .text-danger { color: var(--color-danger); }
 .text-warning { color: var(--color-warning); }
 
+/* 유틸리티 클래스: 배경색 */
 .bg-surface { background-color: var(--color-surface); }
 .bg-surface-secondary { background-color: var(--color-surface-secondary); }
 
+/* 유틸리티 클래스: 테두리 */
 .border { border: var(--border-width) solid var(--color-border); }
 .border-top { border-top: var(--border-width) solid var(--color-border); }
 .border-bottom { border-bottom: var(--border-width) solid var(--color-border); }
 .border-left { border-left: var(--border-width) solid var(--color-border); }
 .border-right { border-right: var(--border-width) solid var(--color-border); }
 
+/* 유틸리티 클래스: 둥근 모서리 */
 .rounded { border-radius: var(--border-radius); }
 .rounded-large { border-radius: var(--border-radius-large); }
 
+/* 유틸리티 클래스: 패딩 */
 .p-0 { padding: 0; }
 .p-small { padding: var(--spacing-small); }
 .p-medium { padding: var(--spacing-medium); }
 .p-large { padding: var(--spacing-large); }
 
+/* 유틸리티 클래스: 마진 */
 .m-0 { margin: 0; }
 .m-small { margin: var(--spacing-small); }
 .m-medium { margin: var(--spacing-medium); }
 .m-large { margin: var(--spacing-large); }
 
+/* 유틸리티 클래스: 디스플레이 */
 .d-flex { display: flex; }
 .d-block { display: block; }
 .d-inline-block { display: inline-block; }
 .d-none { display: none; }
 
+/* 유틸리티 클래스: Flexbox */
 .flex-column { flex-direction: column; }
 .flex-row { flex-direction: row; }
 .align-items-center { align-items: center; }
 .justify-content-center { justify-content: center; }
 .justify-content-between { justify-content: space-between; }
 
+/* 유틸리티 클래스: 크기 */
 .w-100 { width: 100%; }
 .h-100 { height: 100%; }
 
-/* Animations */
+/* 애니메이션: 서서히 나타남 */
 .fade-in {
   animation: fadeIn var(--transition-medium) ease-in-out;
 }
@@ -349,6 +402,7 @@ body {
   to { opacity: 1; }
 }
 
+/* 애니메이션: 아래에서 위로 나타남 */
 .slide-in {
   animation: slideIn var(--transition-medium) ease-out;
 }
@@ -357,3 +411,35 @@ body {
   from { transform: translateY(-10px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* 스크롤바 스타일링 */
+/* 웹킷 기반 브라우저 (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #21262d; /* 회색 트랙 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #484f58; /* 회색 스크롤바 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5a6169; /* hover 시 더 진한 회색 */
+}
+
+::-webkit-scrollbar-corner {
+  background: #21262d; /* 코너 영역 */
+}
+
+/* 파이어폭스 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #484f58 #21262d; /* thumb track */
+}
+

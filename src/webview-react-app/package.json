@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "gh-actions-analyzer": "file:../..",
+    "jszip": "^3.10.1",
+    "openai": "^5.12.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
@@ -25,6 +28,6 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2",
-    "vite-tsconfig-paths": "^4.2.0"
+    "vite-tsconfig-paths": "^4.3.2"
   }
 }

@@ -1,217 +1,444 @@
-/* History Table 컴포넌트 스타일 */
-.history-table-container {
+/* History Table 스타일 - theme.css에서 기본 스타일을 가져옴 */
+@import '../../styles/theme.css';
+
+/* 전체 히스토리 테이블을 감싸는 래퍼 */
+.history-table-wrapper {
   width: 100%;
-  background-color: var(--color-surface);
-  border: var(--border-width) solid var(--color-border);
-  border-radius: var(--border-radius);
-  overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
 
-.history-table {
+/* GitHub Actions 스타일의 런 컨테이너 */
+.github-runs-container {
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  overflow: hidden; /* 둥근 모서리 유지 */
+  background: #161b22;
+  margin: 0;
+  padding: 0;
+}
+
+/* GitHub Actions 스타일 헤더 - 이전 헤더 색상으로 변경 */
+.github-runs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #21262d; /* 이전 헤더 색상으로 변경 */
+  /* 구분선 제거 - Run log 제목에만 적용 */
+  overflow: visible; /* 드롭다운이 잘리지 않도록 */
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #DBE8F2;
+}
+
+.header-filters {
+  display: flex;
+  gap: 12px;
+  margin-left: auto; /* 오른쪽 정렬 */
+}
+
+.history-filter-dropdown {
+  position: relative;
+}
+
+.history-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #DBE8F2;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.history-filter-btn:hover {
+  background: #30363d;
+}
+
+.history-filter-arrow {
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+.history-filter-arrow.up {
+  transform: rotate(180deg);
+}
+
+.history-dropdown-menu {
+  position: fixed; /* fixed로 변경하여 어떤 컨테이너에도 잘리지 않도록 */
+  min-width: 200px;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 9999; /* 더 높은 z-index로 설정 */
+  margin-top: 4px;
+}
+
+.history-dropdown-search {
+  padding: 8px;
+  border-bottom: 1px solid #30363d;
+}
+
+.history-dropdown-search input {
   width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-body);
-  background-color: transparent;
+  padding: 6px 8px; /* 원래 패딩으로 복원 */
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  color: #DBE8F2;
+  font-size: 12px;
 }
 
-.history-table thead {
-  background-color: var(--color-surface-secondary);
+.history-dropdown-search input:focus {
+  outline: none;
+  border-color: #58a6ff;
 }
 
-.history-table th {
-  padding: var(--spacing-large);
-  text-align: left;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  border-bottom: var(--border-width) solid var(--color-border);
-  font-size: var(--font-size-body);
+.history-dropdown-item {
+  padding: 8px 12px;
+  color: #DBE8F2;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.history-table th:first-child {
-  padding-left: var(--spacing-xlarge);
+.history-dropdown-item:hover {
+  background: #30363d;
 }
 
-.history-table th:last-child {
-  padding-right: var(--spacing-xlarge);
+/* 체크 아이콘 */
+.check-icon {
+  color: #58a6ff;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
-.history-table-row {
-  transition: background-color var(--transition-medium);
-  border-bottom: var(--border-width) solid var(--color-border-muted);
+.history-dropdown-item.checked .check-icon {
+  opacity: 1;
 }
 
-.history-table-row:hover {
-  background-color: var(--color-surface-hover);
+.header-count {
+  margin-left: 16px;
+  font-size: 12px;
+  color: #8b949e;
 }
 
-.history-table-row:last-child {
+/* 빈 상태 메시지 */
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: #8b949e;
+  font-size: 14px;
+}
+
+/* 실행 기록 목록 - 표 컨테이너 내부의 본문 부분 */
+.runs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* 마진 완전 제거하여 표처럼 연결 */
+  margin: 0; /* 마진 완전 제거 */
+  padding: 0; /* 패딩 완전 제거 */
+  /* 테두리와 배경은 상위 컨테이너에서 처리 */
+}
+
+/* GitHub Actions 스타일의 개별 런 아이템 */
+.github-run-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px;
+  border-bottom: 1px solid #30363d;
+  background: transparent;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
+.github-run-item:hover {
+  background: #21262d;
+}
+
+.github-run-item:last-child {
   border-bottom: none;
 }
 
-.history-table td {
-  padding: var(--spacing-large);
-  color: var(--color-text-primary);
-  vertical-align: middle;
-  border-bottom: none;
+/* 왼쪽 상태 아이콘 영역 */
+.run-status-icon {
+  margin-right: 12px;
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 
-.history-table td:first-child {
-  padding-left: var(--spacing-xlarge);
+/* 오른쪽 메인 콘텐츠 영역 */
+.run-main-content {
+  flex: 1;
+  min-width: 0;
 }
 
-.history-table td:last-child {
-  padding-right: var(--spacing-xlarge);
+/* 첫 번째 줄: 제목과 메타 정보 */
+.run-title-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
 }
 
-/* Run ID 스타일 */
+.run-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.run-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #DBE8F2;
+}
+
 .run-id {
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
+  font-size: 12px;
+  color: #8b949e;
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
 }
 
-/* Status 스타일 */
+.run-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto; /* 오른쪽으로 더 이동 */
+}
+
+.run-branch-tag {
+  background: #21262d;
+  color: #58a6ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #30363d;
+  white-space: nowrap;
+}
+
+.no-branch {
+  color: #8b949e;
+  font-size: 12px;
+}
+
+.branch-separator {
+  color: #8b949e;
+  font-size: 12px;
+  margin: 0 4px;
+}
+
+.run-time-ago {
+  font-size: 12px;
+  color: #8b949e;
+  white-space: nowrap;
+}
+
+/* 두 번째 줄: 커밋 정보 */
+.run-commit-line {
+  margin-top: 2px;
+}
+
+.run-commit-info {
+  font-size: 12px;
+  color: #8b949e;
+}
+
+.commit-hash {
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
+  color: #DBE8F2;
+}
+
+.commit-author {
+  color: #DBE8F2;
+}
+
+/* 개별 실행 기록 아이템 - 표의 행으로 변경 */
+.run-item {
+  background: transparent; /* 전체 표 배경과 동일하게 */
+  border: none; /* 개별 테두리 제거 */
+  border-radius: 0; /* 둥근 모서리 제거 */
+  padding: 16px; /* 상하 패딩을 8px로 줄여서 더 촘촘한 표 스타일 */
+  margin: 0 !important; /* Dashboard.css의 margin-top: 16px 강제 덮어쓰기 */
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border-bottom: 1px solid #30363d; /* 행 사이 구분선만 유지 */
+  box-shadow: none !important; /* Dashboard.css의 box-shadow 강제 제거 */
+}
+
+/* 실행 기록 아이템에 마우스를 올렸을 때의 스타일 */
+.run-item:hover {
+  background: #21262d; /* hover 시 배경색만 변경 */
+}
+
+/* 마지막 행의 구분선 제거 */
+.run-item:last-child {
+  border-bottom: none;
+}
+
+/* 실행 기록 아이템 내부의 한 줄(row) */
+.run-row {
+  display: grid;
+  grid-template-columns: 80px 140px 180px 120px 1fr;
+  align-items: center;
+}
+
+/* 실행 ID 스타일 */
+.run-id {
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  font-weight: 600;
+  color: #DBE8F2;
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
+}
+
+/* 실행 상태(status) 영역 */
 .run-status {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
-.run-status .status {
-  display: inline-flex;
+/* 상태를 나타내는 아이콘(동그라미 등)의 컨테이너 */
+.status-indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
   align-items: center;
-  gap: var(--spacing-small);
-  padding: var(--spacing-small) var(--spacing-medium);
-  border-radius: var(--border-radius-small);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-medium);
-  text-transform: capitalize;
-  letter-spacing: 0.025em;
-  min-width: 70px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 성공(success) 상태 아이콘 */
+.status-indicator.status-success {
+  background: rgba(35, 134, 54, 0.15);
+  border: 1px solid rgba(35, 134, 54, 0.3);
+}
+
+/* 실패(failed) 상태 아이콘 */
+.status-indicator.status-failed {
+  background: rgba(255, 0, 0, 0.15); /* 더 빨간색으로 변경 */
+  border: 1px solid rgba(255, 0, 0, 0.3); /* 더 빨간색으로 변경 */
+}
+
+/* 실행 중(running) 상태 아이콘 */
+.status-indicator.status-running {
+  background: rgba(255, 136, 0, 0.15);
+  border: 1px solid rgba(255, 136, 0, 0.3);
+}
+
+/* 대기(pending) 상태 아이콘 */
+.status-indicator.status-pending {
+  background: rgba(139, 148, 158, 0.15);
+  border: 1px solid rgba(139, 148, 158, 0.3);
+}
+
+/* 상태 텍스트(Completed, Failed 등) */
+.status-text {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* 성공 상태 텍스트 색상 */
+.status-indicator.status-success + .status-text {
+  color: #238636;
+}
+
+/* 실패 상태 텍스트 색상 */
+.status-indicator.status-failed + .status-text {
+  color: #ff0000; /* 더 빨간색으로 변경 */
+}
+
+/* 실행 중 상태 텍스트 색상 */
+.status-indicator.status-running + .status-text {
+  color: #ff8800;
+}
+
+/* 대기 상태 텍스트 색상 */
+.status-indicator.status-pending + .status-text {
+  color: #8b949e;
+}
+
+/* 실행 시각(Timestamp) 스타일 */
+.run-timestamp {
+  font-family: var(--font-family-base);
+  font-size: 12px;
+  color: #8b949e;
+  font-family: 'Consolas', 'Monaco', 'Menlo', monospace;
+}
+
+/* 브랜치(Branch) 정보 영역 */
+.run-branch {
+  display: flex;
   justify-content: center;
 }
 
-/* Status Text Color by State */
-.status-success {
-  color: var(--color-success);
-}
-
-.status-failed {
-  color: var(--color-danger);
-}
-
-.status-running {
-  color: var(--color-running);
-}
-
-.status-pending {
-  color: var(--color-pending);
-}
-
-.status-cancelled {
-  color: var(--color-cancelled);
-}
-
-/* Timestamp 스타일 */
-.run-timestamp {
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-body);
-  color: var(--color-text-secondary);
-}
-
-/* Reason 스타일 */
-.reason-container {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-medium);
-}
-
-.reason-text {
-  color: var(--color-text-primary);
-  font-size: var(--font-size-body);
-}
-
+/* 브랜치 이름을 감싸는 태그 */
 .branch-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--spacing-xs) var(--spacing-small);
-  background-color: var(--color-accent);
-  color: var(--color-white);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
-  border-radius: var(--border-radius-small);
-  text-transform: lowercase;
+  background: #21262d;
+  color: #58a6ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #30363d;
+  white-space: nowrap;
 }
 
-/* Reason Text Color by State */
-.status-failed .reason-text {
-  color: var(--color-danger);
+/* 브랜치 정보가 없을 때 표시되는 스타일 */
+.no-branch {
+  color: #8b949e;
+  font-size: 12px;
 }
 
-.status-success .reason-text {
-  color: var(--color-success);
+/* 실행 이유(Reason) 스타일 */
+.run-reason {
+  font-family: var(--font-family-base);
+  font-size: 13px;
+  color: #c9d1d9;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.status-running .reason-text {
-  color: var(--color-running);
-}
-
-.status-pending .reason-text {
-  color: var(--color-pending);
-}
-
-.status-cancelled .reason-text {
-  color: var(--color-cancelled);
-}
-
-/* Empty State */
+/* 실행 기록이 없을 때 보여주는 영역 */
 .empty-state {
-  padding: var(--spacing-xxlarge);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 120px;
   text-align: center;
-  background-color: var(--color-surface);
 }
 
+/* 실행 기록이 없을 때 보여주는 텍스트 스타일 */
 .empty-state p {
-  margin: 0;
-  color: var(--color-text-muted);
   font-size: var(--font-size-body);
-}
-
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-  .history-table th,
-  .history-table td {
-    padding: var(--spacing-medium);
-  }
-  
-  .history-table th:first-child,
-  .history-table td:first-child {
-    padding-left: var(--spacing-large);
-  }
-  
-  .history-table th:last-child,
-  .history-table td:last-child {
-    padding-right: var(--spacing-large);
-  }
-  
-  .reason-container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-small);
-  }
-  
-  .run-timestamp {
-    font-size: var(--font-size-caption);
-  }
-}
-
-/* 스크롤 가능한 테이블 */
-@media (max-width: 480px) {
-  .history-table-container {
-    overflow-x: auto;
-  }
-  
-  .history-table {
-    min-width: 600px;
-  }
+  color: var(--color-text-muted);
 }

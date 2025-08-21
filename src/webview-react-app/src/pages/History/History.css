@@ -1,19 +1,133 @@
-/* History Page Layout */
-.history-main-content {
-  padding: var(--spacing-xlarge);
+/* History 페이지 스타일 - theme.css에서 기본 스타일을 가져옴 */
+@import '../../styles/theme.css';
+
+/* 히스토리 페이지 전체를 감싸는 최상위 컨테이너 */
+.history-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background: var(--color-black);
+  font-family: var(--font-family-base);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  padding: 0;
+  margin: 0;
+}
+
+/* 사이드바가 열려있을 때의 히스토리 컨테이너 */
+.history-container.sidebar-open {
+  /* 사이드바가 열려있을 때: 메인 패널이 1/2 차지 (사이드바 제외한 화면의) */
+}
+
+/* 사이드바가 닫혔을 때의 히스토리 컨테이너 */
+.history-container.sidebar-closed {
+  /* 사이드바가 닫혀있을 때: 메인 패널이 1/2 차지 (전체 화면의) */
+  width: 100vw;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100vh;
+}
+
+/* 히스토리 페이지의 메인 콘텐츠 영역 */
+.history-main {
+  position: fixed;
+  right: 0; /* 오른쪽에 고정 */
+  top: 0;
+  height: 100%;
+  padding: 0 20px 20px 20px; /* 메인 패널과 동일한 padding */
+  overflow: hidden;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box; /* padding이 width에 포함되도록 */
+  z-index: 10; /* 다른 요소 위에 표시 */
+}
+
+/* 사이드바가 열려있을 때의 히스토리 메인 영역 */
+.history-container.sidebar-open .history-main {
+  /* 사이드바 열림: 오른쪽에 고정, 왼쪽에서 resize */
+  right: 0 !important; /* 오른쪽 고정 */
+  width: 75% !important; /* 사이드바 제외한 공간 전체 사용 */
+  padding: 0 20px 20px 20px !important; /* 패딩 일관성 유지 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important; /* 박스 모델 강제 적용 */
+}
+
+/* 사이드바가 닫혔을 때의 히스토리 메인 영역 */
+.history-container.sidebar-closed .history-main {
+  /* 사이드바 닫힘: 오른쪽에 고정, 전체 화면 사용 */
+  right: 0 !important; /* 오른쪽 고정 */
+  width: 100% !important; /* 전체 화면 사용 */
+  padding: 0 20px 20px 20px !important; /* 패딩 일관성 유지 */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important; /* 박스 모델 강제 적용 */
+}
+
+/* 메인 헤더 스타일 */
+.main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  /* 구분선 제거 - Editor 페이지에서만 사용 */
+  margin-bottom: 20px;
+}
+
+/* 메인 콘텐츠 영역의 제목(Workflow Run History) */
+.main-title {
+  font-family: var(--font-family-base);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 24pt;
+  line-height: 60px;
+  color: var(--color-white);
+  margin: 0;
+  transition: opacity 0.3s ease, margin-left 0.3s ease; /* 부드러운 전환 효과 */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 사이드바가 닫혔을 때 메인 타이틀을 오른쪽으로 밀기 */
+.history-container.sidebar-closed .main-title {
+  margin-left: 30px; /* 오른쪽으로 밀기 */
+}
+
+/* 히스토리 테이블을 감싸는 에디터 형식의 컨테이너 */
+.history-editor {
+  padding: 0; /* 모든 패딩 제거 */
+  margin: 0; /* 모든 마진 제거 */
   overflow-y: auto;
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
-  min-height: 100vh;
+  flex: 1;
 }
 
-.history-title {
-  font-size: var(--font-size-large-title);
-  font-weight: var(--font-weight-semibold);
-  margin-bottom: var(--spacing-xlarge);
-  color: var(--color-text-primary);
+/* 히스토리 에디터의 스크롤바 */
+.history-editor::-webkit-scrollbar {
+  width: 8px;
 }
 
+/* 스크롤바 트랙 */
+.history-editor::-webkit-scrollbar-track {
+  background: #21262d;
+  border-radius: 4px;
+}
+
+/* 스크롤바 핸들 */
+.history-editor::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+/* 스크롤바 핸들에 마우스를 올렸을 때 */
+.history-editor::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* 히스토리 데이터가 없거나 로딩 중일 때의 상태 표시 영역 */
 .history-empty-state,
 .history-loading {
   display: flex;
@@ -23,6 +137,7 @@
   text-align: center;
 }
 
+/* 데이터가 없거나 로딩 중일 때의 텍스트 스타일 */
 .history-empty-state p,
 .history-loading p {
   font-size: var(--font-size-body);

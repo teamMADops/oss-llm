@@ -7,11 +7,9 @@
     "moduleResolution": "node",
     "types": ["node", "vscode"],
     "outDir": "out",
-    "rootDir": "src"
+    "rootDir": "src",
+    "skipLibCheck": true
   },
-  "exclude": [
-    "node_modules",
-    "src/webview-react-app",
-    "getFailedLogsForLLM.ts"
-  ]
+
+  "exclude": ["src/getFailedLogsForLLM.ts", "src/webview-react-app"]
 }

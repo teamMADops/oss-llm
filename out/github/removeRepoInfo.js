@@ -33,27 +33,21 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGitHubToken = getGitHubToken;
-// src/auth/tokenManager.ts
+exports.registerRemoveRepoCommand = registerRemoveRepoCommand;
 const vscode = __importStar(require("vscode"));
-const TOKEN_KEY = 'github_token';
-async function getGitHubToken(context) {
-    let token = context.workspaceState.get(TOKEN_KEY);
-    if (token) {
-        console.log('[🔐] 저장된 GitHub 토큰 사용');
-        return token;
-    }
-    console.log('[📝] GitHub 토큰 없음 → 사용자 입력 필요');
-    token = await vscode.window.showInputBox({
-        prompt: 'GitHub Personal Access Token을 입력하세요',
-        password: true,
-        ignoreFocusOut: true
+function registerRemoveRepoCommand(context) {
+    return vscode.commands.registerCommand('extension.removeRepoInfo', async () => {
+        const current = getFixedRepo(context);
+        if (!current) {
+            vscode.window.showInformationMessage('저장된 레포가 없습니다.');
+            return;
+        }
+        const pick = await vscode.window.showQuickPick(['삭제', '취소'], {
+            placeHolder: `현재: ${formatRepo(current)} — 삭제할까요?`
+        });
+        if (pick !== '삭제')
+            return;
+        await clearFixedRepo(context);
+        vscode.window.showInformationMessage('🗑️ 저장된 레포가 삭제되었습니다.');
     });
-    if (token) {
-        await context.workspaceState.update(TOKEN_KEY, token);
-        console.log('[💾] GitHub 토큰 저장 완료 (workspaceState)');
-        return token;
-    }
-    console.log('[⛔] 사용자 입력 없음 → 토큰 불러오기 실패');
-    return undefined;
 }
