@@ -66,11 +66,14 @@
   box-sizing: border-box !important; /* 박스 모델 강제 적용 */
 }
 
-/* 메인 콘텐츠 영역의 헤더 */
+/* 메인 헤더 스타일 */
 .main-header {
-  padding: 20px 20px 20px 0; /* 오른쪽 패딩 제거 */
-  border-bottom: 1px solid var(--border-color);
-  background-color: transparent; /* 배경을 투명하게 만들어 다른 패널들과 동일하게 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+  /* 구분선 제거 - Editor 페이지에서만 사용 */
+  margin-bottom: 20px;
 }
 
 /* 메인 콘텐츠 영역의 제목(Workflow Run History) */

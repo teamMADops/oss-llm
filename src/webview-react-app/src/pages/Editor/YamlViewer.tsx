@@ -7,6 +7,17 @@ interface YamlViewerProps {
 }
 
 const YamlViewer: React.FC<YamlViewerProps> = ({ yamlContent, highlightedLines = [] }) => {
+  // 클립보드에 복사하는 함수
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(yamlContent);
+      alert('YAML이 클립보드에 복사되었습니다!');
+    } catch (err) {
+      console.error('클립보드 복사 실패:', err);
+      alert('클립보드 복사에 실패했습니다.');
+    }
+  };
+
   // YAML 구문 하이라이팅 함수
   const highlightYaml = (yaml: string) => {
     return yaml
@@ -97,10 +108,9 @@ jobs:
     return (
       <div className="yaml-viewer">
         <div className="yaml-header">
-          <span className="yaml-title">workflow.yml</span>
+          <span className="yaml-title">workflow.yaml</span>
           <div className="yaml-actions">
-            <button className="yaml-btn yaml-btn-copy">Save</button>
-            <button className="yaml-btn yaml-btn-format">Format</button>
+            <button className="yaml-btn yaml-btn-copy" onClick={copyToClipboard}>Copy</button>
           </div>
         </div>
         <div className="yaml-content">
@@ -133,10 +143,9 @@ jobs:
   return (
     <div className="yaml-viewer">
       <div className="yaml-header">
-        <span className="yaml-title">workflow.yml</span>
+        <span className="yaml-title">workflow.yaml</span>
         <div className="yaml-actions">
-          <button className="yaml-btn yaml-btn-copy">Copy</button>
-          <button className="yaml-btn yaml-btn-format">Format</button>
+          <button className="yaml-btn yaml-btn-copy" onClick={copyToClipboard}>Copy</button>
         </div>
       </div>
       <div className="yaml-content">

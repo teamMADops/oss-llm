@@ -412,3 +412,34 @@ body {
   to { transform: translateY(0); opacity: 1; }
 }
 
+/* 스크롤바 스타일링 */
+/* 웹킷 기반 브라우저 (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #21262d; /* 회색 트랙 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #484f58; /* 회색 스크롤바 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5a6169; /* hover 시 더 진한 회색 */
+}
+
+::-webkit-scrollbar-corner {
+  background: #21262d; /* 코너 영역 */
+}
+
+/* 파이어폭스 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #484f58 #21262d; /* thumb track */
+}
+

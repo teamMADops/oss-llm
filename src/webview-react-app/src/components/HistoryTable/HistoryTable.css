@@ -25,7 +25,7 @@
   align-items: center;
   padding: 16px 20px;
   background: #21262d; /* 이전 헤더 색상으로 변경 */
-  border-bottom: 1px solid #30363d;
+  /* 구분선 제거 - Run log 제목에만 적용 */
   overflow: visible; /* 드롭다운이 잘리지 않도록 */
 }
 
@@ -340,8 +340,8 @@
 
 /* 실패(failed) 상태 아이콘 */
 .status-indicator.status-failed {
-  background: rgba(218, 54, 51, 0.15);
-  border: 1px solid rgba(218, 54, 51, 0.3);
+  background: rgba(255, 0, 0, 0.15); /* 더 빨간색으로 변경 */
+  border: 1px solid rgba(255, 0, 0, 0.3); /* 더 빨간색으로 변경 */
 }
 
 /* 실행 중(running) 상태 아이콘 */
@@ -372,7 +372,7 @@
 
 /* 실패 상태 텍스트 색상 */
 .status-indicator.status-failed + .status-text {
-  color: #da3633;
+  color: #ff0000; /* 더 빨간색으로 변경 */
 }
 
 /* 실행 중 상태 텍스트 색상 */

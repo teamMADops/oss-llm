@@ -34,7 +34,7 @@
 /* 메인 콘텐츠 영역의 헤더 */
 .main-header {
   padding: 20px 20px 20px 0; /* 오른쪽 패딩 제거 */
-  border-bottom: 1px solid var(--border-color);
+  /* 구분선 제거 - Editor 페이지에서만 사용 */
   background-color: var(--header-background);
 }
 

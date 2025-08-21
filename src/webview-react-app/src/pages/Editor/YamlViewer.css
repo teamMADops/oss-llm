@@ -29,7 +29,7 @@
 /* YAML 뷰어 제목 */
 .yaml-title {
   font-family: var(--font-family-base);
-  font-size: 14px;
+  font-size: 24px; /* main-title과 동일한 크기 */
   font-weight: 600;
   color: #DBE8F2;
 }
@@ -42,33 +42,31 @@
 
 /* YAML 뷰어 헤더의 개별 버튼 */
 .yaml-btn {
-  padding: 4px 8px;
+  padding: 8px 20px; /* main-title과 비슷한 크기로 조정 */
   background: #21262d;
   border: 1px solid #30363d;
   border-radius: 4px;
   color: #DBE8F2;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* YAML 뷰어 버튼에 마우스를 올렸을 때 */
 .yaml-btn:hover {
   background: #30363d;
   border-color: #58a6ff;
+  transform: translateY(-1px);
 }
 
 /* 복사 버튼에 마우스를 올렸을 때 */
 .yaml-btn-copy:hover {
   background: #238636;
   border-color: #238636;
-}
-
-/* 포맷 버튼에 마우스를 올렸을 때 */
-.yaml-btn-format:hover {
-  background: #58a6ff;
-  border-color: #58a6ff;
+  color: #ffffff;
 }
 
 /* YAML 내용이 표시되는 영역 */
