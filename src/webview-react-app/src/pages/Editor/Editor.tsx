@@ -56,9 +56,6 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
   // 현재 포커스된 요소 상태
   const [focusedElement, setFocusedElement] = useState<string | null>(null);
 
-  // 현재 focus된 section 상태
-  const [focusedSection, setFocusedSection] = useState<string | null>(null);
-
   // 섹션 순서 관리 (드래그 앤 드롭용)
   const [sectionOrder, setSectionOrder] = useState([
     'workflow-name',
@@ -365,7 +362,6 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
   // 섹션 렌더링 함수
   const renderSection = (sectionId: string) => {
     // 개별 요소별 focus 관리 (section 전체가 아닌)
-    const isElementFocused = (elementKey: string) => focusedElement === elementKey;
     
     switch (sectionId) {
       case 'workflow-name':
@@ -765,7 +761,6 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
 
   const handleInputBlur = () => {
     setFocusedElement(null);
-    setFocusedSection(null);
     setHighlightedLines({});
   };
 
