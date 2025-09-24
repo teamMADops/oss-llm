@@ -691,10 +691,6 @@ function getNonce() {
   return text;
 }
 
-export function deactivate() {
-  console.log('📴 GitHub Actions 확장 종료됨');
-}
-
 function send(panel: vscode.WebviewPanel, command: string, payload: any) {
   panel.webview.postMessage({ command, payload });
 }
