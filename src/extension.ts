@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 
 import { getSavedRepo, promptAndSaveRepo,deleteSavedRepo, type RepoRef} from './github/getRepoInfo';
 import { getOctokitViaVSCodeAuth, getExistingGitHubSession,signOutGitHub } from './auth/githubSession';
@@ -9,16 +10,14 @@ import { printToOutput } from './output/printToOutput';
 
 import { getFailedStepsAndPrompts } from './log/getFailedLogs';
 import { analyzePrompts } from './llm/analyze';
-import * as fs from 'fs';
-
 
 import * as dotenv from "dotenv";
 dotenv.config();
 
-// Webview panel management - Keep track of panels to prevent duplicates
 const panels: { [key: string]: vscode.WebviewPanel } = {};
-// 맨 위 유틸 추가: 숫자 여부 체크
 const isNumeric = (s: any) => typeof s === 'string' && /^\d+$/.test(s);
+
+type Page = 'dashboard' | 'editor' | 'history';
 
 /**
  * Creates and shows a new webview panel, or reveals an existing one.
@@ -26,7 +25,7 @@ const isNumeric = (s: any) => typeof s === 'string' && /^\d+$/.test(s);
  * @param context The extension context.
  * @param page The page to display in the webview ('dashboard', 'editor', 'history').
  */
-function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard' | 'editor' | 'history') {
+function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
     const column = vscode.window.activeTextEditor
         ? vscode.window.activeTextEditor.viewColumn
         : undefined;
@@ -41,45 +40,37 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
         return;
     }
 
-    // Otherwise, create a new panel.
     const panel = vscode.window.createWebviewPanel(
-        page, // This is the viewType, used internally to identify the panel type
-        pageTitle, // This is the title displayed to the user
+        page,
+        pageTitle,
         column || vscode.ViewColumn.One,
         {
             enableScripts: true,
-            retainContextWhenHidden: true, // Keep the state of the webview even when it's not visible
+            retainContextWhenHidden: true,
             localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'out', 'webview-build'))]
         }
     );
 
     panel.webview.html = getWebviewContent(context, panel);
 
-    // Handle messages from the webview
     panel.webview.onDidReceiveMessage(
         async message => {
-            
-          //github auto auth-login
             const octokit = await getOctokitViaVSCodeAuth();
             if (!octokit) {
             vscode.window.showErrorMessage('GitHub 로그인에 실패했습니다.');
-            return;
+              return;
             }
             console.log('[3] 🔑 VS Code GitHub 세션 확보');
 
-            // All messages from the webview will be handled here.
-            // This is where the API layer described in structure.md is implemented on the extension side.
             const repo = await getSavedRepo(context);
             if (!repo) {
                 panel.webview.postMessage({ command: 'error', payload: 'GitHub 리포지토리 정보를 찾을 수 없습니다.' });
-                return;
+              return;
             }
 
             switch (message.command) {
-                // These are placeholders for the API calls defined in structure.md
-                case 'getActions':
+                case "getActions":
                     try {
-                        // GitHub 워크플로우 파일 목록 가져오기
                         const { data: workflows } = await octokit.actions.listRepoWorkflows({
                             owner: repo.owner,
                             repo: repo.repo
@@ -96,50 +87,36 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                             return;
                         }
                         
-
-                        // ✅ 경로 기반 키 사용 (경로가 없으면 id 문자열 fallback)
                         const actions = (workflows.workflows ?? []).map(w => {
                           const key = w.path || String(w.id);
                           return {
                             // 프론트에서 기존 필드명(actionId)을 그대로 쓰되, 값은 "경로"로 보냄
                             actionId: key,
-                            id: String(w.id),        // 참고용
-                            path: w.path ?? null,    // 참고용
+                            id: String(w.id), // 참고용
+                            path: w.path ?? null, // 참고용
                             name: w.name ?? key,
                             status: w.state === 'active' ? 'success' : 'failed'
                           };
                         });
-                        
+
                         console.log(`[✅] 워크플로우 목록:`, actions);
-                        
-                        panel.webview.postMessage({ 
-                            command: 'getActionsResponse', 
-                            payload: actions 
-                        });
+                        send(panel, 'getActionsResponse', actions);
                     } catch (error) {
                         console.error('Error fetching actions:', error);
-                        panel.webview.postMessage({ 
-                            command: 'error', 
-                            payload: '워크플로우 목록을 가져오는데 실패했습니다.' 
-                        });
+                        send(panel, 'error', '워크플로우 목록을 가져오는데 실패했습니다.');
                     }
                     break;
                     
-                case 'getLatestRun':
+                case "getLatestRun":
                     try {
                         const actionId = message.payload?.actionId;
                         if (!actionId) {
-                            panel.webview.postMessage({ 
-                                command: 'error', 
-                                payload: 'Action ID가 필요합니다.' 
-                            });
+                            send(panel, 'error', 'Action ID가 필요합니다.');
                             return;
                         }
                         
-                        // ✅ 경로 또는 숫자 id 모두 허용
                         const workflowIdOrPath = String(actionId);
 
-                        // 특정 워크플로우의 최신 실행 가져오기
                         const { data: runs } = await octokit.actions.listWorkflowRuns({
                             owner: repo.owner,
                             repo: repo.repo,
@@ -158,47 +135,33 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                                 reason: run.head_commit?.message || 'Unknown'
                             };
                             
-                            panel.webview.postMessage({ 
-                                command: 'getLatestRunResponse', 
-                                payload: latestRun 
-                            });
+                            send(panel, 'getLatestRunResponse', latestRun);
                         } else {
-                            panel.webview.postMessage({ 
-                                command: 'getLatestRunResponse', 
-                                payload: null 
-                            });
+                            send(panel, 'getLatestRunResponse', null);
                         }
                     } catch (error) {
                         console.error('Error fetching latest run:', error);
-                        panel.webview.postMessage({ 
-                            command: 'error', 
-                            payload: '최신 실행 정보를 가져오는데 실패했습니다.' 
-                        });
+                        send(panel, 'error', '최신 실행 정보를 가져오는데 실패했습니다.');
                     }
                     break;
                     
-                case 'getRunHistory':
+                case "getRunHistory":
                     try {
                         const actionId = message.payload?.actionId;
                         if (!actionId) {
-                            panel.webview.postMessage({ 
-                                command: 'error', 
-                                payload: 'Action ID가 필요합니다.' 
-                            });
+                            send(panel, 'error', 'Action ID가 필요합니다.');
                             return;
                         }
                         
-                        const workflowIdOrPath = String(actionId); // ← 그대로 사용
+                        const workflowIdOrPath = String(actionId);
                         console.log(`[🔍] 워크플로우 ${workflowIdOrPath} 실행 기록 조회 (owner=${repo.owner}, repo=${repo.repo})`);
 
-                        // 특정 워크플로우의 실행 기록 가져오기
                         const { data: runs } = await octokit.actions.listWorkflowRuns({
                             owner: repo.owner,
                             repo: repo.repo,
                             workflow_id: isNumeric(workflowIdOrPath) ? Number(workflowIdOrPath) : (workflowIdOrPath as any),
                             per_page: 10
                         });
-                        
                         console.log(`[📊] 실행 기록 개수: ${runs.workflow_runs.length}`);
                         
                         const runHistory = runs.workflow_runs.map(run => ({
@@ -212,24 +175,17 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                             author: run.head_commit?.author?.name || 'Unknown'
                         }));
                         
-                        panel.webview.postMessage({ 
-                            command: 'getRunHistoryResponse', 
-                            payload: runHistory 
-                        });
+                        send(panel, 'getRunHistoryResponse', runHistory);
                     } catch (error) {
                         console.error('Error fetching run history:', error);
-                        panel.webview.postMessage({ 
-                            command: 'error', 
-                            payload: '실행 기록을 가져오는데 실패했습니다.' 
-                        });
+                        send(panel, 'error', '실행 기록을 가져오는데 실패했습니다.');
                                         }
                     break;
                     
-                case 'getLatestRunFromAllActions':
+                case "getLatestRunFromAllActions":
                     try {
                         console.log(`[🔍] 모든 actions 중 가장 최근 run 조회 (owner=${repo.owner}, repo=${repo.repo})`);
                         
-                        // 모든 워크플로우 가져오기
                         const { data: workflows } = await octokit.actions.listRepoWorkflows({
                             owner: repo.owner,
                             repo: repo.repo
@@ -238,7 +194,6 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                         let latestRun = null;
                         let latestTimestamp = 0;
                         
-                        // 각 워크플로우의 최신 실행을 확인
                         for (const workflow of workflows.workflows) {
                             try {
                                 const { data: runs } = await octokit.actions.listWorkflowRuns({
@@ -271,40 +226,29 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                         
                         console.log(`[✅] 가장 최근 run:`, latestRun);
                         
-                        panel.webview.postMessage({ 
-                            command: 'getLatestRunFromAllActionsResponse', 
-                            payload: latestRun 
-                        });
+                        send(panel, 'getLatestRunFromAllActionsResponse', latestRun);
                     } catch (error) {
                         console.error('Error fetching latest run from all actions:', error);
-                        panel.webview.postMessage({ 
-                            command: 'error', 
-                            payload: '가장 최근 실행 정보를 가져오는데 실패했습니다.' 
-                        });
+                        send(panel, 'error', '가장 최근 실행 정보를 가져오는데 실패했습니다.');
                     }
                     break;
                     
-                case 'getRunDetails':
+                case "getRunDetails":
                     try {
                         const runId = message.payload?.runId;
                         if (!runId) {
-                            panel.webview.postMessage({ 
-                                command: 'error', 
-                                payload: 'Run ID가 필요합니다.' 
-                            });
+                            send(panel, 'error', 'Run ID가 필요합니다.');
                             return;
                         }
                         
                         console.log(`[🔍] Run 상세 정보 조회: ${runId} (owner=${repo.owner}, repo=${repo.repo})`);
                         
-                        // 특정 run의 상세 정보 가져오기
                         const { data: run } = await octokit.actions.getWorkflowRun({
                             owner: repo.owner,
                             repo: repo.repo,
                             run_id: Number(runId)
                         });
                         
-                        // Run의 jobs 정보도 가져오기
                         const { data: jobs } = await octokit.actions.listJobsForWorkflowRun({
                             owner: repo.owner,
                             repo: repo.repo,
@@ -328,33 +272,23 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                         
                         console.log(`[✅] Run 상세 정보:`, runDetails);
                         
-                        panel.webview.postMessage({ 
-                            command: 'getRunDetailsResponse', 
-                            payload: runDetails 
-                        });
+                        send(panel, 'getRunDetailsResponse', runDetails);
                     } catch (error) {
                         console.error('Error fetching run details:', error);
-                        panel.webview.postMessage({ 
-                            command: 'error', 
-                            payload: 'Run 상세 정보를 가져오는데 실패했습니다.' 
-                        });
+                        send(panel, 'error', 'Run 상세 정보를 가져오는데 실패했습니다.');
                     }
                     break;
                     
-                case 'getRunLogs':
+                case "getRunLogs":
                     try {
                         const runId = message.payload?.runId;
                         if (!runId) {
-                            panel.webview.postMessage({ 
-                                command: 'error', 
-                                payload: 'Run ID가 필요합니다.' 
-                            });
+                            send(panel, 'error', 'Run ID가 필요합니다.');
                             return;
                         }
                         
                         console.log(`[🔍] Run 로그 다운로드: ${runId} (owner=${repo.owner}, repo=${repo.repo})`);
                         
-                        // Run의 로그 ZIP 다운로드
                         const { data: logs } = await octokit.request(
                             'GET /repos/{owner}/{repo}/actions/runs/{run_id}/logs',
                             { 
@@ -365,7 +299,6 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                             }
                         );
                         
-                        // ZIP 파일을 파싱하여 로그 내용 추출
                         const JSZip = require('jszip');
                         const zip = await JSZip.loadAsync(logs);
                         
@@ -379,51 +312,30 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                         
                         console.log(`[✅] Run 로그 다운로드 완료: ${txtFiles.length}개 파일`);
                         
-                        panel.webview.postMessage({ 
-                            command: 'getRunLogsResponse', 
-                            payload: allLogs 
-                        });
+                        send(panel, 'getRunLogsResponse', allLogs);
                     } catch (error) {
                         console.error('Error fetching run logs:', error);
-                        panel.webview.postMessage({ 
-                            command: 'error', 
-                            payload: 'Run 로그를 가져오는데 실패했습니다.' 
-                        });
+                        send(panel, 'error', 'Run 로그를 가져오는데 실패했습니다.');
                     }
                     break;
                 
-                // helpers: 파일 내용/sha 유틸을 위에 추가
-                async function getFileText(octokit: any, repo: RepoRef, filePath: string, ref = 'main') {
-                  const r = await octokit.repos.getContent({ owner: repo.owner, repo: repo.repo, path: filePath, ref });
-                  if (Array.isArray(r.data)) return '';
-                  const base64 = (r.data as any).content?.replace(/\n/g, '') ?? '';
-                  return Buffer.from(base64, 'base64').toString('utf8');
-                }
+                case "getWorkflowFile":
+                  async function getFileText(octokit: any, repo: RepoRef, filePath: string, ref = 'main') {
+                    const r = await octokit.repos.getContent({ owner: repo.owner, repo: repo.repo, path: filePath, ref });
+                    if (Array.isArray(r.data)) return '';
+                    const base64 = (r.data as any).content?.replace(/\n/g, '') ?? '';
+                    return Buffer.from(base64, 'base64').toString('utf8');
+                  }
 
-                function isNumericId(s: string) {
-                  return /^\d+$/.test(s);
-                }
-
-                function ensureWorkflowPathFromWorkflow(wf: any) {
-                  if (!wf?.path) throw new Error('워크플로우 경로를 찾을 수 없습니다.');
-                  return wf.path as string;
-                }
-
-                case 'getWorkflowFile':
                     try {
-                        //const actionId = message.payload?.actionId;
                         const actionId = String(message.payload?.actionId);
                         if (!actionId) {
-                            panel.webview.postMessage({ 
-                                command: 'error', 
-                                payload: 'Action ID가 필요합니다.' 
-                            });
+                            send(panel, 'error', 'Action ID가 필요합니다.');
                             return;
                         }
 
                         let workflowPath: string;
                         if (isNumericId(actionId)) {
-                          // 숫자 ID → workflow 메타 조회 → path 추출
                           const { data: wf } = await octokit.actions.getWorkflow({
                             owner: repo.owner, repo: repo.repo, workflow_id: Number(actionId)
                           });
@@ -433,68 +345,45 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
                           workflowPath = actionId;
                         }
 
-                        // 파일 내용 읽어오기
                         const content = await getFileText(octokit, repo, workflowPath, 'main');
 
-                        panel.webview.postMessage({
-                          command: 'getWorkflowFileResponse',
-                          payload: content
-                        });
-                        // const workflowIdOrPath = String(actionId);
-
-                        // // ✅ getWorkflow도 경로/ID 모두 허용
-                        // const { data: workflow } = await octokit.actions.getWorkflow({
-                        //   owner: repo.owner,
-                        //   repo: repo.repo,
-                        //   workflow_id: isNumeric(workflowIdOrPath) ? Number(workflowIdOrPath) : (workflowIdOrPath as any)
-                        // });
-
-                        // 여기서는 기본 정보만 반환
-                        // panel.webview.postMessage({ 
-                        //     command: 'getWorkflowFileResponse', 
-                        //     payload: workflow.path 
-                        // });
+                        send(panel, 'getWorkflowFileResponse', content);
                         } catch (error: any) {
                         console.error('Error fetching workflow file:', error);
                         const hint = error?.status === 404
                           ? ' (이 레포에 해당 워크플로가 없거나 권한 문제일 수 있습니다.)'
                           : '';
-                        panel.webview.postMessage({
-                          command: 'error',
-                          payload: '워크플로우 파일을 가져오는데 실패했습니다.' + hint
-                        });
+                        send(panel, 'error', '워크플로우 파일을 가져오는데 실패했습니다.' + hint);
                       }
                     break;
                 
-                // helpers: sha 조회 + 업서트 유틸 추가
-                async function getFileShaIfExists(octokit: any, repo: RepoRef, filePath: string, ref='main') {
-                  try {
-                    const r = await octokit.repos.getContent({ owner: repo.owner, repo: repo.repo, path: filePath, ref });
-                    if (Array.isArray(r.data)) return undefined;
-                    return (r.data as any).sha as string;
-                  } catch (e: any) {
-                    if (e?.status === 404) return undefined;
-                    throw e;
+                case "saveWorkflowFile": {
+                  async function getFileShaIfExists(octokit: any, repo: RepoRef, filePath: string, ref='main') {
+                    try {
+                      const r = await octokit.repos.getContent({ owner: repo.owner, repo: repo.repo, path: filePath, ref });
+                      if (Array.isArray(r.data)) return undefined;
+                      return (r.data as any).sha as string;
+                    } catch (e: any) {
+                      if (e?.status === 404) return undefined;
+                      throw e;
+                    }
                   }
-                }
+  
+                  async function upsertFile(octokit: any, repo: RepoRef, filePath: string, contentUtf8: string, branch='main', message?: string) {
+                    const sha = await getFileShaIfExists(octokit, repo, filePath, branch);
+                    await octokit.repos.createOrUpdateFileContents({
+                      owner: repo.owner,
+                      repo: repo.repo,
+                      path: filePath,
+                      message: message ?? `chore(ci): update ${filePath}`,
+                      content: Buffer.from(contentUtf8, 'utf8').toString('base64'),
+                      branch,
+                      sha, // 있으면 업데이트, 없으면 생성
+                      committer: { name: 'MAD Bot', email: 'mad@team-madops.local' },
+                      author:    { name: 'MAD Bot', email: 'mad@team-madops.local' },
+                    });
+                  }
 
-                async function upsertFile(octokit: any, repo: RepoRef, filePath: string, contentUtf8: string, branch='main', message?: string) {
-                  const sha = await getFileShaIfExists(octokit, repo, filePath, branch);
-                  await octokit.repos.createOrUpdateFileContents({
-                    owner: repo.owner,
-                    repo: repo.repo,
-                    path: filePath,
-                    message: message ?? `chore(ci): update ${filePath}`,
-                    content: Buffer.from(contentUtf8, 'utf8').toString('base64'),
-                    branch,
-                    sha, // 있으면 업데이트, 없으면 생성
-                    committer: { name: 'MAD Bot', email: 'mad@team-madops.local' },
-                    author:    { name: 'MAD Bot', email: 'mad@team-madops.local' },
-                  });
-                }
-
-                // --- case 'saveWorkflowFile' 교체 ---
-                case 'saveWorkflowFile': {
                   try {
                     const actionId = String(message.payload?.actionId);
                     const content = String(message.payload?.content ?? '');
@@ -512,28 +401,19 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: 'dashboard
 
                     await upsertFile(octokit, repo, workflowPath, content, 'main');
 
-                    panel.webview.postMessage({
-                      command: 'saveWorkflowFileResponse',
-                      payload: { ok: true, path: workflowPath }
-                    });
+                    send(panel, 'saveWorkflowFileResponse', { ok: true, path: workflowPath });
                   } catch (error: any) {
                     // TODO: 보호 브랜치면 여기서 feature 브랜치/PR 폴백 추가 가능 : ?? 먼솔 
-                    panel.webview.postMessage({
-                      command: 'saveWorkflowFileResponse',
-                      payload: { ok: false, error: error?.message ?? String(error) }
-                    });
+                    send(panel, 'saveWorkflowFileResponse', { ok: false, error: error?.message ?? String(error) });
                   }
                   break;
                 }
                 
-                case 'analyzeRun':
+                case "analyzeRun":
                     try {
                         const runIdStr = message.payload?.runId;
                         if (typeof runIdStr !== 'string') {
-                            panel.webview.postMessage({ 
-                                command: 'error', 
-                                payload: 'Run ID가 문자열이 아닙니다.' 
-                            });
+                            send(panel, 'error', 'Run ID가 문자열이 아닙니다.');
                             return;
                         }
 
@@ -570,10 +450,7 @@ await vscode.window.withProgress(
       printToOutput(`Run #${runId} → LLM 프롬프트`, prompts);
 
       if (prompts.length === 0) {
-        panel.webview.postMessage({
-          command: 'llmAnalysisResult',
-          payload: { runId, summary: '분석할 로그가 없습니다.', rootCause: null, suggestion: null, items: [] }
-        });
+        send(panel, 'llmAnalysisResult', { runId, summary: '분석할 로그가 없습니다.', rootCause: null, suggestion: null, items: [] });
         vscode.window.showInformationMessage('분석할 로그가 없습니다.');
         return;
       }
@@ -591,14 +468,11 @@ await vscode.window.withProgress(
           payload: { runId, ...analysis }
         });
       } else {
-        panel.webview.postMessage({
-          command: 'llmAnalysisResult',
-          payload: { runId, ...analysis }
-        });
+        send(panel, 'llmAnalysisResult', { runId, ...analysis });
       }
     } catch (e: any) {
       const msg = e?.message ?? String(e);
-      panel.webview.postMessage({ command: 'error', payload: `LLM 분석 실패: ${msg}` });
+      send(panel, 'error', `LLM 분석 실패: ${msg}`);
       vscode.window.showErrorMessage(`❌ 분석 실패: ${msg}`);
     }
   }
@@ -606,18 +480,12 @@ await vscode.window.withProgress(
 
                     } catch (error) {
                         console.error('LLM 분석 시작 중 오류 발생:', error);
-                        panel.webview.postMessage({ 
-                            command: 'error', 
-                            payload: 'LLM 분석을 시작하는 데 실패했습니다.' 
-                        });
+                        send(panel, 'error', 'LLM 분석을 시작하는 데 실패했습니다.');
                     }
                     break;
 
-                case 'analyzeLog':
-                    panel.webview.postMessage({ 
-                        command: 'error', 
-                        payload: '로그 분석은 아직 구현되지 않았습니다.' 
-                    });
+                case "analyzeLog":
+                    send(panel, 'error', '로그 분석은 아직 구현되지 않았습니다.');
                     break;
             }
         },
@@ -646,29 +514,23 @@ export function activate(context: vscode.ExtensionContext) {
     dotenv.config({ path: envPath });
   }
 
-  
-  // 레포 등록/수정
   const cmdSetRepo = vscode.commands.registerCommand('extension.setRepository', async () => {
     await promptAndSaveRepo(context);
   });
 
-  // 레포 삭제
   const cmdClearRepo = vscode.commands.registerCommand('extension.clearRepository', async () => {
     await deleteSavedRepo(context);
   });
 
-  // 레포 보기(선택)
   const cmdShowRepo = vscode.commands.registerCommand('extension.showRepository', async () => {
     const cur = getSavedRepo(context);
     vscode.window.showInformationMessage(`현재 레포: ${cur ? cur.owner + '/' + cur.repo : '(none)'}`);
   });
 
-  // ✅ 로그인: 세션 없으면 브라우저로 리디렉션되어 로그인 진행
   const cmdLoginGithub = vscode.commands.registerCommand('extension.loginGithub', async () => {
     const before = await getExistingGitHubSession();
     const ok = await getOctokitViaVSCodeAuth();
     if (ok) {
-      // 세션 변경 이벤트는 따로 발생하지만, 사용자 피드백을 즉시 제공
       const after = await getExistingGitHubSession();
       const who = after?.account?.label ?? 'GitHub';
       vscode.window.showInformationMessage(
@@ -679,7 +541,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  // ✅ 로그아웃: GitHub 인증 제공자의 signout 명령 호출
   const cmdLogoutGithub = vscode.commands.registerCommand('extension.logoutGithub', async () => {
     const session = await getExistingGitHubSession();
     if (!session) {
@@ -709,8 +570,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
     console.log(`[2] ✅ 레포: ${repo.owner}/${repo.repo}`);
 
-
-    // GitHub 인증 세션 가져오기
     const octokit = await getOctokitViaVSCodeAuth();
     if (!octokit) {
     vscode.window.showErrorMessage('GitHub 로그인에 실패했습니다.');
@@ -761,11 +620,8 @@ await vscode.window.withProgress(
 
       const analysis = await analyzePrompts(prompts); // { summary, rootCause, suggestion }
 
-      // 출력창에 결과 덤프(선택)
       printToOutput('LLM 분석 결과', [JSON.stringify(analysis, null, 2)]);
 
-
-          // 웹뷰로 LLM 분석 결과 전송
           if (panels['dashboard']) {
             panels['dashboard'].webview.postMessage({
               command: 'llmAnalysisResult',
@@ -790,8 +646,6 @@ await vscode.window.withProgress(
   });
   context.subscriptions.push(disposable);
 
-  // --- Webview Commands ---
-  // Main command to open the webview dashboard
   context.subscriptions.push(
     vscode.commands.registerCommand('extension.openDashboard', () => {
         createAndShowWebview(context, 'dashboard');
@@ -839,4 +693,17 @@ function getNonce() {
 
 export function deactivate() {
   console.log('📴 GitHub Actions 확장 종료됨');
+}
+
+function send(panel: vscode.WebviewPanel, command: string, payload: any) {
+  panel.webview.postMessage({ command, payload });
+}
+
+function isNumericId(s: string) {
+  return /^\d+$/.test(s);
+}
+
+function ensureWorkflowPathFromWorkflow(wf: any) {
+  if (!wf?.path) throw new Error('워크플로우 경로를 찾을 수 없습니다.');
+  return wf.path as string;
 }
