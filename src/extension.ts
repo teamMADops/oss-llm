@@ -652,12 +652,6 @@ const cmdClearOpenAiKey = vscode.commands.registerCommand(
 
 context.subscriptions.push(cmdSetOpenAiKey, cmdClearOpenAiKey);
 
-  // 🔑 .env를 확실히 로드 (package.json이 있는 확장 루트)
-  // const envPath = path.join(context.extensionPath, ".env");
-  // if (fs.existsSync(envPath)) {
-  //   dotenv.config({ path: envPath });
-  // }
-
   const cmdSetRepo = vscode.commands.registerCommand(
     "extension.setRepository",
     async () => {
