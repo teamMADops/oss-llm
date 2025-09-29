@@ -1,4 +1,6 @@
 import { OpenAI } from "openai";
+import * as vscode from "vscode";
+
 
 export type LLMResult = {
   summary: string;
@@ -6,8 +8,43 @@ export type LLMResult = {
   suggestion: string;
 };
 
-export async function analyzePrompts(prompts: string[]): Promise<LLMResult> {
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+function parseJsonLenient(text: string): LLMResult {
+  // ```json ... ``` 같은 코드펜스 제거
+  const stripped = text.replace(/```(?:json)?/gi, "").replace(/```/g, "").trim();
+
+  // 가장 바깥쪽 { } 블록만 추출
+  const start = stripped.indexOf("{");
+  const end = stripped.lastIndexOf("}");
+  const candidate =
+    start !== -1 && end !== -1 && end > start
+      ? stripped.slice(start, end + 1)
+      : stripped;
+
+  try {
+    const parsed = JSON.parse(candidate);
+    return {
+      summary: String(parsed.summary ?? ""),
+      rootCause: String(parsed.rootCause ?? ""),
+      suggestion: String(parsed.suggestion ?? ""),
+    };
+  } catch {
+    // 파싱 실패 → 원문을 summary에 넣어 반환
+    return { summary: text, rootCause: "", suggestion: "" };
+  }
+}
+
+export async function analyzePrompts(
+  context: vscode.ExtensionContext,
+  prompts: string[]
+): Promise<LLMResult> {
+  const key = await context.secrets.get("openaiApiKey");
+  if (!key) {
+    throw new Error(
+      "OpenAI API Key가 설정되지 않았습니다. 명령어 팔레트에서 입력하세요."
+    );
+  }
+
+  const client = new OpenAI({ apiKey: key });
   const prompt = prompts[0]; // 우선 첫 프롬프트만 사용 (필요시 개선)
   const chat = await client.chat.completions.create({
     model: "gpt-3.5-turbo",
@@ -29,15 +66,6 @@ export async function analyzePrompts(prompts: string[]): Promise<LLMResult> {
   });
 
   const raw = chat.choices[0].message?.content ?? "{}";
-
-  let parsed: LLMResult = { summary: "", rootCause: "", suggestion: "" };
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    // 혹시 JSON 파싱 실패하면 summary에 원본 내용 담아두기
-    parsed.summary = raw;
-  }
-
-  return parsed;
+  return parseJsonLenient(raw);
   
 }
