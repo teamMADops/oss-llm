@@ -571,7 +571,9 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
 
                   progress.report({ message: "LLM 호출 중" });
 
-                  const analysis = await analyzePrompts(prompts);
+                  // const analysis = await analyzePrompts(prompts);
+                  const analysis = await analyzePrompts(context, prompts);
+
 
                   printToOutput("LLM 분석 결과", [
                     JSON.stringify(analysis, null, 2),
@@ -623,11 +625,32 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  // 🔑 .env를 확실히 로드 (package.json이 있는 확장 루트)
-  const envPath = path.join(context.extensionPath, ".env");
-  if (fs.existsSync(envPath)) {
-    dotenv.config({ path: envPath });
+
+  // activate 함수 안
+const cmdSetOpenAiKey = vscode.commands.registerCommand(
+  "extension.setOpenAiKey",
+  async () => {
+    const key = await vscode.window.showInputBox({
+      prompt: "OpenAI API Key를 입력하세요",
+      ignoreFocusOut: true,
+      password: true,
+    });
+    if (key) {
+      await context.secrets.store("openaiApiKey", key);
+      vscode.window.showInformationMessage("✅ OpenAI API Key가 저장되었습니다.");
+    }
   }
+);
+
+const cmdClearOpenAiKey = vscode.commands.registerCommand(
+  "extension.clearOpenAiKey",
+  async () => {
+    await context.secrets.delete("openaiApiKey");
+    vscode.window.showInformationMessage("🗑️ OpenAI API Key가 삭제되었습니다.");
+  }
+);
+
+context.subscriptions.push(cmdSetOpenAiKey, cmdClearOpenAiKey);
 
   const cmdSetRepo = vscode.commands.registerCommand(
     "extension.setRepository",
@@ -768,7 +791,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             progress.report({ message: "LLM 호출 중" });
 
-            const analysis = await analyzePrompts(prompts); // { summary, rootCause, suggestion }
+            const analysis = await analyzePrompts(context, prompts); // { summary, rootCause, suggestion }
 
             printToOutput("LLM 분석 결과", [JSON.stringify(analysis, null, 2)]);
 

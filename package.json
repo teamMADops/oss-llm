@@ -45,6 +45,14 @@
       {
         "command": "extension.openDashboard",
         "title": "MAD Ops: 대시보드 열기"
+      },
+      {
+        "command": "extension.setOpenAiKey",
+        "title": "OpenAI: API 키 설정"
+      },
+      {
+        "command": "extension.clearOpenAiKey",
+        "title": "OpenAI: API 키 삭제"
       }
     ]
   },
