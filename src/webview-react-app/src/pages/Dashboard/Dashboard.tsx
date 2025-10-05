@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
-import { LLMResult } from '../../../../llm/analyze';
+import { LLMResult } from '../../../../llm/types';
 import { getRunDetails, getRunLogs, analyzeRun, getLatestRunFromAllActions } from '@/api/github';
 
 interface DashboardPageProps {
