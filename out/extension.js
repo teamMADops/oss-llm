@@ -36,15 +36,149 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
 const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
-const fs = __importStar(require("fs"));
 const getRepoInfo_1 = require("./github/getRepoInfo");
-const githubSession_1 = require("./auth/githubSession");
+const github_1 = require("./github");
 const getRunList_1 = require("./github/getRunList");
 const printToOutput_1 = require("./output/printToOutput");
 const getFailedLogs_1 = require("./log/getFailedLogs");
 const analyze_1 = require("./llm/analyze");
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
+/**
+ * It is automatically called when the extension is activated.
+ * It register functions as commands.
+ * @param context - vscode.ExtensionContext
+ */
+function activate(context) {
+    const functionRegister = (functionHandler) => {
+        const cmd = vscode.commands.registerCommand(`extension.${functionHandler.name}`, functionHandler);
+        context.subscriptions.push(cmd);
+    };
+    const setOpenAiKey = async () => {
+        const key = await vscode.window.showInputBox({
+            prompt: "OpenAI API Key를 입력하세요",
+            ignoreFocusOut: true,
+            password: true,
+        });
+        if (key) {
+            await context.secrets.store("openaiApiKey", key);
+            vscode.window.showInformationMessage("✅ OpenAI API Key가 저장되었습니다.");
+        }
+    };
+    functionRegister(setOpenAiKey);
+    const clearOpenAiKey = async () => {
+        await context.secrets.delete("openaiApiKey");
+        vscode.window.showInformationMessage("🗑️ OpenAI API Key가 삭제되었습니다.");
+    };
+    functionRegister(clearOpenAiKey);
+    const setRepository = async () => (0, getRepoInfo_1.promptAndSaveRepo)(context);
+    functionRegister(setRepository);
+    const clearRepository = async () => (0, getRepoInfo_1.deleteSavedRepo)(context);
+    functionRegister(clearRepository);
+    const showRepository = async () => {
+        const cur = (0, getRepoInfo_1.getSavedRepo)(context);
+        vscode.window.showInformationMessage(`현재 레포: ${cur ? cur.owner + "/" + cur.repo : "(none)"}`);
+    };
+    functionRegister(showRepository);
+    const loginGithub = async () => {
+        const before = await (0, github_1.getExistingGitHubSession)();
+        const ok = await (0, github_1.getOctokitViaVSCodeAuth)();
+        if (ok) {
+            const after = await (0, github_1.getExistingGitHubSession)();
+            const who = after?.account?.label ?? "GitHub";
+            vscode.window.showInformationMessage(before ? `이미 로그인되어 있습니다: ${who}` : `로그인 완료: ${who}`);
+        }
+        else {
+            vscode.window.showErrorMessage("GitHub 로그인에 실패했습니다.");
+        }
+    };
+    functionRegister(loginGithub);
+    const logoutGithub = async () => {
+        const session = await (0, github_1.getExistingGitHubSession)();
+        if (!session) {
+            vscode.window.showInformationMessage("이미 로그아웃 상태입니다.");
+            return;
+        }
+        const isSignOut = await (0, github_1.isSignOutGitHub)();
+        if (isSignOut) {
+            vscode.window.showInformationMessage("GitHub 로그아웃 완료.");
+        }
+    };
+    functionRegister(logoutGithub);
+    const analyzeGitHubActions = async (repoArg) => {
+        console.log("[1] 🔍 확장 실행됨");
+        // 우선순위: 명령 인자 > 저장된 레포
+        const repo = repoArg ?? (0, getRepoInfo_1.getSavedRepo)(context);
+        if (!repo) {
+            vscode.window.showWarningMessage("저장된 레포가 없습니다. 먼저 레포를 등록하세요.");
+            return;
+        }
+        console.log(`[2] ✅ 레포: ${repo.owner}/${repo.repo}`);
+        const octokit = await (0, github_1.getOctokitViaVSCodeAuth)();
+        if (!octokit) {
+            vscode.window.showErrorMessage("GitHub 로그인에 실패했습니다.");
+            return;
+        }
+        console.log("[3] 🔑 VS Code GitHub 세션 확보");
+        const run_id = await (0, getRunList_1.getRunIdFromQuickPick)(octokit, repo.owner, repo.repo);
+        if (!run_id) {
+            vscode.window.showInformationMessage("선택된 워크플로우 실행이 없습니다.");
+            return;
+        }
+        console.log(`[4] ✅ 선택된 Run ID: ${run_id}`);
+        const mode = await vscode.window.showQuickPick(["전체 로그", "에러 메세지만"], {
+            placeHolder: "LLM 프롬프트에 포함할 로그 범위 선택",
+        });
+        const logMode = mode === "전체 로그" ? "all" : "error";
+        console.log(`[5] 📄 로그 추출 방식: ${logMode}`);
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: `Run #${run_id} 분석 중...`,
+        }, async (progress) => {
+            try {
+                progress.report({
+                    message: "로그 ZIP 다운로드 및 프롬프트 생성 중",
+                });
+                const { failedSteps, prompts } = await (0, getFailedLogs_1.getFailedStepsAndPrompts)(octokit, repo.owner, repo.repo, run_id, logMode);
+                (0, printToOutput_1.printToOutput)(`Run #${run_id} 실패한 Step 목록`, failedSteps);
+                (0, printToOutput_1.printToOutput)(`Run #${run_id} → LLM 프롬프트`, prompts);
+                if (prompts.length === 0) {
+                    vscode.window.showInformationMessage("분석할 로그가 없습니다.");
+                    return;
+                }
+                progress.report({ message: "LLM 호출 중" });
+                const analysis = await (0, analyze_1.analyzePrompts)(context, prompts); // { summary, rootCause, suggestion }
+                (0, printToOutput_1.printToOutput)("LLM 분석 결과", [JSON.stringify(analysis, null, 2)]);
+                if (panels["dashboard"]) {
+                    panels["dashboard"].webview.postMessage({
+                        command: "llmAnalysisResult",
+                        payload: analysis,
+                    });
+                    vscode.window.showInformationMessage("LLM 분석 결과가 대시보드에 표시되었습니다.");
+                }
+                else {
+                    const summary = analysis.summary ?? "LLM 분석이 완료되었습니다.";
+                    const choice = await vscode.window.showInformationMessage(`🧠 ${summary}`, "출력창 열기", "요약 복사");
+                    if (choice === "출력창 열기") {
+                        vscode.commands.executeCommand("workbench.action.output.toggleOutput");
+                    }
+                    else if (choice === "요약 복사") {
+                        await vscode.env.clipboard.writeText(summary);
+                        vscode.window.showInformationMessage("📋 요약을 클립보드에 복사했어요.");
+                    }
+                }
+            }
+            catch (e) {
+                vscode.window.showErrorMessage(`❌ 분석 실패: ${e?.message ?? e}`);
+            }
+        });
+    };
+    functionRegister(analyzeGitHubActions);
+    const openDashboard = async () => {
+        createAndShowWebview(context, "dashboard");
+    };
+    functionRegister(openDashboard);
+}
 const panels = {};
 const isNumeric = (s) => typeof s === "string" && /^\d+$/.test(s);
 /**
@@ -74,7 +208,7 @@ function createAndShowWebview(context, page) {
     });
     panel.webview.html = getWebviewContent(context, panel);
     panel.webview.onDidReceiveMessage(async (message) => {
-        const octokit = await (0, githubSession_1.getOctokitViaVSCodeAuth)();
+        const octokit = await (0, github_1.getOctokitViaVSCodeAuth)();
         if (!octokit) {
             vscode.window.showErrorMessage("GitHub 로그인에 실패했습니다.");
             return;
@@ -461,7 +595,8 @@ function createAndShowWebview(context, page) {
                                 return;
                             }
                             progress.report({ message: "LLM 호출 중" });
-                            const analysis = await (0, analyze_1.analyzePrompts)(prompts);
+                            // const analysis = await analyzePrompts(prompts);
+                            const analysis = await (0, analyze_1.analyzePrompts)(context, prompts);
                             (0, printToOutput_1.printToOutput)("LLM 분석 결과", [
                                 JSON.stringify(analysis, null, 2),
                             ]);
@@ -500,119 +635,6 @@ function createAndShowWebview(context, page) {
     // Store the panel and send the initial page message
     panels[page] = panel;
     panel.webview.postMessage({ command: "changePage", page });
-}
-function activate(context) {
-    // 🔑 .env를 확실히 로드 (package.json이 있는 확장 루트)
-    const envPath = path.join(context.extensionPath, ".env");
-    if (fs.existsSync(envPath)) {
-        dotenv.config({ path: envPath });
-    }
-    const cmdSetRepo = vscode.commands.registerCommand("extension.setRepository", async () => {
-        await (0, getRepoInfo_1.promptAndSaveRepo)(context);
-    });
-    const cmdClearRepo = vscode.commands.registerCommand("extension.clearRepository", async () => {
-        await (0, getRepoInfo_1.deleteSavedRepo)(context);
-    });
-    const cmdShowRepo = vscode.commands.registerCommand("extension.showRepository", async () => {
-        const cur = (0, getRepoInfo_1.getSavedRepo)(context);
-        vscode.window.showInformationMessage(`현재 레포: ${cur ? cur.owner + "/" + cur.repo : "(none)"}`);
-    });
-    const cmdLoginGithub = vscode.commands.registerCommand("extension.loginGithub", async () => {
-        const before = await (0, githubSession_1.getExistingGitHubSession)();
-        const ok = await (0, githubSession_1.getOctokitViaVSCodeAuth)();
-        if (ok) {
-            const after = await (0, githubSession_1.getExistingGitHubSession)();
-            const who = after?.account?.label ?? "GitHub";
-            vscode.window.showInformationMessage(before ? `이미 로그인되어 있습니다: ${who}` : `로그인 완료: ${who}`);
-        }
-        else {
-            vscode.window.showErrorMessage("GitHub 로그인에 실패했습니다.");
-        }
-    });
-    const cmdLogoutGithub = vscode.commands.registerCommand("extension.logoutGithub", async () => {
-        const session = await (0, githubSession_1.getExistingGitHubSession)();
-        if (!session) {
-            vscode.window.showInformationMessage("이미 로그아웃 상태입니다.");
-            return;
-        }
-        const ok = await (0, githubSession_1.signOutGitHub)();
-        if (ok) {
-            vscode.window.showInformationMessage("GitHub 로그아웃 완료.");
-        }
-    });
-    context.subscriptions.push(cmdSetRepo, cmdClearRepo, cmdShowRepo, cmdLoginGithub, cmdLogoutGithub);
-    const disposable = vscode.commands.registerCommand("extension.analyzeGitHubActions", async (repoArg) => {
-        console.log("[1] 🔍 확장 실행됨");
-        // 우선순위: 명령 인자 > 저장된 레포
-        const repo = repoArg ?? (0, getRepoInfo_1.getSavedRepo)(context);
-        if (!repo) {
-            vscode.window.showWarningMessage("저장된 레포가 없습니다. 먼저 레포를 등록하세요.");
-            return;
-        }
-        console.log(`[2] ✅ 레포: ${repo.owner}/${repo.repo}`);
-        const octokit = await (0, githubSession_1.getOctokitViaVSCodeAuth)();
-        if (!octokit) {
-            vscode.window.showErrorMessage("GitHub 로그인에 실패했습니다.");
-            return;
-        }
-        console.log("[3] 🔑 VS Code GitHub 세션 확보");
-        const run_id = await (0, getRunList_1.getRunIdFromQuickPick)(octokit, repo.owner, repo.repo);
-        if (!run_id) {
-            vscode.window.showInformationMessage("선택된 워크플로우 실행이 없습니다.");
-            return;
-        }
-        console.log(`[4] ✅ 선택된 Run ID: ${run_id}`);
-        const mode = await vscode.window.showQuickPick(["전체 로그", "에러 메세지만"], {
-            placeHolder: "LLM 프롬프트에 포함할 로그 범위 선택",
-        });
-        const logMode = mode === "전체 로그" ? "all" : "error";
-        console.log(`[5] 📄 로그 추출 방식: ${logMode}`);
-        await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: `Run #${run_id} 분석 중...`,
-        }, async (progress) => {
-            try {
-                progress.report({
-                    message: "로그 ZIP 다운로드 및 프롬프트 생성 중",
-                });
-                const { failedSteps, prompts } = await (0, getFailedLogs_1.getFailedStepsAndPrompts)(octokit, repo.owner, repo.repo, run_id, logMode);
-                (0, printToOutput_1.printToOutput)(`Run #${run_id} 실패한 Step 목록`, failedSteps);
-                (0, printToOutput_1.printToOutput)(`Run #${run_id} → LLM 프롬프트`, prompts);
-                if (prompts.length === 0) {
-                    vscode.window.showInformationMessage("분석할 로그가 없습니다.");
-                    return;
-                }
-                progress.report({ message: "LLM 호출 중" });
-                const analysis = await (0, analyze_1.analyzePrompts)(prompts); // { summary, rootCause, suggestion }
-                (0, printToOutput_1.printToOutput)("LLM 분석 결과", [JSON.stringify(analysis, null, 2)]);
-                if (panels["dashboard"]) {
-                    panels["dashboard"].webview.postMessage({
-                        command: "llmAnalysisResult",
-                        payload: analysis,
-                    });
-                    vscode.window.showInformationMessage("LLM 분석 결과가 대시보드에 표시되었습니다.");
-                }
-                else {
-                    const summary = analysis.summary ?? "LLM 분석이 완료되었습니다.";
-                    const choice = await vscode.window.showInformationMessage(`🧠 ${summary}`, "출력창 열기", "요약 복사");
-                    if (choice === "출력창 열기") {
-                        vscode.commands.executeCommand("workbench.action.output.toggleOutput");
-                    }
-                    else if (choice === "요약 복사") {
-                        await vscode.env.clipboard.writeText(summary);
-                        vscode.window.showInformationMessage("📋 요약을 클립보드에 복사했어요.");
-                    }
-                }
-            }
-            catch (e) {
-                vscode.window.showErrorMessage(`❌ 분석 실패: ${e?.message ?? e}`);
-            }
-        });
-    });
-    context.subscriptions.push(disposable);
-    context.subscriptions.push(vscode.commands.registerCommand("extension.openDashboard", () => {
-        createAndShowWebview(context, "dashboard");
-    }));
 }
 function getWebviewContent(context, panel) {
     const buildPath = path.join(context.extensionPath, "out", "webview-build");
