@@ -1,0 +1,1 @@
+export type RepoInfo = { owner: string; repo: string };
