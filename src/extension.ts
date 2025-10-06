@@ -2,12 +2,10 @@ import * as vscode from "vscode";
 import * as path from "path";
 
 import {
-  getSavedRepo,
-  promptAndSaveRepo,
+  getSavedRepoInfo,
+  saveRepo,
   deleteSavedRepo,
-  type RepoRef,
-} from "./github/getRepoInfo";
-import {
+  type RepoInfo,
   getOctokitViaVSCodeAuth,
   getExistingGitHubSession,
   isSignOutGitHub,
@@ -57,14 +55,14 @@ export function activate(context: vscode.ExtensionContext) {
   };
   functionRegister(clearOpenAiKey);
 
-  const setRepository = async () => promptAndSaveRepo(context);
+  const setRepository = async () => saveRepo(context);
   functionRegister(setRepository);
 
   const clearRepository = async () => deleteSavedRepo(context);
   functionRegister(clearRepository);
 
   const showRepository = async () => {
-    const cur = getSavedRepo(context);
+    const cur = getSavedRepoInfo(context);
     vscode.window.showInformationMessage(
       `현재 레포: ${cur ? cur.owner + "/" + cur.repo : "(none)"}`
     );
@@ -99,11 +97,11 @@ export function activate(context: vscode.ExtensionContext) {
   };
   functionRegister(logoutGithub);
 
-  const analyzeGitHubActions = async (repoArg?: RepoRef) => {
+  const analyzeGitHubActions = async (repoArg?: RepoInfo) => {
     console.log("[1] 🔍 확장 실행됨");
 
     // 우선순위: 명령 인자 > 저장된 레포
-    const repo = repoArg ?? getSavedRepo(context);
+    const repo = repoArg ?? getSavedRepoInfo(context);
     if (!repo) {
       vscode.window.showWarningMessage(
         "저장된 레포가 없습니다. 먼저 레포를 등록하세요."
@@ -264,7 +262,7 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
       }
       console.log("[3] 🔑 VS Code GitHub 세션 확보");
 
-      const repo = await getSavedRepo(context);
+      const repo = getSavedRepoInfo(context);
       if (!repo) {
         panel.webview.postMessage({
           command: "error",
@@ -556,7 +554,7 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
         case "getWorkflowFile":
           async function getFileText(
             octokit: any,
-            repo: RepoRef,
+            repo: RepoInfo,
             filePath: string,
             ref = "main"
           ) {
@@ -616,7 +614,7 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
         case "saveWorkflowFile": {
           async function getFileShaIfExists(
             octokit: any,
-            repo: RepoRef,
+            repo: RepoInfo,
             filePath: string,
             ref = "main"
           ) {
@@ -637,7 +635,7 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
 
           async function upsertFile(
             octokit: any,
-            repo: RepoRef,
+            repo: RepoInfo,
             filePath: string,
             contentUtf8: string,
             branch = "main",

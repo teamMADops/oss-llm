@@ -36,7 +36,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
 const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
-const getRepoInfo_1 = require("./github/getRepoInfo");
 const github_1 = require("./github");
 const getRunList_1 = require("./github/getRunList");
 const printToOutput_1 = require("./output/printToOutput");
@@ -71,12 +70,12 @@ function activate(context) {
         vscode.window.showInformationMessage("🗑️ OpenAI API Key가 삭제되었습니다.");
     };
     functionRegister(clearOpenAiKey);
-    const setRepository = async () => (0, getRepoInfo_1.promptAndSaveRepo)(context);
+    const setRepository = async () => (0, github_1.saveRepo)(context);
     functionRegister(setRepository);
-    const clearRepository = async () => (0, getRepoInfo_1.deleteSavedRepo)(context);
+    const clearRepository = async () => (0, github_1.deleteSavedRepo)(context);
     functionRegister(clearRepository);
     const showRepository = async () => {
-        const cur = (0, getRepoInfo_1.getSavedRepo)(context);
+        const cur = (0, github_1.getSavedRepoInfo)(context);
         vscode.window.showInformationMessage(`현재 레포: ${cur ? cur.owner + "/" + cur.repo : "(none)"}`);
     };
     functionRegister(showRepository);
@@ -108,7 +107,7 @@ function activate(context) {
     const analyzeGitHubActions = async (repoArg) => {
         console.log("[1] 🔍 확장 실행됨");
         // 우선순위: 명령 인자 > 저장된 레포
-        const repo = repoArg ?? (0, getRepoInfo_1.getSavedRepo)(context);
+        const repo = repoArg ?? (0, github_1.getSavedRepoInfo)(context);
         if (!repo) {
             vscode.window.showWarningMessage("저장된 레포가 없습니다. 먼저 레포를 등록하세요.");
             return;
@@ -214,7 +213,7 @@ function createAndShowWebview(context, page) {
             return;
         }
         console.log("[3] 🔑 VS Code GitHub 세션 확보");
-        const repo = await (0, getRepoInfo_1.getSavedRepo)(context);
+        const repo = await (0, github_1.getSavedRepoInfo)(context);
         if (!repo) {
             panel.webview.postMessage({
                 command: "error",

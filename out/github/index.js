@@ -15,5 +15,5 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./vscodeAuth"), exports);
-// export * from "./repository";
+__exportStar(require("./repository"), exports);
 // export * from "./runs";

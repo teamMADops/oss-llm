@@ -35,7 +35,7 @@ VS Code에 내장된 GitHub 인증을 사용하여 안전하게 GitHub 계정과
 - **`src/github/getRepoInfo.ts`**: 사용자가 입력한 `owner/repo` 정보를 VS Code 전역 상태에 저장하여 관리합니다.
   ```typescript
   // src/github/getRepoInfo.ts
-  export async function promptAndSaveRepo(context: vscode.ExtensionContext): Promise<RepoRef | null> {
+  export async function promptAndSaveRepo(context: vscode.ExtensionContext): Promise<RepoInfo | null> {
     const value = await vscode.window.showInputBox({
       prompt: '저장할 GitHub 레포를 입력하세요 (owner/repo 또는 GitHub URL)',
       // ...

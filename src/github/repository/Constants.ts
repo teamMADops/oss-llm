@@ -1,0 +1,1 @@
+export const KEY = 'gh_actions_analyzer.fixed_repo';

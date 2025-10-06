@@ -32,13 +32,26 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = getGithubSession;
+exports.default = deleteSavedRepo;
 const vscode = __importStar(require("vscode"));
 const Constants_1 = require("./Constants");
-async function getGithubSession(createIfNone = false, silent = false) {
-    return await vscode.authentication.getSession(Constants_1.GITHUB_PROVIDER, Constants_1.SCOPES, {
-        createIfNone,
-        silent,
+const getSavedRepoInfo_1 = __importDefault(require("./getSavedRepoInfo"));
+const formatRepoInfo_1 = __importDefault(require("./formatRepoInfo"));
+async function deleteSavedRepo(context) {
+    const savedRepoInfo = await (0, getSavedRepoInfo_1.default)(context);
+    if (!savedRepoInfo) {
+        vscode.window.showInformationMessage("저장된 레포가 없습니다.");
+        return;
+    }
+    const pick = await vscode.window.showQuickPick(["삭제", "취소"], {
+        placeHolder: `현재: ${(0, formatRepoInfo_1.default)(savedRepoInfo)} — 삭제할까요?`,
     });
+    if (pick !== "삭제")
+        return;
+    await context.globalState.update(Constants_1.KEY, undefined);
+    vscode.window.showInformationMessage("🗑️ 저장된 레포를 삭제했습니다.");
 }

@@ -39,7 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = isSignOutGitHub;
 const vscode = __importStar(require("vscode"));
 const getExistingGithubSession_1 = __importDefault(require("./getExistingGithubSession"));
-const Constant_1 = require("./Constant");
+const Constants_1 = require("./Constants");
 async function isSignOutGitHub() {
     // 1) 세션이 없으면 바로 종료
     const existing = await (0, getExistingGithubSession_1.default)();
@@ -53,7 +53,7 @@ async function isSignOutGitHub() {
     catch { }
     // 3) 워크벤치 계정 패널 경유(환경별로 지원/미지원 가능)
     try {
-        await vscode.commands.executeCommand("workbench.action.accounts.signOutOfAuthenticationProvider", { id: Constant_1.GITHUB_PROVIDER, label: "GitHub" });
+        await vscode.commands.executeCommand("workbench.action.accounts.signOutOfAuthenticationProvider", { id: Constants_1.GITHUB_PROVIDER, label: "GitHub" });
         return true;
     }
     catch { }

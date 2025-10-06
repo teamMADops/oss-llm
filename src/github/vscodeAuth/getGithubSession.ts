@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { GITHUB_PROVIDER, SCOPES } from "./Constant";
+import { GITHUB_PROVIDER, SCOPES } from "./Constants";
 
 export default async function getGithubSession(
   createIfNone: boolean = false,
