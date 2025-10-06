@@ -20,7 +20,6 @@ import { getFailedStepsAndPrompts } from "./log/getFailedLogs";
 import { analyzePrompts } from "./llm/analyze";
 
 import * as dotenv from "dotenv";
-dotenv.config();
 
 /**
  * It is automatically called when the extension is activated.
@@ -28,6 +27,12 @@ dotenv.config();
  * @param context - vscode.ExtensionContext
  */
 export function activate(context: vscode.ExtensionContext) {
+  // 개발 모드(F5)일 때만 .env 파일을 로드
+  if (context.extensionMode === vscode.ExtensionMode.Development) {
+    dotenv.config({ path: path.join(context.extensionPath, ".env") });
+  }
+  // 여기까지 지우기
+
   const functionRegister = (functionHandler: () => any) => {
     const cmd = vscode.commands.registerCommand(
       `extension.${functionHandler.name}`,
@@ -865,3 +870,4 @@ function ensureWorkflowPathFromWorkflow(wf: any) {
   if (!wf?.path) throw new Error("워크플로우 경로를 찾을 수 없습니다.");
   return wf.path as string;
 }
+
