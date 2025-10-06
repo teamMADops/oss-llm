@@ -40,10 +40,10 @@ exports.deleteSavedRepo = deleteSavedRepo;
 // src/github/getRepoInfo.ts
 const vscode = __importStar(require("vscode"));
 /** 전역 저장 키 */
-const KEY = 'gh_actions_analyzer.fixed_repo';
+const KEY = "gh_actions_analyzer.fixed_repo";
 /** 보기 좋게 */
-function formatRepo(ref) {
-    return ref ? `${ref.owner}/${ref.repo}` : '(none)';
+function formatRepo(repoInfo) {
+    return repoInfo ? `${repoInfo.owner}/${repoInfo.repo}` : "(none)";
 }
 /** owner/repo 또는 GitHub URL(https/ssh, .git 유무) 파싱 */
 function parseOwnerRepo(input) {
@@ -52,7 +52,7 @@ function parseOwnerRepo(input) {
     const s = input.trim();
     // 1) owner/repo
     if (/^[^/]+\/[^/]+$/i.test(s)) {
-        const [owner, repo] = s.split('/');
+        const [owner, repo] = s.split("/");
         return { owner, repo };
     }
     // 2) GitHub URL (엔터프라이즈/SSH 포함), .git 유무
@@ -74,11 +74,13 @@ function getSavedRepo(context) {
 async function promptAndSaveRepo(context) {
     const current = getSavedRepo(context);
     const value = await vscode.window.showInputBox({
-        prompt: '저장할 GitHub 레포를 입력하세요 (owner/repo 또는 GitHub URL)',
-        placeHolder: 'ex) octocat/Hello-World',
-        value: current ? formatRepo(current) : '',
+        prompt: "저장할 GitHub 레포를 입력하세요 (owner/repo 또는 GitHub URL)",
+        placeHolder: "ex) yourGithubName/yourRepoName",
+        value: current ? formatRepo(current) : "",
         ignoreFocusOut: true,
-        validateInput: (text) => (parseOwnerRepo(text) ? null : 'owner/repo 또는 유효한 GitHub URL 형식이어야 합니다.')
+        validateInput: (text) => parseOwnerRepo(text)
+            ? null
+            : "owner/repo 또는 유효한 GitHub URL 형식이어야 합니다.",
     });
     if (!value)
         return null;
@@ -91,14 +93,14 @@ async function promptAndSaveRepo(context) {
 async function deleteSavedRepo(context) {
     const current = getSavedRepo(context);
     if (!current) {
-        vscode.window.showInformationMessage('저장된 레포가 없습니다.');
+        vscode.window.showInformationMessage("저장된 레포가 없습니다.");
         return;
     }
-    const pick = await vscode.window.showQuickPick(['삭제', '취소'], {
-        placeHolder: `현재: ${formatRepo(current)} — 삭제할까요?`
+    const pick = await vscode.window.showQuickPick(["삭제", "취소"], {
+        placeHolder: `현재: ${formatRepo(current)} — 삭제할까요?`,
     });
-    if (pick !== '삭제')
+    if (pick !== "삭제")
         return;
     await context.globalState.update(KEY, undefined);
-    vscode.window.showInformationMessage('🗑️ 저장된 레포를 삭제했습니다.');
+    vscode.window.showInformationMessage("🗑️ 저장된 레포를 삭제했습니다.");
 }
