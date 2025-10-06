@@ -262,7 +262,7 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
       }
       console.log("[3] 🔑 VS Code GitHub 세션 확보");
 
-      const repo = await getSavedRepoInfo(context);
+      const repo = getSavedRepoInfo(context);
       if (!repo) {
         panel.webview.postMessage({
           command: "error",
