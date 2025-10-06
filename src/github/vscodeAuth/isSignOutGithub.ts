@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import getExistingGithubSession from "./getExistingGithubSession";
-import { GITHUB_PROVIDER } from "./Constant";
+import { GITHUB_PROVIDER } from "./Constants";
 
 export default async function isSignOutGitHub(): Promise<boolean> {
   // 1) 세션이 없으면 바로 종료
