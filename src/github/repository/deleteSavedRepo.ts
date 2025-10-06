@@ -6,7 +6,7 @@ import formatRepoInfo from "./formatRepoInfo";
 export default async function deleteSavedRepo(
   context: vscode.ExtensionContext
 ) {
-  const savedRepoInfo = await getSavedRepoInfo(context);
+  const savedRepoInfo = getSavedRepoInfo(context);
 
   if (!savedRepoInfo) {
     vscode.window.showInformationMessage("저장된 레포가 없습니다.");
