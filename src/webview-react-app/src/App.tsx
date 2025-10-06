@@ -3,7 +3,7 @@ import Sidebar from './components/Sidebar/Sidebar';
 import DashboardPage from './pages/Dashboard/Dashboard';
 import EditorPage from './pages/Editor/Editor';
 import HistoryPage from './pages/History/History';
-import { LLMResult } from '../../llm/analyze'; // Import LLMResult type
+import { LLMResult } from '../../llm/types'; // Import LLMResult type
 import { Action } from './components/Sidebar/types'; // Import Action type
 import { getActions } from './api/github'; // [MOD] analyzeRun import 제거
 import './styles/theme.css';
