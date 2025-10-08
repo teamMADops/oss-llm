@@ -229,6 +229,7 @@ function App() {
         onSelectAction={onSelectAction}
         onSelectPage={onSelectPage}
         onSidebarToggle={onSidebarToggle}
+        onOpenSettings={() => setShowSettingsModal(true)}
       />
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-closed' : 'sidebar-open'}`}>
         {currentPage === 'dashboard' && <DashboardPage actionId={selectedActionId} runId={selectedRunId} isSidebarOpen={!sidebarCollapsed} llmAnalysisResult={llmAnalysisResult} />}

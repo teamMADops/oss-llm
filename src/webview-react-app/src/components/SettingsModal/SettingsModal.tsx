@@ -26,6 +26,7 @@ const getVscode = () => {
 
 export interface SettingsData {
   githubAuthenticated: boolean;
+  githubUser?: { username: string; avatarUrl: string; name: string } | null;
   openaiApiKey: string;
   repositoryUrl: string;
 }
@@ -48,21 +49,25 @@ const SettingsModal = ({
   console.log('[SettingsModal] 렌더링됨:', { isOpen, isInitialSetup, initialData });
   
   const [githubAuthenticated, setGithubAuthenticated] = useState(false);
+  const [githubUser, setGithubUser] = useState<{ username: string; avatarUrl: string; name: string } | null>(null);
   const [openaiApiKey, setOpenaiApiKey] = useState('');
   const [repositoryUrl, setRepositoryUrl] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [showApiKey, setShowApiKey] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       console.log('[SettingsModal] 초기 데이터 설정:', initialData);
       setGithubAuthenticated(initialData.githubAuthenticated || false);
+      setGithubUser(initialData.githubUser || null);
       setOpenaiApiKey(initialData.openaiApiKey || '');
       setRepositoryUrl(initialData.repositoryUrl || '');
       setErrors({});
       
       console.log('[SettingsModal] 설정된 상태:', {
         githubAuthenticated: initialData.githubAuthenticated || false,
+        githubUser: initialData.githubUser,
         openaiApiKey: initialData.openaiApiKey || '',
         repositoryUrl: initialData.repositoryUrl || ''
       });
@@ -167,9 +172,15 @@ const SettingsModal = ({
       if (message.command === 'githubLoginResult') {
         if (message.payload.success) {
           setGithubAuthenticated(true);
+          setGithubUser({
+            username: message.payload.username,
+            avatarUrl: message.payload.avatarUrl,
+            name: message.payload.name
+          });
           setErrors({ ...errors, github: '' });
         } else {
           setGithubAuthenticated(false);
+          setGithubUser(null);
           setErrors({ ...errors, github: message.payload.error || 'GitHub 로그인에 실패했습니다.' });
         }
         setIsAuthenticating(false);
@@ -216,10 +227,25 @@ const SettingsModal = ({
             </label>
             <div className="settings-github-login">
               {githubAuthenticated ? (
-                <div className="settings-status-success">
-                  <span className="settings-status-icon">✓</span>
-                  <span>GitHub 로그인 완료</span>
-                </div>
+                githubUser && (
+                  <div className="settings-github-user-info">
+                    {githubUser.avatarUrl && (
+                      <img 
+                        src={githubUser.avatarUrl} 
+                        alt={githubUser.username}
+                        className="settings-github-avatar"
+                      />
+                    )}
+                    <div className="settings-github-details">
+                      <div className="settings-github-name">{githubUser.name}</div>
+                      <div className="settings-github-username">@{githubUser.username}</div>
+                    </div>
+                    <div className="settings-status-success">
+                      <span className="settings-status-icon">✓</span>
+                      <span>로그인 완료</span>
+                    </div>
+                  </div>
+                )
               ) : (
                 <button
                   type="button"
@@ -243,22 +269,52 @@ const SettingsModal = ({
               <span className="settings-label-text">2. OpenAI API 키</span>
               <span className="settings-label-required">*</span>
             </label>
-            <input
-              id="openai-api-key"
-              type="password"
-              className={`settings-input ${errors.openaiApiKey ? 'settings-input-error' : ''}`}
-              placeholder="sk-..."
-              value={openaiApiKey}
-              onChange={(e) => setOpenaiApiKey(e.target.value)}
-              autoComplete="off"
-            />
+            <div className="settings-input-wrapper">
+              <input
+                id="openai-api-key"
+                type={showApiKey ? "text" : "password"}
+                className={`settings-input ${errors.openaiApiKey ? 'settings-input-error' : ''}`}
+                placeholder="sk-..."
+                value={openaiApiKey}
+                onChange={(e) => setOpenaiApiKey(e.target.value)}
+                autoComplete="off"
+              />
+              {openaiApiKey && (
+                <button
+                  type="button"
+                  className="settings-input-toggle"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  aria-label={showApiKey ? "API 키 숨기기" : "API 키 보기"}
+                >
+                  {showApiKey ? (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  )}
+                </button>
+              )}
+            </div>
             {errors.openaiApiKey && <div className="settings-error">{errors.openaiApiKey}</div>}
             <div className="settings-help-text">
               LLM 분석을 위한 OpenAI API 키를 입력하세요. 
               <a 
-                href="https://platform.openai.com/api-keys" 
-                target="_blank" 
-                rel="noopener noreferrer"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const vscode = getVscode();
+                  if (vscode) {
+                    vscode.postMessage({
+                      command: 'openExternalUrl',
+                      payload: { url: 'https://platform.openai.com/api-keys' }
+                    });
+                  }
+                }}
                 className="settings-link"
               >
                 API 키 발급받기
@@ -305,12 +361,6 @@ const SettingsModal = ({
             {isInitialSetup ? '시작하기' : '저장'}
           </button>
         </div>
-
-        {!isInitialSetup && (
-          <div className="settings-keyboard-hint">
-            💡 Ctrl + Enter로 빠르게 저장할 수 있습니다.
-          </div>
-        )}
       </div>
     </div>
   );

@@ -18,9 +18,11 @@
   position: fixed;
   right: 37.5%; /* LLM 분석 패널 왼쪽에 고정 */
   top: 0;
-  height: 100%;
-  padding: 0 20px 20px 20px; /* 고정 패딩 - 사이드바 전환 시 변하지 않음 */
-  overflow: hidden; /* 메인 섹션 자체는 스크롤 없음 */
+  bottom: 0; /* 하단도 고정하여 터미널 창에 반응 */
+  height: auto; /* 100vh 대신 auto 사용 */
+  padding: 0 20px 0 20px; /* 하단 패딩 제거 */
+  overflow-y: auto; /* 세로 스크롤 허용 */
+  overflow-x: hidden;
   min-width: 0; /* flexbox에서 축소 허용 */
   display: flex;
   flex-direction: column;
@@ -65,6 +67,49 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
+}
+
+/* 패널 내용 영역 - 스크롤 없이 공간만 차지 */
+.panel-content {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 패널 섹션 - panel-content와 동일한 크기 */
+.panel-section {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* panel-container - Run Info에서도 스크롤 가능 */
+.panel-container {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Run Info 카드 */
+.run-info-card {
+  /* 내용물에 따라 자연스럽게 늘어나고, panel-section이 스크롤 */
+}
+
+/* Log Viewer - panel-container 크기에 맞춤 */
+.log-viewer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
 }
 
 /* 'Run Info', 'Run Log' 등 패널을 선택하는 버튼들의 컨테이너 */
@@ -274,7 +319,7 @@
   /* transform 제거 */
 }
 
-/* 로그 뷰어 전체를 감싸는 컨테이너 */
+/* 로그 뷰어 전체를 감싸는 컨테이너 - 위에서 이미 정의됨, 여기서 추가 스타일만 */
 .log-viewer {
   background: #161b22;
   border: 1px solid #30363d; /* Run Info와 동일한 테두리 스타일 */
@@ -282,18 +327,17 @@
   padding: 20px;
   margin-top: 0; /* 상단 마진 제거로 구분선과 붙임 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* 위에서 정의한 flex 속성 유지 */
 }
 
-/* 로그 내용이 표시되는 영역 */
+/* 로그 내용이 표시되는 영역 - log-viewer 안에서 스크롤 */
 .log-content {
   flex: 1;
-  overflow: auto !important; /* YAML viewer와 동일하게 !important 추가 */
+  overflow-y: auto;
+  overflow-x: auto;
   padding: 0;
   position: relative;
   min-height: 0;
-  scroll-behavior: auto;
-  /* transition 제거 */
-  max-height: 416px; /* 17줄 * 20.8px (line-height) */
   /* 줄 번호 고정을 위한 추가 설정 */
   contain: layout;
   transform: translateZ(0); /* 하드웨어 가속 활성화 */
@@ -425,11 +469,12 @@
   width: 37.5%; /* 사이드바 열림 시: 37.5% */
   max-width: 50%;
   min-width: 400px; /* 최소 너비 보장 */
-  height: 100%;
+  height: auto; /* 100vh 대신 auto 사용 */
   flex-shrink: 0; /* 축소 방지 */
   position: fixed; /* 오른쪽 고정 */
   right: 0;
   top: 0;
+  bottom: 0; /* 하단도 고정하여 터미널 창에 반응 */
   display: flex;
   flex-direction: column;
   border-left: 1px solid var(--border-color); /* 1px 구분선 */
@@ -697,7 +742,7 @@
 .dashboard-container.sidebar-closed .dashboard-main {
   right: 50% !important; /* 전체 화면의 절반 지점에 고정 (오른쪽 고정) */
   width: 50% !important; /* 전체 화면의 50% */
-  padding: 0px 20px 20px 20px !important; /* 패딩 일관성 유지 */
+  padding: 0px 20px 0px 20px !important; /* 하단 패딩 제거 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-sizing: border-box !important; /* 박스 모델 강제 적용 */
 }
@@ -715,7 +760,7 @@
 .dashboard-container.sidebar-open .dashboard-main {
   right: 37.5% !important; /* LLM 분석 패널 왼쪽에 고정 유지 */
   width: 37.5% !important; /* 사이드바 열림 후: 37.5% */
-  padding: 0px 20px 20px 20px !important; /* 패딩 일관성 유지 */
+  padding: 0px 20px 0px 20px !important; /* 하단 패딩 제거 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-sizing: border-box !important; /* 박스 모델 강제 적용 */
 }
