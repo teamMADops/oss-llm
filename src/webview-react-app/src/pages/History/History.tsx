@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import HistoryTable from '@/components/HistoryTable/HistoryTable';
-import { WorkflowRun } from '@/types/api';
-import { getRunHistory } from '@/api/github';
+import { useRunHistory } from '@/hooks/useRunHistory';
 import './History.css';
 
 interface HistoryPageProps {
@@ -10,112 +9,8 @@ interface HistoryPageProps {
   onRunClick: (runId: string) => void; // [ADD] 실행(run) 클릭 시 호출될 함수
 }
 
-// Mock runs data - in real app, this would be fetched based on actionId
-const mockRuns: WorkflowRun[] = [
-  {
-    id: '1234',
-    status: 'completed',
-    conclusion: 'success',
-    timestamp: '2025-08-15 12:00:34',
-    reason: 'Build completed successfully',
-    branch: 'main',
-    commit: 'a1b2c3d4e5f6',
-    author: 'sungwoncho',
-  },
-  {
-    id: '1235',
-    status: 'completed',
-    conclusion: 'failure',
-    timestamp: '2025-08-15 11:45:22',
-    reason: 'Compile Error: Syntax error in line 45',
-    branch: 'develop',
-    commit: 'b2c3d4e5f6g7',
-    author: 'angkmfirefoxygal',
-  },
-  {
-    id: '1236',
-    status: 'completed',
-    conclusion: 'success',
-    timestamp: '2025-08-15 11:30:15',
-    reason: 'All tests passed',
-    branch: 'feature/new-ui',
-    commit: 'c3d4e5f6g7h8',
-    author: 'sungwoncho',
-  },
-  {
-    id: '1237',
-    status: 'completed',
-    conclusion: 'failure',
-    timestamp: '2025-08-15 11:15:08',
-    reason: 'Test failure: 3 tests failed',
-    branch: 'main',
-    commit: 'd4e5f6g7h8i9',
-    author: 'angkmfirefoxygal',
-  },
-  {
-    id: '1238',
-    status: 'completed',
-    conclusion: 'success',
-    timestamp: '2025-08-15 11:00:42',
-    reason: 'Deployment successful',
-    branch: 'staging',
-    commit: 'e5f6g7h8i9j0',
-    author: 'sungwoncho',
-  },
-  {
-    id: '1239',
-    status: 'completed',
-    conclusion: 'failure',
-    timestamp: '2025-08-15 10:45:33',
-    reason: 'Dependency resolution failed',
-    branch: 'develop',
-    commit: 'f6g7h8i9j0k1',
-    author: 'angkmfirefoxygal',
-  },
-  {
-    id: '1240',
-    status: 'completed',
-    conclusion: 'success',
-    timestamp: '2025-08-15 10:30:18',
-    reason: 'Code quality checks passed',
-    branch: 'main',
-    commit: 'g7h8i9j0k1l2',
-    author: 'sungwoncho',
-  },
-  {
-    id: '1241',
-    status: 'completed',
-    conclusion: 'failure',
-    timestamp: '2025-08-15 10:15:55',
-    reason: 'Build timeout after 30 minutes',
-    branch: 'feature/performance',
-    commit: 'h8i9j0k1l2m3',
-    author: 'angkmfirefoxygal',
-  },
-];
-
 const HistoryPage: React.FC<HistoryPageProps> = ({ actionId, isSidebarOpen, onRunClick }) => { // [MOD] onRunClick prop 추가
-  const [runHistory, setRunHistory] = useState(mockRuns);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    // API를 통해 실제 run history를 가져옴
-    if (actionId) {
-      setIsLoading(true);
-      getRunHistory(actionId)
-        .then(runs => {
-          setRunHistory(runs);
-        })
-        .catch(error => {
-          console.error('Failed to fetch run history:', error);
-          // 에러 발생 시 mock 데이터 사용
-          setRunHistory(mockRuns);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    }
-  }, [actionId]);
+  const { runHistory, isLoading } = useRunHistory(actionId);
 
   if (!actionId) {
     return (
