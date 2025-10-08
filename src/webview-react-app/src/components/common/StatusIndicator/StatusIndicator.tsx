@@ -7,7 +7,7 @@ interface StatusIndicatorProps {
   conclusion: string | null;
 }
 
-export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ status, conclusion }) => {
+export const StatusIndicator: React.FC<StatusIndicatorProps> = ({ conclusion }) => {
   if (conclusion === 'failure') {
     return (
       <div className="status-indicator status-failed">
