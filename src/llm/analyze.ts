@@ -1,6 +1,14 @@
 import { OpenAI } from "openai";
 import * as vscode from "vscode";
-import type { LLMResult } from "./types";
+import type { LLMResult,
+  LLMKeyError,
+  FailureType,
+  SuspectedPath,
+  SecondPassInput,
+  PinpointResult,
+ } from "./types";
+import { extractSuspects } from "./suspects";
+import { buildFirstPassPrompt, buildSecondPassPrompt } from "./prompts";
 
 function parseJsonLenient(text: string): LLMResult {
   const stripped = text.replace(/```(?:json)?/gi, "").replace(/```/g, "").trim();
@@ -21,9 +29,9 @@ function parseJsonLenient(text: string): LLMResult {
       suggestion: "",
       confidence: 0.2,
     };
-}
+  }
 
- const asString = (v: any) => (v == null ? "" : String(v));
+  const asString = (v: any) => (v == null ? "" : String(v));
   const asNumber01 = (v: any) => {
     const n = Number(v);
     return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : undefined;
@@ -36,7 +44,7 @@ function parseJsonLenient(text: string): LLMResult {
     suggestion: asString(parsed.suggestion),
 
     // 확장 필드(선택)
-    failureType: parsed.failureType ? String(parsed.failureType) : undefined,
+    failureType: parsed.failureType ? String(parsed.failureType)  as FailureType : undefined,
     confidence: asNumber01(parsed.confidence) ?? 0.7,
     affectedStep: parsed.affectedStep ? String(parsed.affectedStep) : undefined,
     filename: parsed.filename ? String(parsed.filename) : undefined,
@@ -45,6 +53,16 @@ function parseJsonLenient(text: string): LLMResult {
           line: Number.isFinite(Number(e?.line)) ? Number(e.line) : undefined,
           snippet: e?.snippet ? String(e.snippet) : undefined,
           note: e?.note ? String(e.note) : undefined,
+        }))
+      : undefined,
+
+      suspectedPaths: Array.isArray(parsed.suspectedPaths)
+      ? parsed.suspectedPaths.map((s: any) => ({
+          path: String(s?.path ?? ""),
+          reason: s?.reason ? String(s.reason) : "",
+          score: typeof s?.score === "number" ? Math.max(0, Math.min(1, s.score)) : undefined,
+          lineHint: Number.isFinite(Number(s?.lineHint)) ? Number(s.lineHint) : undefined,
+          logExcerpt: s?.logExcerpt ? String(s.logExcerpt) : undefined,
         }))
       : undefined,
   };
@@ -56,7 +74,7 @@ function parseJsonLenient(text: string): LLMResult {
 }
 
 async function getOpenAIKey(context: vscode.ExtensionContext): Promise<string | null> {
-  // 1. 사용자가 등록한 키를 우선적으로 확인
+  // 사용자가 등록한 키 확인
   const fromSecret = await context.secrets.get("openaiApiKey");
   if (fromSecret) {
     return fromSecret;
@@ -72,7 +90,7 @@ export async function analyzePrompts(
   const key = await getOpenAIKey(context);
   if (!key) {
     throw new Error(
-      "OpenAI API Key가 설정되지 않았습니다. 명령어 팔레트에서 입력하세요."
+      "OpenAI API Key가 설정되지 않았습니다."
     );
   }
 
@@ -82,6 +100,7 @@ export async function analyzePrompts(
 
   const results: LLMResult[] = [];
   for (const p of chosen) {
+    const userPrompt = buildFirstPassPrompt(p);
     const chat = await client.chat.completions.create({
       model: "gpt-3.5-turbo",
       temperature: 0,
@@ -129,12 +148,21 @@ export async function analyzePrompts(
         '}'
       ].join("\n"),
         },
-        { role: "user", content: p },
+        { role: "user", content: userPrompt },
       ],
   });
 
   const raw = chat.choices[0].message?.content ?? "{}";
-  results.push(parseJsonLenient(raw));
+  const parsed = parseJsonLenient(raw);
+
+  // suspectedPaths 없으면 로컬 규칙으로 보강
+if (!parsed.suspectedPaths || parsed.suspectedPaths.length === 0) {
+  const suspects = extractSuspects(p, { max: 6, excerptPadding: 30 });
+  if (suspects.length) parsed.suspectedPaths = suspects;
+}
+
+  results.push(parsed);
+
 }
   results.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
   return results[0];
