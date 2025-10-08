@@ -82,7 +82,10 @@ function App() {
         case 'settingsSaved': // 설정 저장 완료
           console.log('[App.tsx] 설정 저장 완료, 모달 닫기 및 데이터 새로고침');
           setShowSettingsModal(false);
-          // 설정 저장 후 actions 다시 불러오기
+          // LLM 분석 결과 초기화
+          setLlmAnalysisResult(null);
+          setSelectedRunId(null);
+          // 설정 저장 후 actions 다시 불러오기 (모달은 닫은 상태 유지)
           setTimeout(() => {
             console.log('[App.tsx] 설정 저장 후 actions 새로고침 시작');
             fetchActions();
@@ -192,9 +195,7 @@ function App() {
     setSelectedRunId(runId);
     // 대시보드로 이동
     setCurrentPage('dashboard');
-    // 분석 요청 후 기존 선택 상태 초기화
-    setDropdownActive(false);
-    setActionHighlighted(false);
+    // [FIX] 사이드바 상태 유지를 위해 dropdown/highlight 초기화 제거
   };
 
   // Settings 저장 핸들러

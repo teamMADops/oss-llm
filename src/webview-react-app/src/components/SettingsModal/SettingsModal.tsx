@@ -358,7 +358,7 @@ const SettingsModal = ({
             className="settings-button settings-button-primary"
             onClick={handleSave}
           >
-            {isInitialSetup ? '시작하기' : '저장'}
+            저장
           </button>
         </div>
       </div>
