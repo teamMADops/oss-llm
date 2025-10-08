@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
 import { LLMResult, PinpointResult, SuspectedPath } from '../../../../llm/types';
 import { getRunDetails, getRunLogs, analyzeRun, getLatestRunFromAllActions } from '@/api/github';
+import { analyzePinpoint } from '@/api/llm';
 
 interface DashboardPageProps {
   actionId: string | null;
@@ -73,7 +74,30 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
   const [isErrorDetailsOpen, setIsErrorDetailsOpen] = useState(false);
   const [isSuspectedPathsOpen, setIsSuspectedPathsOpen] = useState(false);
   const [selectedSuspectedPath, setSelectedSuspectedPath] = useState<SuspectedPath | null>(null);
-  const [pinpointResult, _setPinpointResult] = useState<PinpointResult | null>(null); // TODO: 2차 분석 API 연결 시 사용
+  const [pinpointResult, setPinpointResult] = useState<PinpointResult | null>(null);
+  const [isPinpointLoading, setIsPinpointLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [exportStatus, setExportStatus] = useState<'idle' | 'copying' | 'success' | 'error'>('idle');
+
+  // 2차 분석 결과 및 LLM 분석 결과 메시지 수신
+  useEffect(() => {
+    const messageHandler = (event: MessageEvent) => {
+      const message = event.data;
+      if (message.command === 'secondPassResult') {
+        console.log('2차 분석 결과 수신:', message.payload);
+        setPinpointResult(message.payload);
+        setIsPinpointLoading(false);
+      } else if (message.command === 'llmAnalysisResult') {
+        console.log('LLM 분석 결과 수신 (Refresh 완료)');
+        setIsRefreshing(false);
+      }
+    };
+
+    window.addEventListener('message', messageHandler);
+    return () => {
+      window.removeEventListener('message', messageHandler);
+    };
+  }, []);
 
   useEffect(() => {
     if (runId) {
@@ -171,13 +195,16 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
       if (runDetails.conclusion !== 'success' && runDetails.conclusion !== null) {
         console.log(`LLM 분석 재실행: Run ID ${runDetails.id}`);
         analyzeRun(runDetails.id);
+        // isRefreshing은 LLM 분석 결과를 받을 때 (llmAnalysisResult 메시지) false로 설정됨
+      } else {
+        // 성공한 Run은 LLM 분석이 필요 없으므로 바로 로딩 종료
+        setIsRefreshing(false);
       }
       
-      console.log('Refresh 완료');
+      console.log('Refresh 완료 (LLM 분석 대기 중)');
     } catch (error) {
       console.error('Refresh 실패:', error);
-    } finally {
-      setIsRefreshing(false);
+      setIsRefreshing(false); // 에러 시에는 바로 로딩 종료
     }
   };
 
@@ -496,7 +523,13 @@ ${llmAnalysisResult.suggestion}`;
           </div>
         </div>
         <div className="llm-analysis-content">
-          {llmAnalysisResult ? (
+          {isRefreshing ? (
+            // Refresh 로딩 중
+            <div className="llm-analysis-empty">
+              <div className="llm-loading-spinner"></div>
+              <p className="llm-empty-text">LLM 분석을 다시 실행하고 있습니다...</p>
+            </div>
+          ) : llmAnalysisResult ? (
             llmAnalysisResult.summary === "성공한 작업입니다!" ? (
               // [ADD] 성공 상태 UI - 섹션 형태로 통일
               <div className="llm-analysis-result">
@@ -678,8 +711,22 @@ ${llmAnalysisResult.suggestion}`;
                           className={`llm-suspected-path-item ${selectedSuspectedPath === suspectedPath ? 'selected' : ''}`}
                           onClick={() => {
                             setSelectedSuspectedPath(suspectedPath);
-                            // TODO: 2차 LLM 분석 요청 - 나중에 구현
-                            console.log('Selected suspected path:', suspectedPath);
+                            setIsPinpointLoading(true);
+                            
+                            // 2차 LLM 분석 요청
+                            analyzePinpoint({
+                              path: suspectedPath.path,
+                              lineHint: suspectedPath.lineHint,
+                              logExcerpt: suspectedPath.logExcerpt || '',
+                              context: {
+                                workflow: runDetails?.workflow,
+                                step: llmAnalysisResult.affectedStep,
+                              },
+                              radius: 30,
+                              ref: 'main'
+                            });
+                            
+                            console.log('2차 LLM 분석 요청 전송:', suspectedPath);
                           }}
                         >
                           <div className="llm-suspected-path-header">
@@ -714,7 +761,20 @@ ${llmAnalysisResult.suggestion}`;
               )}
 
               {/* 6. 2차 분석 결과 (Pinpoint Result) */}
-              {pinpointResult && (
+              {isPinpointLoading && (
+                <div className="llm-section llm-pinpoint-section">
+                  <h3 className="llm-section-title">
+                    <span className="llm-icon">🎯</span>
+                    정밀 분석 중...
+                  </h3>
+                  <div className="llm-analysis-empty">
+                    <div className="llm-loading-spinner"></div>
+                    <p className="llm-empty-text">선택한 파일을 정밀 분석하고 있습니다...</p>
+                  </div>
+                </div>
+              )}
+              
+              {!isPinpointLoading && pinpointResult && (
                 <div className="llm-section llm-pinpoint-section">
                   <h3 className="llm-section-title">
                     <span className="llm-icon">🎯</span>

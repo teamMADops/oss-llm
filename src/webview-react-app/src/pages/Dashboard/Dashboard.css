@@ -220,19 +220,31 @@
   color: var(--text-color);
 }
 
-/* 성공(success) 상태 텍스트 색상 */
+/* 성공(success) 상태 스타일 - Run Info용 */
 .status-success {
-  color: var(--success-color);
+  color: #ffffff;
+  background: var(--status-success-color);  /* #238636 */
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
-/* 실패(failure) 상태 텍스트 색상 */
+/* 실패(failure) 상태 스타일 - Run Info용 */
 .status-failure {
-  color: var(--error-color);
+  color: #ffffff;
+  background: var(--status-failed-color);  /* #da3633 */
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
-/* 취소(cancelled) 상태 텍스트 색상 */
+/* 취소(cancelled) 상태 스타일 - Run Info용 */
 .status-cancelled {
-  color: var(--warning-color);
+  color: #ffffff;
+  background: #bf8700;  /* 노란색 */
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
 /* Run Log 뷰어 */
@@ -679,17 +691,17 @@
 }
 
 .status-badge.status-success {
-  background: #238636;
+  background: var(--status-success-color);  /* #238636 */
   color: #DBE8F2;
 }
 
 .status-badge.status-failure {
-  background: #da3633;
+  background: var(--status-failed-color);  /* #da3633 */
   color: #DBE8F2;
 }
 
 .status-badge.status-cancelled {
-  background: #9e6a03;
+  background: #bf8700;  /* 노란색 */
   color: #DBE8F2;
 }
 

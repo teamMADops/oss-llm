@@ -217,6 +217,22 @@ function App() {
     }
   };
 
+  // Settings 모달 열기 (최신 설정 데이터 요청)
+  const handleOpenSettings = () => {
+    console.log('[App.tsx] 설정 모달 열기 요청');
+    const vscode = getVscode();
+    if (vscode) {
+      // Extension에 최신 설정 데이터 요청
+      vscode.postMessage({
+        command: 'checkSettings'
+      });
+    } else {
+      // VSCode API가 없으면 그냥 빈 데이터로 모달 열기
+      setSettingsData({});
+      setShowSettingsModal(true);
+    }
+  };
+
   // Settings 모달 닫기
   const handleCloseSettings = () => {
     if (!isInitialSetup) {
@@ -236,7 +252,7 @@ function App() {
         onSelectAction={onSelectAction}
         onSelectPage={onSelectPage}
         onSidebarToggle={onSidebarToggle}
-        onOpenSettings={() => setShowSettingsModal(true)}
+        onOpenSettings={handleOpenSettings}
       />
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-closed' : 'sidebar-open'}`}>
         {currentPage === 'none' && (

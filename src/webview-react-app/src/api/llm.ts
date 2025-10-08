@@ -3,11 +3,22 @@ import { VSCodeAPI } from '@/types/api';
 
 declare const acquireVsCodeApi: () => VSCodeAPI | undefined;
 
-// VS Code 환경인지 확인
-const isVSCode = typeof acquireVsCodeApi !== 'undefined';
-const vscode = isVSCode ? acquireVsCodeApi() : undefined;
+// VS Code 환경인지 확인 (안전한 방법)
+const getVscode = () => {
+  if (typeof window !== 'undefined') {
+    if (window.getVscode) {
+      return window.getVscode();
+    }
+    if (window.vscode) {
+      return window.vscode;
+    }
+  }
+  return undefined;
+};
 
 export const analyzeLog = (logContent: string): Promise<string> => {
+  const vscode = getVscode();
+  
   if (!vscode) {
     // 브라우저 환경에서는 mock 데이터 반환
     return Promise.resolve(`Mock LLM 분석 결과:
@@ -31,5 +42,34 @@ export const analyzeLog = (logContent: string): Promise<string> => {
       command: 'analyzeLog',
       payload: { logContent }
     });
+  });
+};
+
+// 2차 LLM 분석 (의심 경로 → 정밀 분석)
+export const analyzePinpoint = (params: {
+  path: string;
+  lineHint?: number;
+  logExcerpt?: string;
+  context?: {
+    workflow?: string;
+    step?: string;
+  };
+  radius?: number;
+  ref?: string;
+}): void => {
+  const vscode = getVscode();
+  
+  if (!vscode) {
+    console.warn('VSCode API가 없어 2차 분석을 실행할 수 없습니다.');
+    console.warn('window:', typeof window);
+    console.warn('window.vscode:', typeof window?.vscode);
+    console.warn('window.getVscode:', typeof window?.getVscode);
+    return;
+  }
+
+  console.log('2차 LLM 분석 요청:', params);
+  vscode.postMessage({
+    command: 'analyzeSecondPass',
+    payload: params
   });
 };
