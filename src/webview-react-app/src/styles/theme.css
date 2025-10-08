@@ -1,4 +1,6 @@
 /* 웹뷰 전체의 디자인 테마를 정의하는 전역 스타일시트 */
+@import './variables.css';
+@import './mixins.css';
 
 /* Pretendard 폰트 import - 로컬 패키지에서 가져오기 */
 @import "pretendard/dist/web/variable/pretendardvariable.css";
@@ -196,16 +198,16 @@ body {
 
 /* 성공 상태 스타일 */
 .status-success {
-  background-color: rgba(35, 134, 54, 0.1);
-  color: var(--color-success);
-  border: 1px solid rgba(35, 134, 54, 0.2);
+  background-color: var(--status-success-bg);
+  color: var(--status-success-color);
+  border: 1px solid var(--status-success-border);
 }
 
 /* 실패 상태 스타일 */
 .status-failed {
-  background-color: rgba(218, 54, 51, 0.1);
-  color: var(--color-danger);
-  border: 1px solid rgba(218, 54, 51, 0.2);
+  background-color: var(--status-failed-bg);
+  color: var(--status-failed-color);
+  border: 1px solid var(--status-failed-border);
 }
 
 /* 실행 중 상태 스타일 */
@@ -217,9 +219,9 @@ body {
 
 /* 대기 중 상태 스타일 */
 .status-pending {
-  background-color: rgba(210, 153, 34, 0.1);
-  color: var(--color-pending);
-  border: 1px solid rgba(210, 153, 34, 0.2);
+  background-color: var(--status-pending-bg);
+  color: var(--status-pending-color);
+  border: 1px solid var(--status-pending-border);
 }
 
 /* 취소됨 상태 스타일 */

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
 import { LLMResult } from '../../../../llm/types';
@@ -60,6 +61,7 @@ interface RunDetails {
   duration: string;
   commit: string;
   author: string;
+  // TODO: jobs 타입 정의 필요
   jobs?: any[];
 }
 
@@ -79,6 +81,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
       console.log(`Dashboard: actionId만 있음 → ${actionId}, 전체 actions 중 가장 최근 run을 가져옵니다.`);
       loadLatestRunFromAllActions();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId, actionId]);
 
   const loadRunData = async (runId: string) => {
@@ -222,7 +225,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
           {/* Panel Content */}
           <div className="panel-content">
             {selectedPanel === 1 && runDetails && (
-              <div className="panel-section">
+              <div className="panel-section panel-container">
                 <h2 className="dashboard-section-title">Run Information</h2>
                 <div className="run-info-card">
                   <div className="run-info-row">
@@ -268,7 +271,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
             )}
 
             {selectedPanel === 2 && (
-              <div className="panel-section">
+              <div className="panel-section panel-container">
                 <h2 className="dashboard-section-title">Detailed Log</h2>
                 <div className="log-viewer">
                   <div className="log-header">
@@ -301,7 +304,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
             )}
 
             {selectedPanel === 3 && runDetails?.jobs && (
-              <div className="panel-section">
+              <div className="panel-section panel-container">
                 <h2 className="dashboard-section-title">Jobs</h2>
                 <div className="jobs-list">
                   {runDetails.jobs.map((job: any, index: number) => (
@@ -323,7 +326,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
             )}
 
             {selectedPanel === 4 && (
-              <div className="panel-section">
+              <div className="panel-section panel-container">
                 <h2 className="dashboard-section-title">Artifacts</h2>
                 <div className="artifacts-placeholder">
                   <p>아티팩트 정보가 여기에 표시됩니다.</p>
