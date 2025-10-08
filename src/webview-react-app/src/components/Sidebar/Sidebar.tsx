@@ -68,18 +68,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               {selectedActionId === action.id && dropdownActive && (
                   <div className="action-dropdown">
                     <div 
-                      className={`dropdown-item ${activePage === 'editor' ? 'selected' : ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectPage('editor');
-                      }}
-                    >
-                      <span className="dropdown-icon">
-                        <EditorIcon />
-                      </span>
-                      <span>Editor</span>
-                    </div>
-                    <div 
                       className={`dropdown-item ${activePage === 'history' ? 'selected' : ''}`}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -90,6 +78,18 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <HistoryIcon />
                       </span>
                       <span>Run History</span>
+                    </div>
+                    <div 
+                      className={`dropdown-item ${activePage === 'editor' ? 'selected' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectPage('editor');
+                      }}
+                    >
+                      <span className="dropdown-icon">
+                        <EditorIcon />
+                      </span>
+                      <span>Editor</span>
                     </div>
                   </div>
               )}
