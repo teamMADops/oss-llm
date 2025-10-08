@@ -1,0 +1,14 @@
+:root {
+  /* 상태별 색상 통합 */
+  --status-success-bg: rgba(35, 134, 54, 0.1);
+  --status-success-border: rgba(35, 134, 54, 0.2);
+  --status-success-color: #238636;
+  
+  --status-failed-bg: rgba(218, 54, 51, 0.1);
+  --status-failed-border: rgba(218, 54, 51, 0.2);
+  --status-failed-color: #da3633;
+  
+  --status-pending-bg: rgba(139, 148, 158, 0.1);
+  --status-pending-border: rgba(139, 148, 158, 0.2);
+  --status-pending-color: #8b949e;
+}

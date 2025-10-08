@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // GitHub Actions의 정보를 받아올 소스코드
-import { VSCodeAPI, Action, WorkflowRun, LatestRun } from '../types/api';
+import { VSCodeAPI, Action, WorkflowRun, LatestRun } from '@/types/api';
 
 declare const acquireVsCodeApi: () => VSCodeAPI | undefined;
 

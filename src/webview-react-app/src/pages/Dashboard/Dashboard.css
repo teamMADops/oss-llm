@@ -773,15 +773,7 @@
   background: transparent;
 }
 
-/* Run Info 패널의 각 섹션 */
-.run-info-section {
-  margin-bottom: 32px;
-  background: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
+
 
 /* Run Info 섹션 제목 */
 .run-info-section-title {
@@ -819,14 +811,8 @@
   background: transparent;
 }
 
-/* Run Log 패널의 각 섹션 */
-.run-log-section {
+.panel-section {
   margin-bottom: 32px;
-  background: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Run Log 섹션 제목 */
