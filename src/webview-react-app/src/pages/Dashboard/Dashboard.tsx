@@ -74,7 +74,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
   const [isSuspectedPathsOpen, setIsSuspectedPathsOpen] = useState(false);
   const [selectedSuspectedPath, setSelectedSuspectedPath] = useState<SuspectedPath | null>(null);
   const [pinpointResult, _setPinpointResult] = useState<PinpointResult | null>(null); // TODO: 2차 분석 API 연결 시 사용
-
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [exportStatus, setExportStatus] = useState<'idle' | 'copying' | 'success' | 'error'>('idle');
   useEffect(() => {
     if (runId) {
       console.log(`Dashboard: runId 변경됨 → ${runId}, 실행 상세 정보를 가져옵니다.`);
