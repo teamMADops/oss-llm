@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { WorkflowRun } from '@/types/api';
 import './HistoryTable.css';
 import { StatusIndicator } from '@/components/common/StatusIndicator/StatusIndicator';
+import { formatTimeAgo } from '@/utils/dateTime';
 
 interface HistoryTableProps {
   runs: WorkflowRun[];
@@ -73,26 +74,6 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ runs, onRunClick }) => { //
 
   //   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   // };
-
-  // GitHub Actions 스타일의 "몇 시간 전" 계산 함수
-  const formatTimeAgo = (timestamp: string) => {
-    const now = new Date();
-    const date = new Date(timestamp);
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) {
-      return `${diffInSeconds}s ago`;
-    } else if (diffInSeconds < 3600) {
-      const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes}m ago`;
-    } else if (diffInSeconds < 86400) {
-      const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours}h ago`;
-    } else {
-      const days = Math.floor(diffInSeconds / 86400);
-      return `${days}d ago`;
-    }
-  };
 
   // 기존 formatStatus 함수 (필요시 사용 가능)
   // const formatStatus = (status: string, conclusion: string | null) => {

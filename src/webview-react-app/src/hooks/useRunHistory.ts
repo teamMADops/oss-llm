@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { WorkflowRun } from '@/types/api';
 import { getRunHistory } from '@/api/github';
+import { mockRuns } from '@/mocks/workflowData';
 
 export const useRunHistory = (actionId: string | null) => {
   const [runHistory, setRunHistory] = useState<WorkflowRun[]>([]);
@@ -11,7 +12,10 @@ export const useRunHistory = (actionId: string | null) => {
       setIsLoading(true);
       getRunHistory(actionId)
         .then(setRunHistory)
-        .catch(console.error)
+        .catch(error => {
+          console.error('Failed to fetch run history:', error);
+          setRunHistory(mockRuns);
+        })
         .finally(() => setIsLoading(false));
     }
   }, [actionId]);

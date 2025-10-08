@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // GitHub Actions의 정보를 받아올 소스코드
 import { VSCodeAPI, Action, WorkflowRun, LatestRun } from '@/types/api';
+import { WORKFLOW_STATUSES, WORKFLOW_CONCLUSIONS } from '@/constants/workflow';
 
 declare const acquireVsCodeApi: () => VSCodeAPI | undefined;
 
@@ -59,8 +60,8 @@ export const getLatestRun = (actionId: string): Promise<LatestRun> => {
     // 브라우저 환경에서는 mock 데이터 반환
     return Promise.resolve({ 
       id: 'run1', 
-      status: 'completed', 
-      conclusion: 'success',
+      status: WORKFLOW_STATUSES.COMPLETED, 
+      conclusion: WORKFLOW_CONCLUSIONS.SUCCESS,
       timestamp: '2025-08-15 12:00:34',
       reason: 'Push to main'
     });
@@ -89,8 +90,8 @@ export const getRunHistory = (actionId: string): Promise<WorkflowRun[]> => {
     return Promise.resolve([
       { 
         id: 'run1', 
-        status: 'completed', 
-        conclusion: 'success',
+        status: WORKFLOW_STATUSES.COMPLETED, 
+        conclusion: WORKFLOW_CONCLUSIONS.SUCCESS,
         timestamp: '2025-08-15 12:00:34',
         reason: 'Push to main',
         branch: 'main',
@@ -99,8 +100,8 @@ export const getRunHistory = (actionId: string): Promise<WorkflowRun[]> => {
       },
       { 
         id: 'run2', 
-        status: 'completed', 
-        conclusion: 'failure',
+        status: WORKFLOW_STATUSES.COMPLETED, 
+        conclusion: WORKFLOW_CONCLUSIONS.FAILURE,
         timestamp: '2025-08-15 11:30:22',
         reason: 'Pull request #123',
         branch: 'develop',
@@ -200,7 +201,7 @@ export const getLatestRunFromAllActions = (): Promise<any> => {
     // 브라우저 환경에서는 mock 데이터 반환
     return Promise.resolve({
       id: 'latest-run-1',
-      status: 'completed',
+      status: WORKFLOW_STATUSES.COMPLETED,
       conclusion: 'success',
       timestamp: '2025-08-20 12:00:34',
       reason: 'Push to main',
@@ -230,8 +231,8 @@ export const getRunDetails = (runId: string): Promise<any> => {
     // 브라우저 환경에서는 mock 데이터 반환
     return Promise.resolve({
       id: runId,
-      status: 'completed',
-      conclusion: 'success',
+      status: WORKFLOW_STATUSES.COMPLETED,
+      conclusion: WORKFLOW_CONCLUSIONS.SUCCESS,
       timestamp: '2025-08-15 12:00:34',
       reason: 'Push to main',
       branch: 'main',
