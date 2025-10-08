@@ -120,6 +120,9 @@ function App() {
           const firstAction = fetchedActions[0];
           console.log(`[App.tsx] 첫 번째 action 자동 선택: ${firstAction.id}`);
           setSelectedActionId(firstAction.id);
+          // 첫 번째 action의 드롭다운도 활성화
+          setDropdownActive(true);
+          setActionHighlighted(true);
           // 이미 history 페이지이므로 페이지 변경 불필요
         }
       } catch (error) {
@@ -158,10 +161,9 @@ function App() {
 
   const onSelectPage = (pageName: string) => {
     setCurrentPage(pageName);
-    // dropdown item 클릭 시 action 하이라이트 비활성화
-    setActionHighlighted(false);
-    // dropdown은 열린 상태 유지
-    setDropdownActive(true);
+    // 페이지 선택 시 action은 하이라이트 유지하되, dropdown은 활성 상태 유지
+    // (사용자가 명시적으로 페이지를 선택했으므로 드롭다운을 닫지 않음)
+    
     // Actions가 비어있고 대시보드로 이동하는 경우 로드
     if (pageName === 'dashboard' && actions.length === 0) {
       loadActions();
@@ -188,9 +190,15 @@ function App() {
       setSelectedActionId(actionId);
       setDropdownActive(true); // dropdown 활성화
       setActionHighlighted(true); // action 하이라이트 활성화
+      
+      // 현재 페이지에 따라 적절한 페이지로 이동
+      if (currentPage === 'dashboard') {
+        // Dashboard에 있으면 새로운 action의 History로 이동
+        setCurrentPage('history');
+      }
+      // History나 Editor에 있으면 현재 페이지 유지
     }
-    // History로 이동 (변경됨: 기존에는 dashboard였음)
-    setCurrentPage('history');
+    
     // Actions가 비어있으면 로드
     if (actions.length === 0) {
       loadActions();
@@ -214,9 +222,7 @@ function App() {
     if (actions.length === 0) {
       loadActions();
     }
-    // 분석 요청 후 기존 선택 상태 초기화
-    setDropdownActive(false);
-    setActionHighlighted(false);
+    // 사이드바 상태는 유지 (드롭다운 상태 초기화하지 않음)
   };
 
   // Settings 저장 핸들러
