@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-case-declarations */
 import React, { useState, useEffect } from 'react';
 import YamlViewer from './YamlViewer';
-import { getWorkflowFile, saveWorkflowFile } from '../../api/github';
+import { getWorkflowFile, saveWorkflowFile } from '@/api/github';
 import './Editor.css';
 
 // Props: App.tsx로부터 받음
@@ -175,6 +177,7 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
   useEffect(() => {
     const generatedYaml = generateYaml();
     setWorkflowContent(generatedYaml);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workflowName, workflowTriggers, jobs, dynamicSections, isAdvancedMode, sectionOrder]);
 
   // --- Handlers ---
@@ -245,7 +248,7 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
     }
 
     // 드롭 위치에 따른 섹션 순서 재배열
-    let newOrder = [...sectionOrder];
+    const newOrder = [...sectionOrder];
     const draggedIndex = newOrder.indexOf(draggedSection);
     
     // 드래그된 섹션을 먼저 제거

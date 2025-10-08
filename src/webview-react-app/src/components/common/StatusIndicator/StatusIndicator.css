@@ -1,3 +1,5 @@
+@import '../../../styles/variables.css';
+
 /* 상태를 나타내는 아이콘(동그라미 등)의 컨테이너 */
 .status-indicator {
   width: 24px;
@@ -11,14 +13,14 @@
 
 /* 성공(success) 상태 아이콘 */
 .status-indicator.status-success {
-  background: rgba(35, 134, 54, 0.15);
-  border: 1px solid rgba(35, 134, 54, 0.3);
+  background: var(--status-success-bg);
+  border: 1px solid var(--status-success-border);
 }
 
 /* 실패(failed) 상태 아이콘 */
 .status-indicator.status-failed {
-  background: rgba(255, 0, 0, 0.15); /* 더 빨간색으로 변경 */
-  border: 1px solid rgba(255, 0, 0, 0.3); /* 더 빨간색으로 변경 */
+  background: var(--status-failed-bg);
+  border: 1px solid var(--status-failed-border);
 }
 
 /* 실행 중(running) 상태 아이콘 */
@@ -29,8 +31,8 @@
 
 /* 대기(pending) 상태 아이콘 */
 .status-indicator.status-pending {
-  background: rgba(139, 148, 158, 0.15);
-  border: 1px solid rgba(139, 148, 158, 0.3);
+  background: var(--status-pending-bg);
+  border: 1px solid var(--status-pending-border);
 }
 
 /* 상태 텍스트(Completed, Failed 등) */
@@ -44,12 +46,12 @@
 
 /* 성공 상태 텍스트 색상 */
 .status-indicator.status-success + .status-text {
-  color: #238636;
+  color: var(--status-success-color);
 }
 
 /* 실패 상태 텍스트 색상 */
 .status-indicator.status-failed + .status-text {
-  color: #ff0000; /* 더 빨간색으로 변경 */
+  color: var(--status-failed-color);
 }
 
 /* 실행 중 상태 텍스트 색상 */
@@ -59,5 +61,5 @@
 
 /* 대기 상태 텍스트 색상 */
 .status-indicator.status-pending + .status-text {
-  color: #8b949e;
+  color: var(--status-pending-color);
 }

@@ -258,15 +258,7 @@
   margin-left: 1px;
 }
 
-/* 섹션 제목 */
-.section-title {
-  font-size: 14px; /* 더 작은 글씨 */
-  font-weight: 500; /* 약간 가벼운 굵기 */
-  color: #8b949e; /* 회색으로 변경 */
-  margin: 0;
-  text-transform: uppercase; /* 대문자로 */
-  letter-spacing: 0.5px; /* 글자 간격 */
-}
+
 
 /* 섹션 내용 */
 .section-content {
