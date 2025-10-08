@@ -8,8 +8,8 @@ const getGithubSession_1 = __importDefault(require("./getGithubSession"));
 async function getExistingGitHubSession() {
     try {
         const silent = true;
-        const session = await (0, getGithubSession_1.default)(silent);
-        return session ?? undefined;
+        const session = await (0, getGithubSession_1.default)(false, silent);
+        return session;
     }
     catch {
         return undefined;

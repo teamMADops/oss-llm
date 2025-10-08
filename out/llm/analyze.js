@@ -2,6 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.analyzePrompts = analyzePrompts;
 const openai_1 = require("openai");
+// export type LLMResult = {
+//   summary: string;
+//   rootCause: string;
+//   suggestion: string;
+// };
 function parseJsonLenient(text) {
     // ```json ... ``` 같은 코드펜스 제거
     const stripped = text.replace(/```(?:json)?/gi, "").replace(/```/g, "").trim();
@@ -12,6 +17,7 @@ function parseJsonLenient(text) {
         : stripped;
     let parsed;
     try {
+        // const parsed = JSON.parse(candidate);
         parsed = JSON.parse(candidate);
     }
     catch {
@@ -21,6 +27,15 @@ function parseJsonLenient(text) {
             suggestion: "",
             confidence: 0.2,
         };
+        //   return {
+        //     summary: String(parsed.summary ?? ""),
+        //     rootCause: String(parsed.rootCause ?? ""),
+        //     suggestion: String(parsed.suggestion ?? ""),
+        //   };
+        // } catch {
+        //   // 파싱 실패 → 원문을 summary에 넣어 반환
+        //   return { summary: text, rootCause: "", suggestion: "" };
+        // }
     }
     const asString = (v) => (v == null ? "" : String(v));
     const asNumber01 = (v) => {

@@ -42,7 +42,7 @@ const Constants_1 = require("./Constants");
 const getSavedRepoInfo_1 = __importDefault(require("./getSavedRepoInfo"));
 const formatRepoInfo_1 = __importDefault(require("./formatRepoInfo"));
 async function deleteSavedRepo(context) {
-    const savedRepoInfo = await (0, getSavedRepoInfo_1.default)(context);
+    const savedRepoInfo = (0, getSavedRepoInfo_1.default)(context);
     if (!savedRepoInfo) {
         vscode.window.showInformationMessage("저장된 레포가 없습니다.");
         return;
