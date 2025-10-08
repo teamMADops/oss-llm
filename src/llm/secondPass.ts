@@ -3,10 +3,6 @@ import * as vscode from "vscode";
 import { buildSecondPassPrompt } from "./prompts";
 import type { SecondPassInput, PinpointResult } from "./types";
 
-/**
- * 2차(정밀) LLM 분석 실행
- * - 로그 + 코드 윈도우를 기반으로 unified diff 및 checklist를 생성
- */
 export async function analyzeSecondPass(
   context: vscode.ExtensionContext,
   input: SecondPassInput
@@ -18,7 +14,7 @@ export async function analyzeSecondPass(
   const userPrompt = buildSecondPassPrompt(input);
 
   const chat = await client.chat.completions.create({
-    model: "gpt-4o-mini", // 코드 문맥이 포함되므로 gpt-4 계열 권장
+    model: "gpt-3.5-turbo", 
     temperature: 0,
     messages: [
       {
