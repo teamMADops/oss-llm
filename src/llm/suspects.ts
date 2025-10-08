@@ -182,12 +182,3 @@ function isGeneratedOrVendor(path: string): boolean {
   );
 }
 
-/* 참고: 필요한 최소 타입 (types.ts에 없으면 추가)
-export type SuspectedPath = {
-  path: string;
-  reason: string;
-  score?: number;
-  lineHint?: number;
-  logExcerpt?: string;
-};
-*/

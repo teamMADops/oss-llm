@@ -1,14 +1,9 @@
 import { OpenAI } from "openai";
 import * as vscode from "vscode";
-import type { LLMResult,
-  LLMKeyError,
-  FailureType,
-  SuspectedPath,
-  SecondPassInput,
-  PinpointResult,
- } from "./types";
+import type { LLMResult,FailureType} from "./types";
 import { extractSuspects } from "./suspects";
-import { buildFirstPassPrompt, buildSecondPassPrompt } from "./prompts";
+import { buildFirstPassPrompt } from "./prompts";
+import { preprocessLogForLLM } from "./logPreprocess";
 
 function parseJsonLenient(text: string): LLMResult {
   const stripped = text.replace(/```(?:json)?/gi, "").replace(/```/g, "").trim();
@@ -100,7 +95,13 @@ export async function analyzePrompts(
 
   const results: LLMResult[] = [];
   for (const p of chosen) {
-    const userPrompt = buildFirstPassPrompt(p);
+    const safeLog = preprocessLogForLLM(p, {
+    maxTokens: 16000,
+    safetyMargin: 1500,  
+    tailCount: 700,     
+    });
+
+    const userPrompt = buildFirstPassPrompt(safeLog);
     const chat = await client.chat.completions.create({
       model: "gpt-3.5-turbo",
       temperature: 0,
