@@ -13,8 +13,9 @@ function parseJsonLenient(text: string): LLMResult {
 
   let parsed: any;
   try {
-    parsed = JSON.parse(candidate);} catch {
-      return {
+    parsed = JSON.parse(candidate);
+  } catch {
+    return {
       summary: text,
       rootCause: "",
       suggestion: "",
@@ -59,15 +60,6 @@ async function getOpenAIKey(context: vscode.ExtensionContext): Promise<string | 
   const fromSecret = await context.secrets.get("openaiApiKey");
   if (fromSecret) {
     return fromSecret;
-  }
-
-  // 2. 개발 모드일 경우에만 .env 파일에서 키를 fallback으로 사용
-  if (context.extensionMode === vscode.ExtensionMode.Development) {
-    const fromEnv = process.env.MADOPS_OPENAI_KEY || process.env.OPENAI_API_KEY;
-    if (fromEnv) {
-      console.log("🔑 등록된 OpenAI 키가 없어 .env 파일의 개발용 키를 사용합니다.");
-      return fromEnv;
-    }
   }
 
   return null;
