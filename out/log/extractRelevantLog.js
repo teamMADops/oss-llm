@@ -1,7 +1,7 @@
 "use strict";
+// // src/log/extractRelevantLog.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractRelevantLog = extractRelevantLog;
-// src/log/extractRelevantLog.ts
 function extractRelevantLog(content, mode = 'all', options) {
     const tailLines = options?.tailLines ?? 800;
     const errorWindow = options?.errorWindow ?? 300;

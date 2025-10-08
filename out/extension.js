@@ -213,7 +213,7 @@ function createAndShowWebview(context, page) {
             return;
         }
         console.log("[3] 🔑 VS Code GitHub 세션 확보");
-        const repo = await (0, github_1.getSavedRepoInfo)(context);
+        const repo = (0, github_1.getSavedRepoInfo)(context);
         if (!repo) {
             panel.webview.postMessage({
                 command: "error",
