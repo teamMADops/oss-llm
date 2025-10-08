@@ -36,14 +36,14 @@ const getVscode = () => {
 function App() {
   console.log('[App.tsx] App 컴포넌트 렌더링 시작');
   
-  const [currentPage, setCurrentPage] = useState<string>('history');
+  const [currentPage, setCurrentPage] = useState<string>('none'); // 초기 상태: 아무 페이지도 선택 안됨
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
-  const [selectedRunId, setSelectedRunId] = useState<string | null>(null); // [ADD] 선택된 run ID
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [llmAnalysisResult, setLlmAnalysisResult] = useState<LLMResult | null>(null);
-  const [actions, setActions] = useState<Action[]>([]); // New state for actions
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false); // New state for sidebar collapsed
-  const [dropdownActive, setDropdownActive] = useState<boolean>(false); // New state for dropdown active
-  const [actionHighlighted, setActionHighlighted] = useState<boolean>(false); // New state for action highlighted // Use LLMResult type
+  const [actions, setActions] = useState<Action[]>([]);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  const [dropdownActive, setDropdownActive] = useState<boolean>(false);
+  const [actionHighlighted, setActionHighlighted] = useState<boolean>(false);
   
   // Settings 상태
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
@@ -95,9 +95,13 @@ function App() {
         case 'settingsSaved': // 설정 저장 완료
           console.log('[App.tsx] 설정 저장 완료, 모달 닫기 및 데이터 새로고침');
           setShowSettingsModal(false);
-          // LLM 분석 결과 초기화
+          // [FIX] 레포지토리 변경 시 모든 상태 초기화
           setLlmAnalysisResult(null);
           setSelectedRunId(null);
+          setSelectedActionId(null);
+          setActionHighlighted(false);
+          setDropdownActive(false);
+          setCurrentPage('none'); // "워크플로우를 선택해주세요" 화면으로
           // 설정 저장 후 actions 다시 불러오기 (모달은 닫은 상태 유지)
           setTimeout(() => {
             console.log('[App.tsx] 설정 저장 후 actions 새로고침 시작');
@@ -110,24 +114,14 @@ function App() {
 
     window.addEventListener('message', handleMessage);
 
-    // Fetch actions when component mounts (첫 번째 action 자동 선택)
+    // Fetch actions when component mounts (자동 선택 안함)
     const fetchActions = async () => {
       try {
         console.log('[App.tsx] fetchActions 시작');
         const fetchedActions = await getActions();
         console.log('[App.tsx] fetchActions 결과:', fetchedActions);
         setActions(fetchedActions);
-        
-        // 첫 번째 action 자동 선택하여 History 화면 표시
-        if (fetchedActions.length > 0) {
-          const firstAction = fetchedActions[0];
-          console.log(`[App.tsx] 첫 번째 action 자동 선택: ${firstAction.id}`);
-          setSelectedActionId(firstAction.id);
-          // 첫 번째 action의 드롭다운도 활성화
-          setDropdownActive(true);
-          setActionHighlighted(true);
-          // 이미 history 페이지이므로 페이지 변경 불필요
-        }
+        // 자동 선택하지 않음 - 사용자가 직접 선택해야 함
       } catch (error) {
         console.error('[App.tsx] Failed to fetch actions:', error);
       }
@@ -163,51 +157,33 @@ function App() {
   }, [loadActions]);
 
   const onSelectPage = (pageName: string) => {
+    // 드롭다운에서 editor/history 클릭 시
     setCurrentPage(pageName);
-    // 페이지 선택 시 action은 하이라이트 유지하되, dropdown은 활성 상태 유지
-    // (사용자가 명시적으로 페이지를 선택했으므로 드롭다운을 닫지 않음)
-    
-    // Actions가 비어있고 대시보드로 이동하는 경우 로드
-    if (pageName === 'dashboard' && actions.length === 0) {
-      loadActions();
-    }
-    // [ADD] 페이지 변경 시 선택된 run ID 초기화
+    // 선택된 run ID 초기화
     setSelectedRunId(null);
+    // action 하이라이트와 드롭다운 상태는 유지
   };
 
   const onSelectAction = (actionId: string) => {
-    if (selectedActionId === actionId) {
-      // 이미 선택된 action을 다시 클릭한 경우
-      if (dropdownActive && !actionHighlighted) {
-        // dropdown이 활성화되고 action이 하이라이트되지 않은 상태면 action 하이라이트 활성화
-        setActionHighlighted(true);
-      } else if (dropdownActive && actionHighlighted) {
-        // dropdown이 활성화되고 action이 하이라이트된 상태면 dropdown 비활성화
-        setDropdownActive(false);
-      } else {
-        // dropdown이 비활성화된 상태면 dropdown 활성화
-        setDropdownActive(true);
-      }
+    if (selectedActionId === actionId && actionHighlighted) {
+      // 하이라이트된 action을 다시 클릭한 경우 -> 선택 해제
+      console.log(`[App.tsx] 하이라이트된 action 클릭 -> 선택 해제`);
+      setSelectedActionId(null);
+      setActionHighlighted(false);
+      setDropdownActive(false);
+      setCurrentPage('none');
+      setSelectedRunId(null);
+      setLlmAnalysisResult(null);
     } else {
-      // 새로운 action을 선택한 경우
+      // 하이라이트 안된 action 클릭 -> 선택 및 History 페이지로 이동
+      console.log(`[App.tsx] 새로운 action 선택: ${actionId}`);
       setSelectedActionId(actionId);
-      setDropdownActive(true); // dropdown 활성화
-      setActionHighlighted(true); // action 하이라이트 활성화
-      
-      // 현재 페이지에 따라 적절한 페이지로 이동
-      if (currentPage === 'dashboard') {
-        // Dashboard에 있으면 새로운 action의 History로 이동
-        setCurrentPage('history');
-      }
-      // History나 Editor에 있으면 현재 페이지 유지
+      setActionHighlighted(true);
+      setDropdownActive(true);
+      setCurrentPage('history');
+      setSelectedRunId(null);
+      setLlmAnalysisResult(null);
     }
-    
-    // Actions가 비어있으면 로드
-    if (actions.length === 0) {
-      loadActions();
-    }
-    // [ADD] 새로운 action 선택 시 선택된 run ID 초기화
-    setSelectedRunId(null);
   };
 
   const onSidebarToggle = () => {
@@ -224,11 +200,6 @@ function App() {
     // 대시보드로 이동
     setCurrentPage('dashboard');
     // [FIX] 사이드바 상태 유지를 위해 dropdown/highlight 초기화 제거
-    // Actions가 비어있으면 로드
-    if (actions.length === 0) {
-      loadActions();
-    }
-    // 사이드바 상태는 유지 (드롭다운 상태 초기화하지 않음)
   };
 
   // Settings 저장 핸들러
@@ -268,9 +239,14 @@ function App() {
         onOpenSettings={() => setShowSettingsModal(true)}
       />
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-closed' : 'sidebar-open'}`}>
+        {currentPage === 'none' && (
+          <div className="llm-analysis-empty" style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <p className="llm-empty-text" style={{ fontSize: '18px' }}>워크플로우를 선택해주세요</p>
+          </div>
+        )}
         {currentPage === 'dashboard' && <DashboardPage actionId={selectedActionId} runId={selectedRunId} isSidebarOpen={!sidebarCollapsed} llmAnalysisResult={llmAnalysisResult} />}
         {currentPage === 'editor' && <EditorPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />}
-        {currentPage === 'history' && <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} onRunClick={handleRunClick} />} {/* [MOD] onRunClick prop 전달 */}
+        {currentPage === 'history' && <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} onRunClick={handleRunClick} />}
       </main>
       
       {/* Settings Modal */}
