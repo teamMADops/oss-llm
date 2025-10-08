@@ -20,8 +20,8 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ actionId, isSidebarOpen, onRu
             <h1 className="main-title">Workflow Run History</h1>
           </div>
           <div className="history-editor">
-            <div className="history-empty-state">
-              <p>워크플로우를 선택해주세요.</p>
+            <div className="llm-analysis-empty">
+              <p className="llm-empty-text">워크플로우를 선택해주세요.</p>
             </div>
           </div>
         </div>
@@ -41,8 +41,9 @@ const HistoryPage: React.FC<HistoryPageProps> = ({ actionId, isSidebarOpen, onRu
         {/* History Editor */}
         <div className="history-editor">
           {isLoading ? (
-            <div className="history-loading">
-              <p>로딩 중...</p>
+            <div className="llm-analysis-empty">
+              <div className="llm-loading-spinner"></div>
+              <p className="llm-empty-text">실행 기록을 불러오는 중...</p>
             </div>
           ) : (
             <HistoryTable runs={runHistory} isSidebarOpen={isSidebarOpen} onRunClick={onRunClick} />)}

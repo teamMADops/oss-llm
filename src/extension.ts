@@ -747,9 +747,13 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
             );
 
             send(panel, "getRunLogsResponse", allLogs);
-          } catch (error) {
+          } catch (error: any) {
             console.error("Error fetching run logs:", error);
-            send(panel, "error", "Run 로그를 가져오는데 실패했습니다.");
+            // [FIX] 로그를 가져올 수 없을 때 에러 대신 안내 메시지 전송
+            const errorMsg = error?.status === 404 
+              ? "로그를 찾을 수 없습니다. (로그가 만료되었거나, 아직 생성되지 않았거나, 진행 중일 수 있습니다)"
+              : `로그를 가져오는데 실패했습니다: ${error?.message || error}`;
+            send(panel, "getRunLogsResponse", errorMsg);
           }
           break;
 
@@ -915,6 +919,36 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
             console.log(
               `[🚀] Webview로부터 LLM 분석 요청 수신 (Run ID: ${runId})`
             );
+
+            // [ADD] Run 상태 확인
+            const { data: run } = await octokit.actions.getWorkflowRun({
+              owner: repo.owner,
+              repo: repo.repo,
+              run_id: runId,
+            });
+
+            // [ADD] 성공한 workflow는 LLM 분석 없이 성공 메시지 전송
+            if (run.conclusion === "success") {
+              console.log(`[✅] Run #${runId}는 성공한 작업입니다.`);
+              const successResult = {
+                runId,
+                status: "success" as const,
+                summary: "성공한 작업입니다!",
+                rootCause: "",
+                suggestion: "",
+              };
+              
+              if (panels["dashboard"]) {
+                panels["dashboard"].webview.postMessage({
+                  command: "llmAnalysisResult",
+                  payload: successResult,
+                });
+              } else {
+                send(panel, "llmAnalysisResult", successResult);
+              }
+              return;
+            }
+
             // TODO : 여기서 triggerLlmAnalysis 사용, 이를 적절하게 대체 필요!
             // await triggerLlmAnalysis(context, repo, runId);
             // ✅ 커맨드 경로의 LLM 분석 블록을 그대로 사용 (변수명만 맞춤)
@@ -967,18 +1001,45 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
                     JSON.stringify(analysis, null, 2),
                   ]);
 
+                  // [MOD] 성공적으로 분석된 결과에 status 추가
+                  const resultWithStatus = {
+                    runId,
+                    status: "failure" as const,
+                    ...analysis,
+                  };
+
                   // 여기서는 현재 열려있는 대시보드로 보내거나, 바로 이 패널로 회신 둘 중 택1
                   if (panels["dashboard"]) {
                     panels["dashboard"].webview.postMessage({
                       command: "llmAnalysisResult",
-                      payload: { runId, ...analysis },
+                      payload: resultWithStatus,
                     });
                   } else {
-                    send(panel, "llmAnalysisResult", { runId, ...analysis });
+                    send(panel, "llmAnalysisResult", resultWithStatus);
                   }
                 } catch (e: any) {
                   const msg = e?.message ?? String(e);
-                  send(panel, "error", `LLM 분석 실패: ${msg}`);
+                  console.error(`[❌] LLM 분석 실패: ${msg}`);
+                  
+                  // [MOD] 에러 정보를 UI로 전송
+                  const errorResult = {
+                    runId,
+                    status: "error" as const,
+                    summary: "분석이 실패했습니다",
+                    rootCause: "",
+                    suggestion: "",
+                    error: msg,
+                  };
+
+                  if (panels["dashboard"]) {
+                    panels["dashboard"].webview.postMessage({
+                      command: "llmAnalysisResult",
+                      payload: errorResult,
+                    });
+                  } else {
+                    send(panel, "llmAnalysisResult", errorResult);
+                  }
+                  
                   vscode.window.showErrorMessage(`❌ 분석 실패: ${msg}`);
                 }
               }

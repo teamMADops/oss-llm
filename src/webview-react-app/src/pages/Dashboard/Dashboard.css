@@ -162,20 +162,6 @@
   transform: none !important; /* 선택된 상태에서는 hover 효과 비활성화 */
 }
 
-/* panel-selector 아래쪽 길게 구분선 - 더 명확하게 */
-.dashboard-container .panel-selector::after {
-  content: '';
-  position: absolute;
-  bottom: -3px; /* 구분선을 바로 아래로 이동 */
-  left: 0;
-  right: 0;
-  height: 1px; /* 구분선 두께 */
-  background-color: #30363D !important; /* #30363D 색상으로 변경 */
-  z-index: 1;
-  width: 100%;
-  display: block !important; /* 강제 표시 */
-}
-
 
 
 
@@ -1009,7 +995,8 @@
 
 /* 2. 핵심 문제 섹션 */
 .llm-rootcause-section {
-  border-left: 3px solid #da3633;
+  background: linear-gradient(135deg, #2a1a1a 0%, #161b22 100%);
+  border: 1px solid #da3633;
 }
 
 .llm-section-title {
@@ -1033,10 +1020,6 @@
   padding: 16px;
 }
 
-.llm-rootcause-box {
-  border-left: 3px solid #da3633;
-}
-
 .llm-rootcause-text {
   font-size: 14px;
   color: #ff7b72;
@@ -1047,11 +1030,11 @@
 
 /* 3. 권장 해결책 섹션 */
 .llm-suggestion-section {
-  border-left: 3px solid #1a7f37;
+  background: linear-gradient(135deg, #1a2620 0%, #161b22 100%);
+  border: 1px solid #1a7f37;
 }
 
 .llm-suggestion-box {
-  border-left: 3px solid #1a7f37;
   position: relative;
 }
 
@@ -1106,7 +1089,8 @@
 
 /* 4. 상세 로그 분석 섹션 (Accordion) */
 .llm-errors-section {
-  border-left: 3px solid #6e7681;
+  background: linear-gradient(135deg, #1e1e24 0%, #161b22 100%);
+  border: 1px solid #6e7681;
 }
 
 .llm-accordion-header {
@@ -1191,7 +1175,6 @@
   margin-top: 8px;
   padding: 8px 12px;
   background: #161b22;
-  border-left: 3px solid #58a6ff;
   border-radius: 4px;
 }
 
@@ -1205,15 +1188,111 @@
 /* 빈 상태 */
 .llm-analysis-empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
-  padding: 40px 20px;
+  min-height: 300px;
+  padding: 60px 20px;
+  gap: 20px;
+}
+
+.llm-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #30363d;
+  border-top-color: #58a6ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .llm-empty-text {
   color: #8b949e;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 500;
   text-align: center;
+  line-height: 1.5;
+}
+
+/* [ADD] 성공/에러 상태 섹션 - 다른 섹션들과 통일된 스타일 */
+.llm-success-section {
+  background: linear-gradient(135deg, #1a2620 0%, #161b22 100%);
+  border: 1px solid #2ea043;
+}
+
+.llm-error-section {
+  background: linear-gradient(135deg, #2a1a1a 0%, #161b22 100%);
+  border: 1px solid #da3633;
+}
+
+.llm-status-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.llm-status-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.llm-status-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #c9d1d9;
+  margin: 0;
+  flex: 1;
+}
+
+.llm-success-section .llm-status-title {
+  color: #2ea043;
+}
+
+.llm-error-section .llm-status-title {
+  color: #ff7b72;
+}
+
+.llm-status-content {
+  margin-top: 16px;
+}
+
+.llm-status-message {
+  font-size: 14px;
+  color: #8b949e;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.llm-error-detail-box {
+  margin-top: 16px;
+  background: #0d1117;
+  border: 1px solid #da3633;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.llm-error-detail-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.llm-error-detail-text {
+  font-size: 13px;
+  color: #ff7b72;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
