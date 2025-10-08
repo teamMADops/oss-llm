@@ -55,11 +55,12 @@
   width: 25%;
   min-width: 280px;
   max-width: 400px;
-  height: 100%;
+  height: 100vh;
   background: #0F1A24; /* 명시적으로 불투명한 배경색 설정 */
   border-right: 1px solid #30363d;
   transition: transform 0.3s ease; /* transform으로 이동 */
-  overflow: visible; /* white bar가 잘리지 않도록 visible로 변경 */
+  overflow-y: hidden; /* Sidebar 자체는 스크롤 없음 */
+  overflow-x: hidden;
   flex-shrink: 0;
   /* 사이드바 내부 스크롤만 허용 */
   overscroll-behavior: contain;
@@ -69,6 +70,8 @@
   /* 가로 스크롤 차단 */
   max-width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 사이드바가 접혔을(collapsed) 때의 스타일 */
@@ -93,7 +96,7 @@
   padding: 20px 20px 0;
   border-bottom: 1px solid #30363d;
   min-height: 100px;
-  flex-shrink: 0; /* 헤더는 고정 */
+  flex-shrink: 0; /* 헤더는 고정 크기 */
   /* 가로 스크롤 차단 */
   max-width: 100%;
   box-sizing: border-box;
@@ -185,6 +188,7 @@
   max-width: 100%;
   box-sizing: border-box;
   transition: opacity 0.3s ease; /* 부드러운 투명도 전환 */
+  min-height: 0;
 }
 
 /* 사이드바가 접혔을 때 액션 리스트를 숨김 */
@@ -521,4 +525,58 @@
   width: 16px;
   height: 16px;
   fill: white;
+}
+
+/* 사이드바 푸터 (설정 버튼 영역) */
+.sidebar-footer {
+  flex-shrink: 0;
+  padding: 12px;
+  border-top: 1px solid var(--color-border);
+  background: #161B22;
+  transition: opacity 0.3s ease;
+}
+
+/* 사이드바가 닫혔을 때 설정 버튼도 숨김 */
+.editor-sidebar.collapsed .sidebar-footer {
+  opacity: 0;
+}
+
+/* 설정 버튼 */
+.sidebar-settings-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #161B22;
+  border: none;
+  border-radius: 6px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-family: var(--font-family-base);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.sidebar-settings-button:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.sidebar-settings-button:active {
+  transform: scale(0.98);
+}
+
+.sidebar-settings-button svg {
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.sidebar-settings-button:hover svg {
+  opacity: 1;
+}
+
+.sidebar-settings-button span {
+  flex: 1;
+  text-align: left;
 }

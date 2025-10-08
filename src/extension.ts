@@ -285,9 +285,43 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
 
           // 실제 설정 데이터를 모달에 전달
           console.log('[extension.ts] 설정 모달 표시 요청');
+          
+          // API 키 가져오기 (실제 값 전달)
+          let apiKeyValue = '';
+          if (hasOpenAiKey) {
+            const actualKey = await context.secrets.get("openaiApiKey");
+            if (actualKey) {
+              apiKeyValue = actualKey;
+            }
+          }
+          
+          // GitHub 사용자 정보 가져오기
+          let githubUserInfo = null;
+          if (githubSession) {
+            try {
+              const octokit = await getOctokitViaVSCodeAuth();
+              if (octokit) {
+                const { data: user } = await octokit.rest.users.getAuthenticated();
+                githubUserInfo = {
+                  username: user.login,
+                  avatarUrl: user.avatar_url,
+                  name: user.name || user.login
+                };
+              }
+            } catch (error) {
+              console.error('[extension.ts] GitHub 사용자 정보 가져오기 실패:', error);
+              githubUserInfo = {
+                username: githubSession.account.label,
+                avatarUrl: '',
+                name: githubSession.account.label
+              };
+            }
+          }
+          
           const currentSettings = {
             githubAuthenticated: !!githubSession,
-            openaiApiKey: hasOpenAiKey ? '••••••••' : '',
+            githubUser: githubUserInfo,
+            openaiApiKey: apiKeyValue, // 실제 API 키 전달 (눈 아이콘으로 보이기/숨기기 가능)
             repositoryUrl: savedRepo ? `${savedRepo.owner}/${savedRepo.repo}` : '',
           };
           
@@ -316,13 +350,31 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
             const octokit = await getOctokitViaVSCodeAuth();
             if (octokit) {
               const session = await getExistingGitHubSession();
-              panel.webview.postMessage({
-                command: "githubLoginResult",
-                payload: {
-                  success: true,
-                  username: session?.account?.label || 'GitHub User'
-                }
-              });
+              
+              // GitHub API로 사용자 정보 가져오기
+              try {
+                const { data: user } = await octokit.rest.users.getAuthenticated();
+                panel.webview.postMessage({
+                  command: "githubLoginResult",
+                  payload: {
+                    success: true,
+                    username: user.login,
+                    avatarUrl: user.avatar_url,
+                    name: user.name || user.login
+                  }
+                });
+              } catch (apiError) {
+                // API 호출 실패 시 세션 정보만 사용
+                panel.webview.postMessage({
+                  command: "githubLoginResult",
+                  payload: {
+                    success: true,
+                    username: session?.account?.label || 'GitHub User',
+                    avatarUrl: '',
+                    name: session?.account?.label || 'GitHub User'
+                  }
+                });
+              }
             } else {
               panel.webview.postMessage({
                 command: "githubLoginResult",
@@ -344,14 +396,23 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
           return;
         }
 
+        case 'openExternalUrl': {
+          // 외부 URL 열기
+          const url = message.payload?.url;
+          if (url) {
+            vscode.env.openExternal(vscode.Uri.parse(url));
+          }
+          return;
+        }
+
         case 'saveSettings': {
           // 설정 저장
           console.log('[extension.ts] 설정 저장 요청 받음:', message.payload);
           try {
             const { openaiApiKey, repositoryUrl } = message.payload;
 
-            // OpenAI API 키 저장 (••••••••가 아닌 경우에만)
-            if (openaiApiKey && !openaiApiKey.includes('•')) {
+            // OpenAI API 키 저장 (실제 값이 있을 때만)
+            if (openaiApiKey && openaiApiKey.trim()) {
               await context.secrets.store("openaiApiKey", openaiApiKey);
             }
 
@@ -969,7 +1030,7 @@ function getWebviewContent(
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource}; script-src 'nonce-${nonce}';">
+      <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}'; font-src ${panel.webview.cspSource} data:; img-src ${panel.webview.cspSource} https: data:;">
       <title>MAD Ops</title>
       <link rel="stylesheet" type="text/css" href="${styleUri}">
     </head>
