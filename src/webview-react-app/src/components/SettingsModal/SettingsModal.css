@@ -1,0 +1,316 @@
+/* Settings Modal 오버레이 */
+.settings-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Settings Modal 컨테이너 */
+.settings-modal {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideInScale 0.3s ease-out;
+}
+
+@keyframes slideInScale {
+  from {
+    transform: scale(0.9) translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Modal 헤더 */
+.settings-modal-header {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.settings-modal-close {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.settings-modal-close:hover {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+/* Modal 바디 */
+.settings-modal-body {
+  padding: 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* 환영 메시지 */
+.settings-welcome-message {
+  background-color: rgba(88, 166, 255, 0.1);
+  border: 1px solid rgba(88, 166, 255, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.settings-welcome-message p {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 섹션 */
+.settings-section {
+  margin-bottom: 28px;
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
+}
+
+/* 레이블 */
+.settings-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.settings-label-text {
+  margin-right: 4px;
+}
+
+.settings-label-required {
+  color: #f85149;
+  margin-left: 2px;
+}
+
+/* 입력 필드 */
+.settings-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+  background-color: var(--color-surface);
+}
+
+.settings-input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.settings-input-error {
+  border-color: #f85149;
+}
+
+.settings-input-error:focus {
+  border-color: #f85149;
+  box-shadow: 0 0 0 3px rgba(248, 81, 73, 0.1);
+}
+
+/* GitHub 로그인 섹션 */
+.settings-github-login {
+  display: flex;
+  align-items: center;
+}
+
+/* 상태 표시 */
+.settings-status-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background-color: rgba(35, 134, 54, 0.1);
+  border: 1px solid rgba(35, 134, 54, 0.3);
+  border-radius: 6px;
+  color: #3fb950;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.settings-status-icon {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* 버튼 */
+.settings-button {
+  padding: 10px 20px;
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.settings-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.settings-button-primary {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.settings-button-primary:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+}
+
+.settings-button-secondary {
+  background-color: var(--color-surface-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.settings-button-secondary:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+}
+
+.settings-button-github {
+  background-color: #238636;
+  color: white;
+}
+
+.settings-button-github:hover:not(:disabled) {
+  background-color: #2ea043;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(35, 134, 54, 0.3);
+}
+
+/* 에러 메시지 */
+.settings-error {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #f85149;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.settings-error::before {
+  content: '⚠';
+  font-size: 14px;
+}
+
+/* 도움말 텍스트 */
+.settings-help-text {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.settings-link {
+  color: var(--color-accent);
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.settings-link:hover {
+  text-decoration: underline;
+}
+
+/* Modal 푸터 */
+.settings-modal-footer {
+  padding: 20px 28px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background-color: var(--color-surface-secondary);
+}
+
+/* 키보드 힌트 */
+.settings-keyboard-hint {
+  padding: 12px 28px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .settings-modal {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .settings-modal-header {
+    padding: 20px;
+  }
+
+  .settings-modal-body {
+    padding: 20px;
+  }
+
+  .settings-modal-footer {
+    padding: 16px 20px;
+  }
+
+  .settings-section {
+    margin-bottom: 24px;
+  }
+}
+

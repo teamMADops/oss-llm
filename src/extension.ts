@@ -232,6 +232,8 @@ type Page = "dashboard" | "editor" | "history";
  * @param page The page to display in the webview ('dashboard', 'editor', 'history').
  */
 function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
+  console.log(`[extension.ts] 웹뷰 생성 시작: ${page}`);
+  
   const column = vscode.window.activeTextEditor
     ? vscode.window.activeTextEditor.viewColumn
     : undefined;
@@ -240,12 +242,14 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
 
   // If we already have a panel for this page, show it.
   if (panels[page]) {
+    console.log(`[extension.ts] 기존 패널 사용: ${page}`);
     panels[page].reveal(column);
     // Also send a message to ensure the correct page is displayed, in case the user changed it.
     panels[page].webview.postMessage({ command: "changePage", page });
     return;
   }
 
+  console.log(`[extension.ts] 새 웹뷰 패널 생성: ${pageTitle}`);
   const panel = vscode.window.createWebviewPanel(
     page,
     pageTitle,
@@ -261,10 +265,137 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
     }
   );
 
+  console.log(`[extension.ts] 웹뷰 HTML 설정 중...`);
   panel.webview.html = getWebviewContent(context, panel);
+  console.log(`[extension.ts] 웹뷰 HTML 설정 완료`);
 
   panel.webview.onDidReceiveMessage(
     async (message) => {
+      // Settings 관련 메시지 처리 (GitHub 인증 불필요)
+      console.log('[extension.ts] 받은 메시지:', message.command, message);
+      
+      switch (message.command) {
+        case 'checkSettings': {
+          // 초기 설정 확인
+          console.log('[extension.ts] 설정 확인 중...');
+          const githubSession = await getExistingGitHubSession();
+          const savedRepo = getSavedRepoInfo(context);
+          const hasOpenAiKey = !!(await context.secrets.get("openaiApiKey"));
+
+          console.log('[extension.ts] 설정 상태:', {
+            hasGithubSession: !!githubSession,
+            hasSavedRepo: !!savedRepo,
+            hasOpenAiKey
+          });
+
+          const isConfigured = githubSession && savedRepo && hasOpenAiKey;
+
+          // 실제 설정 데이터를 모달에 전달
+          console.log('[extension.ts] 설정 모달 표시 요청');
+          const currentSettings = {
+            githubAuthenticated: !!githubSession,
+            openaiApiKey: hasOpenAiKey ? '••••••••' : '',
+            repositoryUrl: savedRepo ? `${savedRepo.owner}/${savedRepo.repo}` : '',
+          };
+          
+          console.log('[extension.ts] 전달할 설정 데이터:', currentSettings);
+          
+          panel.webview.postMessage({
+            command: "showSettings",
+            payload: {
+              isInitialSetup: !isConfigured, // 설정이 완료되지 않았을 때만 초기 설정으로 표시
+              currentSettings: currentSettings
+            }
+          });
+
+          if (!isConfigured) {
+            console.log('[extension.ts] 설정이 완료되지 않음 - 모달 표시');
+          } else {
+            console.log('[extension.ts] 설정이 이미 완료되어 있음 - 테스트용 모달 표시');
+          }
+          return;
+        }
+
+        case 'requestGithubLogin': {
+          // GitHub 로그인 요청
+          console.log('[extension.ts] GitHub 로그인 요청 받음');
+          try {
+            const octokit = await getOctokitViaVSCodeAuth();
+            if (octokit) {
+              const session = await getExistingGitHubSession();
+              panel.webview.postMessage({
+                command: "githubLoginResult",
+                payload: {
+                  success: true,
+                  username: session?.account?.label || 'GitHub User'
+                }
+              });
+            } else {
+              panel.webview.postMessage({
+                command: "githubLoginResult",
+                payload: {
+                  success: false,
+                  error: 'GitHub 로그인에 실패했습니다.'
+                }
+              });
+            }
+          } catch (error: any) {
+            panel.webview.postMessage({
+              command: "githubLoginResult",
+              payload: {
+                success: false,
+                error: error?.message || 'GitHub 로그인 중 오류가 발생했습니다.'
+              }
+            });
+          }
+          return;
+        }
+
+        case 'saveSettings': {
+          // 설정 저장
+          console.log('[extension.ts] 설정 저장 요청 받음:', message.payload);
+          try {
+            const { openaiApiKey, repositoryUrl } = message.payload;
+
+            // OpenAI API 키 저장 (••••••••가 아닌 경우에만)
+            if (openaiApiKey && !openaiApiKey.includes('•')) {
+              await context.secrets.store("openaiApiKey", openaiApiKey);
+            }
+
+            // 레포지토리 정보 저장
+            if (repositoryUrl) {
+              const repoInfo = await import('./github/repository/normalizeInputAsRepoInfo');
+              const normalized = repoInfo.default(repositoryUrl);
+              if (normalized) {
+                const KEY = (await import('./github/repository/Constants')).KEY;
+                await context.globalState.update(KEY, `${normalized.owner}/${normalized.repo}`);
+              }
+            }
+
+            // 저장 완료 메시지
+            console.log('[extension.ts] 설정 저장 완료, 웹뷰에 알림');
+            console.log('[extension.ts] settingsSaved 메시지 전송 중...');
+            
+            panel.webview.postMessage({
+              command: "settingsSaved",
+              payload: { success: true }
+            });
+            
+            console.log('[extension.ts] settingsSaved 메시지 전송 완료');
+
+            vscode.window.showInformationMessage("✅ 설정이 저장되었습니다.");
+          } catch (error: any) {
+            panel.webview.postMessage({
+              command: "error",
+              payload: `설정 저장 실패: ${error?.message || error}`
+            });
+            vscode.window.showErrorMessage(`설정 저장 실패: ${error?.message || error}`);
+          }
+          return;
+        }
+      }
+
+      // 기존 메시지 처리 (GitHub 인증 필요)
       const octokit = await getOctokitViaVSCodeAuth();
       if (!octokit) {
         vscode.window.showErrorMessage("GitHub 로그인에 실패했습니다.");
@@ -834,8 +965,13 @@ function getWebviewContent(
 
   const nonce = getNonce();
 
+  console.log('[extension.ts] 웹뷰 HTML 생성 중...');
+  console.log('[extension.ts] 빌드 경로:', buildPath);
+  console.log('[extension.ts] 스크립트 URI:', scriptUri.toString());
+  console.log('[extension.ts] 스타일 URI:', styleUri.toString());
+
   // The title here is for the HTML document itself, not the panel tab.
-  return `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
@@ -846,9 +982,43 @@ function getWebviewContent(
     </head>
     <body>
       <div id="root"></div>
+      <script nonce="${nonce}">
+        // VSCode API 주입 (완전 격리)
+        console.log('[Webview] 스크립트 로드 시작');
+        
+        // acquireVsCodeApi 함수를 임시로 저장
+        const originalAcquireVsCodeApi = window.acquireVsCodeApi;
+        
+        try {
+          // 한 번만 초기화
+          if (!window.vscode) {
+            window.vscode = originalAcquireVsCodeApi();
+            console.log('[Webview] VSCode API 초기화됨');
+            console.log('[Webview] vscode 객체:', window.vscode);
+          } else {
+            console.log('[Webview] VSCode API 이미 존재함');
+          }
+          
+          // acquireVsCodeApi 함수를 제거하여 중복 호출 방지
+          delete window.acquireVsCodeApi;
+          
+          // React 앱에서 사용할 수 있도록 전역 함수 제공
+          window.getVscode = function() {
+            return window.vscode;
+          };
+          
+        } catch (error) {
+          console.log('[Webview] VSCode API 초기화 실패:', error.message);
+          // 실패해도 acquireVsCodeApi 함수는 제거
+          delete window.acquireVsCodeApi;
+        }
+      </script>
       <script nonce="${nonce}" src="${scriptUri}"></script>
     </body>
     </html>`;
+    
+  console.log('[extension.ts] 웹뷰 HTML 생성 완료');
+  return html;
 }
 
 function getNonce() {

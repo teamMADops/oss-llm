@@ -4,13 +4,30 @@ import { VSCodeAPI, Action, WorkflowRun, LatestRun } from '@/types/api';
 
 declare const acquireVsCodeApi: () => VSCodeAPI | undefined;
 
-// VS Code 환경인지 확인
-const isVSCode = typeof acquireVsCodeApi !== 'undefined';
-const vscode = isVSCode ? acquireVsCodeApi() : undefined;
+// VS Code 환경인지 확인 (안전한 방법)
+const getVscode = () => {
+  if (typeof window !== 'undefined') {
+    if (window.getVscode) {
+      return window.getVscode();
+    }
+    if (window.vscode) {
+      return window.vscode;
+    }
+  }
+  return undefined;
+};
+
+// vscode 객체를 파일 로드 시점에 가져오지 않고, 각 함수에서 동적으로 가져오기
+// const vscode = getVscode();
 
 // GitHub Actions 관련 API 함수들
 export const getActions = (): Promise<Action[]> => {
+  const vscode = getVscode();
+  console.log('[github.ts] getActions 호출됨');
+  console.log('[github.ts] vscode 객체:', vscode);
+  
   if (!vscode) {
+    console.log('[github.ts] vscode 객체가 없어서 mock 데이터 반환');
     // 브라우저 환경에서는 mock 데이터 반환
     return Promise.resolve([
       { id: 'action1', name: 'Action one_happy', status: 'success' },
@@ -21,9 +38,11 @@ export const getActions = (): Promise<Action[]> => {
     ]);
   }
 
+  console.log('[github.ts] Extension으로 getActions 요청 전송');
   return new Promise((resolve) => {
     const messageHandler = (event: MessageEvent) => {
       if (event.data.command === 'getActionsResponse') {
+        console.log('[github.ts] getActionsResponse 수신됨:', event.data.payload);
         window.removeEventListener('message', messageHandler);
         resolve(event.data.payload);
       }
@@ -35,6 +54,7 @@ export const getActions = (): Promise<Action[]> => {
 };
 
 export const getLatestRun = (actionId: string): Promise<LatestRun> => {
+  const vscode = getVscode();
   if (!vscode) {
     // 브라우저 환경에서는 mock 데이터 반환
     return Promise.resolve({ 
@@ -63,6 +83,7 @@ export const getLatestRun = (actionId: string): Promise<LatestRun> => {
 };
 
 export const getRunHistory = (actionId: string): Promise<WorkflowRun[]> => {
+  const vscode = getVscode();
   if (!vscode) {
     // 브라우저 환경에서는 mock 데이터 반환 (getRunDetails와 동일한 구조)
     return Promise.resolve([
@@ -106,6 +127,7 @@ export const getRunHistory = (actionId: string): Promise<WorkflowRun[]> => {
 };
 
 export const getWorkflowFile = (actionId: string): Promise<string> => {
+  const vscode = getVscode();
   if (!vscode) {
     // 브라우저 환경에서는 mock 데이터 반환
     return Promise.resolve(`name: Mock Workflow
@@ -134,6 +156,7 @@ jobs:
 };
 
 export const saveWorkflowFile = (actionId: string, content: string): Promise<void> => {
+  const vscode = getVscode();
   if (!vscode) {
     // 브라우저 환경에서는 console.log로 출력
     console.log('Mock save:', { actionId, content });
@@ -157,6 +180,9 @@ export const saveWorkflowFile = (actionId: string, content: string): Promise<voi
 };
 
 export const analyzeRun = (runId: string) => {
+  const vscode = getVscode();
+  console.log('[github.ts] analyzeRun 호출됨, runId:', runId);
+  console.log('[github.ts] vscode 객체:', vscode);
   if (!vscode) {
     console.warn('Not in a VSCode environment, skipping analyzeRun.');
     return;
@@ -169,6 +195,7 @@ export const analyzeRun = (runId: string) => {
 
 // [ADD] 모든 actions 중 가장 최근 run 가져오기
 export const getLatestRunFromAllActions = (): Promise<any> => {
+  const vscode = getVscode();
   if (!vscode) {
     // 브라우저 환경에서는 mock 데이터 반환
     return Promise.resolve({
@@ -198,6 +225,7 @@ export const getLatestRunFromAllActions = (): Promise<any> => {
 
 // [ADD] Run 상세 정보 가져오기
 export const getRunDetails = (runId: string): Promise<any> => {
+  const vscode = getVscode();
   if (!vscode) {
     // 브라우저 환경에서는 mock 데이터 반환
     return Promise.resolve({
@@ -234,6 +262,7 @@ export const getRunDetails = (runId: string): Promise<any> => {
 
 // [ADD] Run 로그 가져오기
 export const getRunLogs = (runId: string): Promise<string> => {
+  const vscode = getVscode();
   if (!vscode) {
     // 브라우저 환경에서는 mock 데이터 반환
     return Promise.resolve(`2025-08-15T12:00:34.123Z [INFO] Starting workflow run
