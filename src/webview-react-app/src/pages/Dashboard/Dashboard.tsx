@@ -152,6 +152,110 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
     }
   };
 
+  // Refresh 기능: 현재 Run의 로그를 다시 가져와 LLM 분석 재실행
+  const handleRefresh = async () => {
+    if (!runDetails?.id) {
+      console.warn('Refresh: runDetails.id가 없습니다.');
+      return;
+    }
+
+    setIsRefreshing(true);
+    try {
+      console.log(`Refresh 시작: Run ID ${runDetails.id}`);
+      
+      // 1. 로그 다시 가져오기
+      const logs = await getRunLogs(runDetails.id);
+      setRunLogs(logs);
+      
+      // 2. LLM 분석 재실행 (실패한 경우에만)
+      if (runDetails.conclusion !== 'success' && runDetails.conclusion !== null) {
+        console.log(`LLM 분석 재실행: Run ID ${runDetails.id}`);
+        analyzeRun(runDetails.id);
+      }
+      
+      console.log('Refresh 완료');
+    } catch (error) {
+      console.error('Refresh 실패:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Export 기능: LLM 분석 결과를 클립보드로 복사
+  const handleExport = async () => {
+    if (!llmAnalysisResult) {
+      console.warn('Export: LLM 분석 결과가 없습니다.');
+      return;
+    }
+
+    setExportStatus('copying');
+    try {
+      // LLM 분석 결과를 텍스트 형태로 변환
+      let exportText = '';
+      
+      if (llmAnalysisResult.summary === "성공한 작업입니다!") {
+        exportText = `=== LLM 분석 결과 ===
+상태: 성공
+내용: 이 워크플로우는 성공적으로 완료되었습니다.`;
+      } else if (llmAnalysisResult.summary === "분석이 실패했습니다") {
+        exportText = `=== LLM 분석 결과 ===
+상태: 분석 실패
+내용: LLM 분석 중 문제가 발생했습니다.`;
+        if ((llmAnalysisResult as any).error) {
+          exportText += `\n에러: ${(llmAnalysisResult as any).error}`;
+        }
+      } else {
+        // 실패 분석 결과
+        exportText = `=== LLM 분석 결과 ===
+요약: ${llmAnalysisResult.summary}
+실패 유형: ${llmAnalysisResult.failureType || 'N/A'}
+신뢰도: ${llmAnalysisResult.confidence ? Math.round(llmAnalysisResult.confidence * 100) + '%' : 'N/A'}
+영향받은 단계: ${llmAnalysisResult.affectedStep || 'N/A'}
+
+=== 핵심 실패 원인 ===
+${llmAnalysisResult.rootCause}
+
+=== 권장 조치 및 해결 방법 ===
+${llmAnalysisResult.suggestion}`;
+
+        if (llmAnalysisResult.keyErrors && llmAnalysisResult.keyErrors.length > 0) {
+          exportText += '\n\n=== 오류 로그 상세 정보 ===';
+          llmAnalysisResult.keyErrors.forEach((error, index) => {
+            exportText += `\n\n[오류 ${index + 1}]`;
+            if (error.line !== undefined) {
+              exportText += `\nLine: ${error.line}`;
+            }
+            if (error.snippet) {
+              exportText += `\nSnippet: ${error.snippet}`;
+            }
+            if (error.note) {
+              exportText += `\nNote: ${error.note}`;
+            }
+          });
+        }
+      }
+
+      // 클립보드에 복사
+      await navigator.clipboard.writeText(exportText);
+      setExportStatus('success');
+      console.log('LLM 분석 결과가 클립보드에 복사되었습니다.');
+      
+      // 3초 후 상태 초기화
+      setTimeout(() => {
+        setExportStatus('idle');
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Export 실패:', error);
+      setExportStatus('error');
+      
+      // 3초 후 상태 초기화
+      setTimeout(() => {
+        setExportStatus('idle');
+      }, 3000);
+    }
+  };
+
   if (!actionId) {
     return (
       <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
@@ -371,8 +475,24 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
         <div className="llm-analysis-header">
           <span className="llm-analysis-title">LLM Analysis</span>
           <div className="llm-analysis-actions">
-            <button className="llm-btn llm-btn-refresh">Refresh</button>
-            <button className="llm-btn llm-btn-export">Export</button>
+            <button 
+              className={`llm-btn llm-btn-refresh ${isRefreshing ? 'loading' : ''}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing || !runDetails?.id}
+              title="현재 Run의 로그를 다시 가져와 LLM 분석을 재실행합니다"
+            >
+              {isRefreshing ? '새로고침 중...' : 'Refresh'}
+            </button>
+            <button 
+              className={`llm-btn llm-btn-export ${exportStatus !== 'idle' ? exportStatus : ''}`}
+              onClick={handleExport}
+              disabled={!llmAnalysisResult || exportStatus === 'copying'}
+              title="LLM 분석 결과를 클립보드로 복사합니다"
+            >
+              {exportStatus === 'copying' ? '복사 중...' : 
+               exportStatus === 'success' ? '복사 완료!' : 
+               exportStatus === 'error' ? '복사 실패' : 'Export'}
+            </button>
           </div>
         </div>
         <div className="llm-analysis-content">
