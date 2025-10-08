@@ -214,6 +214,8 @@ function App() {
   // [MOD] 실행(run) 분석을 시작하는 함수 - runId를 Dashboard로 전달
   const handleRunClick = (runId: string) => {
     console.log(`[App.tsx] Run 클릭됨: ${runId}`);
+    // [FIX] 이전 LLM 분석 결과 초기화
+    setLlmAnalysisResult(null);
     // 선택된 run ID 설정
     setSelectedRunId(runId);
     // 대시보드로 이동
@@ -259,6 +261,7 @@ function App() {
         onSelectAction={onSelectAction}
         onSelectPage={onSelectPage}
         onSidebarToggle={onSidebarToggle}
+        onOpenSettings={() => setShowSettingsModal(true)}
       />
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-closed' : 'sidebar-open'}`}>
         {currentPage === 'dashboard' && <DashboardPage actionId={selectedActionId} runId={selectedRunId} isSidebarOpen={!sidebarCollapsed} llmAnalysisResult={llmAnalysisResult} />}
