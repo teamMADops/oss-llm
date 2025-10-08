@@ -1,54 +1,13 @@
 import React, { useState } from 'react';
 import { WorkflowRun } from '@/types/api';
 import './HistoryTable.css';
+import { StatusIndicator } from '@/components/common/StatusIndicator/StatusIndicator';
 
 interface HistoryTableProps {
   runs: WorkflowRun[];
   isSidebarOpen: boolean;
   onRunClick: (runId: string) => void; // [ADD] 실행(run) 클릭 시 호출될 함수
 }
-
-// Sidebar와 동일한 StatusIndicator 컴포넌트
-const StatusIndicator: React.FC<{ status: string, conclusion: string | null }> = ({ status, conclusion }) => {
-  if (conclusion === 'failure') {
-    return (
-      <div className="status-indicator status-failed">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M2.5 2.5L9.5 9.5M9.5 2.5L2.5 9.5" stroke="#FF0000" strokeWidth="1.5" strokeLinecap="round"/>
-        </svg>
-      </div>
-    );
-  }
-  if (conclusion === 'success') {
-    return (
-      <div className="status-indicator status-success">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M3 6L5.5 8.5L9 3" stroke="#238636" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
-    );
-  }
-  if (status === 'in_progress') {
-    return (
-      <div className="status-indicator status-running">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <circle cx="3" cy="7" r="2" fill="#FF8800" opacity="0.3"/>
-          <circle cx="7" cy="7" r="2" fill="#FF8800" opacity="0.6"/>
-          <circle cx="11" cy="7" r="2" fill="#FF8800" opacity="1"/>
-        </svg>
-      </div>
-    );
-  }
-  // pending 상태
-  return (
-    <div className="status-indicator status-pending">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-        <circle cx="6" cy="6" r="5" stroke="#8b949e" strokeWidth="1.5" fill="none"/>
-        <path d="M6 2V6L8.5 8.5" stroke="#8b949e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    </div>
-  );
-};
 
 const HistoryTable: React.FC<HistoryTableProps> = ({ runs, onRunClick }) => { // [MOD] onRunClick prop 추가
   // 필터 상태 관리
