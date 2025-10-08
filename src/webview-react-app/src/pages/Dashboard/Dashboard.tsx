@@ -68,6 +68,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
   const [runDetails, setRunDetails] = useState<RunDetails | null>(null);
   const [runLogs, setRunLogs] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isErrorDetailsOpen, setIsErrorDetailsOpen] = useState(false);
 
   useEffect(() => {
     if (runId) {
@@ -343,34 +344,130 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
           </div>
         </div>
         <div className="llm-analysis-content">
-          <div className="llm-analysis-text">
-            {llmAnalysisResult ? (
-              <>
-                <h2 className="llm-h2">요약</h2>
-                {llmAnalysisResult.summary.split('\n').map((line: string, index: number) => (
-                  line.startsWith('- ') || line.startsWith('* ') ?
-                    <li key={index} className="llm-li">{line.substring(2)}</li> :
-                    <p key={index} className="llm-p">{line}</p>
-                ))}
+          {llmAnalysisResult ? (
+            <div className="llm-analysis-result">
+              {/* 1. 헤더 및 요약 (Immediate Insight) */}
+              <div className="llm-section llm-summary-section">
+                <h2 className="llm-summary-title">{llmAnalysisResult.summary}</h2>
+                
+                <div className="llm-metadata">
+                  {llmAnalysisResult.failureType && (
+                    <span className={`llm-badge llm-badge-${llmAnalysisResult.failureType.toLowerCase()}`}>
+                      {llmAnalysisResult.failureType.toUpperCase()}
+                    </span>
+                  )}
+                  {llmAnalysisResult.confidence !== undefined && (
+                    <span className="llm-confidence">
+                      신뢰도: {Math.round(llmAnalysisResult.confidence * 100)}%
+                    </span>
+                  )}
+                </div>
 
-                <h3 className="llm-h3">근본 원인</h3>
-                {llmAnalysisResult.rootCause.split('\n').map((line: string, index: number) => (
-                  line.startsWith('- ') || line.startsWith('* ') ?
-                    <li key={index} className="llm-li">{line.substring(2)}</li> :
-                    <p key={index} className="llm-p">{line}</p>
-                ))}
+                {llmAnalysisResult.affectedStep && (
+                  <div className="llm-info-item">
+                    <span className="llm-info-label">영향받은 단계:</span>
+                    <span className="llm-info-value">{llmAnalysisResult.affectedStep}</span>
+                  </div>
+                )}
+                
+                {llmAnalysisResult.filename && (
+                  <div className="llm-info-item">
+                    <span className="llm-info-label">로그 파일:</span>
+                    <span className="llm-info-value">{llmAnalysisResult.filename}</span>
+                  </div>
+                )}
+              </div>
 
-                <h3 className="llm-h3">해결 방법</h3>
-                {llmAnalysisResult.suggestion.split('\n').map((line: string, index: number) => (
-                  line.startsWith('- ') || line.startsWith('* ') ?
-                    <li key={index} className="llm-li">{line.substring(2)}</li> :
-                    <p key={index} className="llm-p">{line}</p>
-                ))}
-              </>
-            ) : (
-              <p className="llm-p">LLM 분석 결과를 기다리는 중입니다...</p>
-            )}
-          </div>
+              {/* 2. 핵심 문제 (Root Cause) */}
+              <div className="llm-section llm-rootcause-section">
+                <h3 className="llm-section-title">
+                  <span className="llm-icon">🚨</span>
+                  핵심 실패 원인
+                </h3>
+                <div className="llm-content-box llm-rootcause-box">
+                  <p className="llm-rootcause-text">{llmAnalysisResult.rootCause}</p>
+                </div>
+              </div>
+
+              {/* 3. 권장 해결책 (Suggestion) */}
+              <div className="llm-section llm-suggestion-section">
+                <h3 className="llm-section-title">
+                  <span className="llm-icon">🛠️</span>
+                  권장 조치 및 해결 방법
+                </h3>
+                <div className="llm-content-box llm-suggestion-box">
+                  <div className="llm-suggestion-text">
+                    {llmAnalysisResult.suggestion.split('\n').map((line: string, index: number) => {
+                      if (line.trim().match(/^\d+\./)) {
+                        return <p key={index} className="llm-suggestion-step">{line}</p>;
+                      } else if (line.startsWith('- ') || line.startsWith('* ')) {
+                        return <li key={index} className="llm-suggestion-item">{line.substring(2)}</li>;
+                      } else if (line.trim()) {
+                        return <p key={index} className="llm-suggestion-para">{line}</p>;
+                      }
+                      return null;
+                    })}
+                  </div>
+                  <button 
+                    className="llm-copy-btn"
+                    onClick={() => {
+                      navigator.clipboard.writeText(llmAnalysisResult.suggestion);
+                      // TODO: 복사 완료 피드백 추가
+                    }}
+                  >
+                    📋 복사
+                  </button>
+                </div>
+              </div>
+
+              {/* 4. 상세 로그 분석 (Key Errors) */}
+              {llmAnalysisResult.keyErrors && llmAnalysisResult.keyErrors.length > 0 && (
+                <div className="llm-section llm-errors-section">
+                  <button 
+                    className="llm-accordion-header"
+                    onClick={() => setIsErrorDetailsOpen(!isErrorDetailsOpen)}
+                  >
+                    <h3 className="llm-section-title">
+                      <span className="llm-icon">🧩</span>
+                      오류 로그 상세 정보
+                    </h3>
+                    <span className={`llm-accordion-arrow ${isErrorDetailsOpen ? 'open' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  
+                  {isErrorDetailsOpen && (
+                    <div className="llm-errors-content">
+                      {llmAnalysisResult.keyErrors.map((error, index) => (
+                        <div key={index} className="llm-error-item">
+                          {error.line !== undefined && (
+                            <div className="llm-error-line">
+                              <span className="llm-error-label">Line:</span>
+                              <span className="llm-error-value">{error.line}</span>
+                            </div>
+                          )}
+                          {error.snippet && (
+                            <div className="llm-error-snippet">
+                              <code>{error.snippet}</code>
+                            </div>
+                          )}
+                          {error.note && (
+                            <div className="llm-error-note">
+                              <p>{error.note}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="llm-analysis-empty">
+              <p className="llm-empty-text">LLM 분석 결과를 기다리는 중입니다...</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
