@@ -1580,8 +1580,8 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
   if (!actionId) {
     return (
       <div className="editor-main-content">
-        <div className="editor-empty-state">
-          <p className="text-muted">워크플로우를 선택해주세요.</p>
+        <div className="llm-analysis-empty">
+          <p className="llm-empty-text">워크플로우를 선택해주세요.</p>
         </div>
       </div>
     );
@@ -1590,8 +1590,9 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
   if (isLoading) {
     return (
       <div className="editor-main-content">
-        <div className="editor-loading">
-          <p className="text-muted">워크플로우를 불러오는 중...</p>
+        <div className="llm-analysis-empty">
+          <div className="llm-loading-spinner"></div>
+          <p className="llm-empty-text">워크플로우를 불러오는 중...</p>
         </div>
       </div>
     );

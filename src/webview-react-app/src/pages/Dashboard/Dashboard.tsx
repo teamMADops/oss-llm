@@ -96,10 +96,12 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
       const logs = await getRunLogs(runId);
       setRunLogs(logs);
 
-      // 3. 실패한 경우 LLM 분석 요청
-      if (details.conclusion === 'failure') {
-        console.log(`실패한 실행 발견 (ID: ${runId}). LLM 분석을 요청합니다.`);
+      // 3. 성공하지 않은 경우 LLM 분석 요청
+      if (details.conclusion !== 'success' && details.conclusion !== null) {
+        console.log(`실패한 실행 발견 (ID: ${runId}, conclusion: ${details.conclusion}). LLM 분석을 요청합니다.`);
         analyzeRun(runId);
+      } else {
+        console.log(`Run #${runId} - conclusion: ${details.conclusion}, LLM 분석 건너뜀`);
       }
     } catch (error) {
       console.error('Run 데이터 로드 실패:', error);
@@ -155,8 +157,19 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
             <h1 className="main-title">Run Log</h1>
           </div>
           <div className="dashboard-content">
-            <div className="dashboard-empty-state">
-              <p className="text-muted">액션을 선택해주세요.</p>
+            <div className="llm-analysis-empty">
+              <p className="llm-empty-text">액션을 선택해주세요.</p>
+            </div>
+          </div>
+        </div>
+        {/* Right LLM Analysis Panel */}
+        <div className="llm-analysis-container">
+          <div className="llm-analysis-header">
+            <span className="llm-analysis-title">LLM Analysis</span>
+          </div>
+          <div className="llm-analysis-content">
+            <div className="llm-analysis-empty">
+              <p className="llm-empty-text">워크플로우를 선택해주세요.</p>
             </div>
           </div>
         </div>
@@ -172,8 +185,21 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
             <h1 className="main-title">Run Log</h1>
           </div>
           <div className="dashboard-content">
-            <div className="dashboard-loading">
-              <p className="text-muted">데이터를 불러오는 중...</p>
+            <div className="llm-analysis-empty">
+              <div className="llm-loading-spinner"></div>
+              <p className="llm-empty-text">데이터를 불러오는 중...</p>
+            </div>
+          </div>
+        </div>
+        {/* Right LLM Analysis Panel */}
+        <div className="llm-analysis-container">
+          <div className="llm-analysis-header">
+            <span className="llm-analysis-title">LLM Analysis</span>
+          </div>
+          <div className="llm-analysis-content">
+            <div className="llm-analysis-empty">
+              <div className="llm-loading-spinner"></div>
+              <p className="llm-empty-text">데이터를 불러오는 중...</p>
             </div>
           </div>
         </div>
@@ -348,10 +374,49 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
         </div>
         <div className="llm-analysis-content">
           {llmAnalysisResult ? (
-            <div className="llm-analysis-result">
-              {/* 1. 헤더 및 요약 (Immediate Insight) */}
-              <div className="llm-section llm-summary-section">
-                <h2 className="llm-summary-title">{llmAnalysisResult.summary}</h2>
+            llmAnalysisResult.summary === "성공한 작업입니다!" ? (
+              // [ADD] 성공 상태 UI - 섹션 형태로 통일
+              <div className="llm-analysis-result">
+                <div className="llm-section llm-success-section">
+                  <div className="llm-status-header">
+                    <span className="llm-status-icon">✅</span>
+                    <h2 className="llm-status-title">성공한 작업입니다!</h2>
+                  </div>
+                  <div className="llm-status-content">
+                    <p className="llm-status-message">
+                      이 워크플로우는 성공적으로 완료되었습니다. 
+                      추가적인 분석이 필요하지 않습니다.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : llmAnalysisResult.summary === "분석이 실패했습니다" ? (
+              // [ADD] 에러 상태 UI - 섹션 형태로 통일
+              <div className="llm-analysis-result">
+                <div className="llm-section llm-error-section">
+                  <div className="llm-status-header">
+                    <span className="llm-status-icon">❌</span>
+                    <h2 className="llm-status-title">분석이 실패했습니다</h2>
+                  </div>
+                  <div className="llm-status-content">
+                    <p className="llm-status-message">
+                      LLM 분석 중 문제가 발생했습니다.
+                    </p>
+                    {(llmAnalysisResult as any).error && (
+                      <div className="llm-content-box llm-error-detail-box">
+                        <div className="llm-error-detail-label">에러 상세</div>
+                        <p className="llm-error-detail-text">{(llmAnalysisResult as any).error}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // 기존 failure 상태 UI
+              <div className="llm-analysis-result">
+                {/* 1. 헤더 및 요약 (Immediate Insight) */}
+                <div className="llm-section llm-summary-section">
+                  <h2 className="llm-summary-title">{llmAnalysisResult.summary}</h2>
                 
                 <div className="llm-metadata">
                   {llmAnalysisResult.failureType && (
@@ -465,9 +530,27 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
                   )}
                 </div>
               )}
+              </div>
+            )
+          ) : runDetails && runDetails.conclusion === 'success' ? (
+            // [ADD] runDetails가 success일 때 자동으로 성공 UI 표시 - 섹션 형태로 통일
+            <div className="llm-analysis-result">
+              <div className="llm-section llm-success-section">
+                <div className="llm-status-header">
+                  <span className="llm-status-icon">✅</span>
+                  <h2 className="llm-status-title">성공한 작업입니다!</h2>
+                </div>
+                <div className="llm-status-content">
+                  <p className="llm-status-message">
+                    이 워크플로우는 성공적으로 완료되었습니다. 
+                    추가적인 분석이 필요하지 않습니다.
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="llm-analysis-empty">
+              <div className="llm-loading-spinner"></div>
               <p className="llm-empty-text">LLM 분석 결과를 기다리는 중입니다...</p>
             </div>
           )}
