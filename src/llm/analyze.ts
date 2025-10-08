@@ -2,15 +2,7 @@ import { OpenAI } from "openai";
 import * as vscode from "vscode";
 import type { LLMResult } from "./types";
 
-
-// export type LLMResult = {
-//   summary: string;
-//   rootCause: string;
-//   suggestion: string;
-// };
-
 function parseJsonLenient(text: string): LLMResult {
-  // ```json ... ``` 같은 코드펜스 제거
   const stripped = text.replace(/```(?:json)?/gi, "").replace(/```/g, "").trim();
   const start = stripped.indexOf("{");
   const end = stripped.lastIndexOf("}");
@@ -21,7 +13,6 @@ function parseJsonLenient(text: string): LLMResult {
 
   let parsed: any;
   try {
-    // const parsed = JSON.parse(candidate);
     parsed = JSON.parse(candidate);} catch {
       return {
       summary: text,
@@ -29,15 +20,6 @@ function parseJsonLenient(text: string): LLMResult {
       suggestion: "",
       confidence: 0.2,
     };
-  //   return {
-  //     summary: String(parsed.summary ?? ""),
-  //     rootCause: String(parsed.rootCause ?? ""),
-  //     suggestion: String(parsed.suggestion ?? ""),
-  //   };
-  // } catch {
-  //   // 파싱 실패 → 원문을 summary에 넣어 반환
-  //   return { summary: text, rootCause: "", suggestion: "" };
-  // }
 }
 
  const asString = (v: any) => (v == null ? "" : String(v));
@@ -72,11 +54,30 @@ function parseJsonLenient(text: string): LLMResult {
   return result;
 }
 
+async function getOpenAIKey(context: vscode.ExtensionContext): Promise<string | null> {
+  // 1. 사용자가 등록한 키를 우선적으로 확인
+  const fromSecret = await context.secrets.get("openaiApiKey");
+  if (fromSecret) {
+    return fromSecret;
+  }
+
+  // 2. 개발 모드일 경우에만 .env 파일에서 키를 fallback으로 사용
+  if (context.extensionMode === vscode.ExtensionMode.Development) {
+    const fromEnv = process.env.MADOPS_OPENAI_KEY || process.env.OPENAI_API_KEY;
+    if (fromEnv) {
+      console.log("🔑 등록된 OpenAI 키가 없어 .env 파일의 개발용 키를 사용합니다.");
+      return fromEnv;
+    }
+  }
+
+  return null;
+}
+
 export async function analyzePrompts(
   context: vscode.ExtensionContext,
   prompts: string[]
 ): Promise<LLMResult> {
-  const key = await context.secrets.get("openaiApiKey");
+  const key = await getOpenAIKey(context);
   if (!key) {
     throw new Error(
       "OpenAI API Key가 설정되지 않았습니다. 명령어 팔레트에서 입력하세요."
@@ -138,29 +139,10 @@ export async function analyzePrompts(
         },
         { role: "user", content: p },
       ],
-  // const prompt = prompts[0]; // 우선 첫 프롬프트만 사용 (필요시 개선)
-  // const chat = await client.chat.completions.create({
-  //   model: "gpt-3.5-turbo",
-  //   messages: [
-  //     { role: "system", 
-  //       content:
-  //         "너는 GitHub Actions 로그 분석 도우미야. " +
-  //         "사용자가 준 로그를 읽고 아래 JSON 형식으로만 답해:\n\n" +
-  //         "{\n" +
-  //         '  "summary": "로그 전체 요약",\n' +
-  //         '  "rootCause": "실패의 핵심 원인",\n' +
-  //         '  "suggestion": "해결 방법"\n' +
-  //         "}\n\n" +
-  //         "설명이나 불필요한 말은 하지마. 무조건 JSON만 출력해."
-  //     },
-  //     { role: "user", content: prompt }
-  //   ],
-    // temperature: 0
   });
 
   const raw = chat.choices[0].message?.content ?? "{}";
   results.push(parseJsonLenient(raw));
-  // return parseJsonLenient(raw);
 }
   results.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
   return results[0];
