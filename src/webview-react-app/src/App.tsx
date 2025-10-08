@@ -3,12 +3,38 @@ import Sidebar from './components/Sidebar/Sidebar';
 import DashboardPage from './pages/Dashboard/Dashboard';
 import EditorPage from './pages/Editor/Editor';
 import HistoryPage from './pages/History/History';
+import SettingsModal, { SettingsData } from './components/SettingsModal/SettingsModal';
 import { LLMResult } from '../../llm/types'; // Import LLMResult type
 import { Action } from './components/Sidebar/types'; // Import Action type
 import { getActions } from './api/github'; // [MOD] analyzeRun import 제거
 import './styles/theme.css';
 
+// VSCode API 선언
+declare global {
+  interface Window {
+    vscode: {
+      postMessage: (message: any) => void;
+    };
+    getVscode: () => any;
+  }
+}
+
+// 안전한 vscode 객체 접근
+const getVscode = () => {
+  if (typeof window !== 'undefined') {
+    if (window.getVscode) {
+      return window.getVscode();
+    }
+    if (window.vscode) {
+      return window.vscode;
+    }
+  }
+  return null;
+};
+
 function App() {
+  console.log('[App.tsx] App 컴포넌트 렌더링 시작');
+  
   const [currentPage, setCurrentPage] = useState<string>('dashboard');
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null); // [ADD] 선택된 run ID
@@ -17,12 +43,26 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false); // New state for sidebar collapsed
   const [dropdownActive, setDropdownActive] = useState<boolean>(false); // New state for dropdown active
   const [actionHighlighted, setActionHighlighted] = useState<boolean>(false); // New state for action highlighted // Use LLMResult type
+  
+  // Settings 상태
+  const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
+  const [isInitialSetup, setIsInitialSetup] = useState<boolean>(false);
+  const [settingsData, setSettingsData] = useState<Partial<SettingsData>>({});
+
+  console.log('[App.tsx] 현재 상태:', { currentPage, showSettingsModal, isInitialSetup });
 
   useEffect(() => {
+    console.log('[App.tsx] useEffect 실행됨');
+    
     // Handle messages from the extension
-    window.addEventListener('message', event => {
+    const handleMessage = (event: MessageEvent) => {
       const message = event.data; // The JSON data our extension sent
-      console.log('Message from extension:', message);
+      console.log('[App.tsx] Message from extension:', message);
+      
+      // settingsSaved 메시지 특별 로그
+      if (message.command === 'settingsSaved') {
+        console.log('[App.tsx] settingsSaved 메시지 수신됨!', message.payload);
+      }
 
       switch (message.command) {
         case 'changePage':
@@ -32,14 +72,34 @@ function App() {
           setLlmAnalysisResult(message.payload);
           setCurrentPage('dashboard'); // Ensure dashboard is active when result arrives
           break;
+        case 'showSettings': // 설정 모달 표시 요청
+          console.log('[App.tsx] showSettings 메시지 받음:', message.payload);
+          setSettingsData(message.payload?.currentSettings || {});
+          setIsInitialSetup(message.payload?.isInitialSetup || false);
+          setShowSettingsModal(true);
+          console.log('[App.tsx] 모달 표시 상태 변경됨:', true);
+          break;
+        case 'settingsSaved': // 설정 저장 완료
+          console.log('[App.tsx] 설정 저장 완료, 모달 닫기 및 데이터 새로고침');
+          setShowSettingsModal(false);
+          // 설정 저장 후 actions 다시 불러오기
+          setTimeout(() => {
+            console.log('[App.tsx] 설정 저장 후 actions 새로고침 시작');
+            fetchActions();
+          }, 100);
+          break;
         // Add other message handlers here
       }
-    });
+    };
+
+    window.addEventListener('message', handleMessage);
 
     // Fetch actions when component mounts
     const fetchActions = async () => {
       try {
+        console.log('[App.tsx] fetchActions 시작');
         const fetchedActions = await getActions();
+        console.log('[App.tsx] fetchActions 결과:', fetchedActions);
         setActions(fetchedActions);
         
         // [ADD] 첫 번째 action 자동 선택
@@ -51,11 +111,37 @@ function App() {
           setCurrentPage('dashboard');
         }
       } catch (error) {
-        console.error('Failed to fetch actions:', error);
+        console.error('[App.tsx] Failed to fetch actions:', error);
       }
     };
 
     fetchActions();
+
+    // 초기 로드 시 설정 확인 요청 (웹뷰 완전 로드 후)
+    setTimeout(() => {
+      console.log('[App.tsx] 설정 확인 요청');
+      const vscode = getVscode();
+      console.log('[App.tsx] vscode 객체:', vscode);
+      if (vscode) {
+        vscode.postMessage({ command: 'checkSettings' });
+        console.log('[App.tsx] checkSettings 메시지 전송됨');
+      } else {
+        console.error('[App.tsx] vscode 객체가 없습니다!');
+        // vscode 객체가 없으면 다시 시도
+        setTimeout(() => {
+          const retryVscode = getVscode();
+          console.log('[App.tsx] 재시도 - vscode 객체:', retryVscode);
+          if (retryVscode) {
+            retryVscode.postMessage({ command: 'checkSettings' });
+            console.log('[App.tsx] 재시도 성공 - checkSettings 메시지 전송됨');
+          }
+        }, 500);
+      }
+    }, 500);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
   }, []);
 
   const onSelectPage = (pageName: string) => {
@@ -109,6 +195,28 @@ function App() {
     setActionHighlighted(false);
   };
 
+  // Settings 저장 핸들러
+  const handleSaveSettings = (data: SettingsData) => {
+    console.log('[App.tsx] Settings 저장:', data);
+    // Extension으로 설정 저장 요청
+    const vscode = getVscode();
+    if (vscode) {
+      vscode.postMessage({
+        command: 'saveSettings',
+        payload: data
+      });
+    } else {
+      console.error('[App.tsx] vscode 객체가 없어서 설정 저장 실패');
+    }
+  };
+
+  // Settings 모달 닫기
+  const handleCloseSettings = () => {
+    if (!isInitialSetup) {
+      setShowSettingsModal(false);
+    }
+  };
+
   return (
     <div className="app-container">
       <Sidebar
@@ -127,6 +235,15 @@ function App() {
         {currentPage === 'editor' && <EditorPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />}
         {currentPage === 'history' && <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} onRunClick={handleRunClick} />} {/* [MOD] onRunClick prop 전달 */}
       </main>
+      
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        initialData={settingsData}
+        onSave={handleSaveSettings}
+        onClose={handleCloseSettings}
+        isInitialSetup={isInitialSetup}
+      />
     </div>
   );
 }
