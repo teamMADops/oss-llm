@@ -98,10 +98,7 @@
   flex-direction: column;
 }
 
-/* Run Info 카드 */
-.run-info-card {
-  /* 내용물에 따라 자연스럽게 늘어나고, panel-section이 스크롤 */
-}
+/* Run Info 카드 - 내용물에 따라 자연스럽게 늘어나고, panel-section이 스크롤 */
 
 /* Log Viewer - panel-container 크기에 맞춤 */
 .log-viewer {
@@ -1325,5 +1322,277 @@
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* ==================== 의심 경로 섹션 (Suspected Paths) ==================== */
+
+.llm-suspected-paths-section {
+  background: linear-gradient(135deg, #1e1e24 0%, #161b22 100%);
+  border: 1px solid #6e7681;
+}
+
+.llm-suspected-paths-content {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.llm-suspected-path-item {
+  background: #0d1117;
+  border: 2px solid #21262d;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.llm-suspected-path-item:hover {
+  background: #161b22;
+  border-color: #58a6ff;
+  box-shadow: 0 2px 8px rgba(88, 166, 255, 0.2);
+}
+
+.llm-suspected-path-item.selected {
+  background: #161b22;
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
+}
+
+.llm-suspected-path-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.llm-suspected-path-icon {
+  font-size: 18px;
+}
+
+.llm-suspected-path-path {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #58a6ff;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  word-break: break-all;
+}
+
+.llm-suspected-path-score {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2ea043;
+  background: rgba(46, 160, 67, 0.15);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.llm-suspected-path-reason {
+  font-size: 13px;
+  color: #c9d1d9;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.llm-suspected-path-line {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.llm-suspected-path-line-label {
+  color: #8b949e;
+  font-weight: 600;
+}
+
+.llm-suspected-path-line-value {
+  color: #58a6ff;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+}
+
+.llm-suspected-path-log {
+  margin-top: 12px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.llm-suspected-path-log-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.llm-suspected-path-log-content {
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 12px;
+  color: #ff7b72;
+  white-space: pre-wrap;
+  word-break: break-all;
+  display: block;
+  margin-top: 4px;
+}
+
+/* ==================== 정밀 분석 결과 섹션 (Pinpoint Result) ==================== */
+
+.llm-pinpoint-section {
+  background: linear-gradient(135deg, #1a2026 0%, #161b22 100%);
+  border: 2px solid #58a6ff;
+  box-shadow: 0 4px 16px rgba(88, 166, 255, 0.2);
+}
+
+.llm-pinpoint-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.llm-pinpoint-file {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+}
+
+.llm-pinpoint-file-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b949e;
+}
+
+.llm-pinpoint-file-value {
+  font-size: 13px;
+  color: #58a6ff;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  word-break: break-all;
+  flex: 1;
+}
+
+.llm-pinpoint-lines {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+}
+
+.llm-pinpoint-lines-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b949e;
+}
+
+.llm-pinpoint-lines-value {
+  font-size: 13px;
+  color: #2ea043;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+}
+
+.llm-pinpoint-confidence {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+}
+
+.llm-pinpoint-confidence-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b949e;
+}
+
+.llm-pinpoint-confidence-value {
+  font-size: 13px;
+  color: #2ea043;
+  font-weight: 600;
+}
+
+.llm-pinpoint-diff {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.llm-pinpoint-diff-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b949e;
+  margin-bottom: 12px;
+}
+
+.llm-pinpoint-diff-content {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 16px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+}
+
+.llm-pinpoint-diff-content pre {
+  margin: 0;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.llm-pinpoint-diff-content code {
+  color: #c9d1d9;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+}
+
+.llm-pinpoint-checklist {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.llm-pinpoint-checklist-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b949e;
+  margin-bottom: 12px;
+}
+
+.llm-pinpoint-checklist-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.llm-pinpoint-checklist-item {
+  font-size: 13px;
+  color: #c9d1d9;
+  padding: 8px 12px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding-left: 32px;
+  position: relative;
+}
+
+.llm-pinpoint-checklist-item::before {
+  content: "☐";
+  position: absolute;
+  left: 12px;
+  color: #8b949e;
+  font-size: 16px;
 }
 

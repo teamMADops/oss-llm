@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
-import { LLMResult } from '../../../../llm/types';
+import { LLMResult, PinpointResult, SuspectedPath } from '../../../../llm/types';
 import { getRunDetails, getRunLogs, analyzeRun, getLatestRunFromAllActions } from '@/api/github';
 
 interface DashboardPageProps {
@@ -71,8 +71,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
   const [runLogs, setRunLogs] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [isErrorDetailsOpen, setIsErrorDetailsOpen] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [exportStatus, setExportStatus] = useState<'idle' | 'copying' | 'success' | 'error'>('idle');
+  const [isSuspectedPathsOpen, setIsSuspectedPathsOpen] = useState(false);
+  const [selectedSuspectedPath, setSelectedSuspectedPath] = useState<SuspectedPath | null>(null);
+  const [pinpointResult, _setPinpointResult] = useState<PinpointResult | null>(null); // TODO: 2차 분석 API 연결 시 사용
 
   useEffect(() => {
     if (runId) {
@@ -650,6 +651,141 @@ ${llmAnalysisResult.suggestion}`;
                       ))}
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* 5. 의심 경로 목록 (Suspected Paths) */}
+              {llmAnalysisResult.suspectedPaths && llmAnalysisResult.suspectedPaths.length > 0 && (
+                <div className="llm-section llm-suspected-paths-section">
+                  <button 
+                    className="llm-accordion-header"
+                    onClick={() => setIsSuspectedPathsOpen(!isSuspectedPathsOpen)}
+                  >
+                    <h3 className="llm-section-title">
+                      <span className="llm-icon">🔍</span>
+                      의심 경로 목록 ({llmAnalysisResult.suspectedPaths.length}개)
+                    </h3>
+                    <span className={`llm-accordion-arrow ${isSuspectedPathsOpen ? 'open' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  
+                  {isSuspectedPathsOpen && (
+                    <div className="llm-suspected-paths-content">
+                      {llmAnalysisResult.suspectedPaths.map((suspectedPath, index) => (
+                        <div 
+                          key={index} 
+                          className={`llm-suspected-path-item ${selectedSuspectedPath === suspectedPath ? 'selected' : ''}`}
+                          onClick={() => {
+                            setSelectedSuspectedPath(suspectedPath);
+                            // TODO: 2차 LLM 분석 요청 - 나중에 구현
+                            console.log('Selected suspected path:', suspectedPath);
+                          }}
+                        >
+                          <div className="llm-suspected-path-header">
+                            <span className="llm-suspected-path-icon">📄</span>
+                            <span className="llm-suspected-path-path">{suspectedPath.path}</span>
+                            {suspectedPath.score !== undefined && (
+                              <span className="llm-suspected-path-score">
+                                {Math.round(suspectedPath.score * 100)}%
+                              </span>
+                            )}
+                          </div>
+                          <div className="llm-suspected-path-reason">
+                            {suspectedPath.reason}
+                          </div>
+                          {suspectedPath.lineHint !== undefined && (
+                            <div className="llm-suspected-path-line">
+                              <span className="llm-suspected-path-line-label">라인:</span>
+                              <span className="llm-suspected-path-line-value">{suspectedPath.lineHint}</span>
+                            </div>
+                          )}
+                          {suspectedPath.logExcerpt && (
+                            <div className="llm-suspected-path-log">
+                              <div className="llm-suspected-path-log-label">로그 발췌:</div>
+                              <code className="llm-suspected-path-log-content">{suspectedPath.logExcerpt}</code>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 6. 2차 분석 결과 (Pinpoint Result) */}
+              {pinpointResult && (
+                <div className="llm-section llm-pinpoint-section">
+                  <h3 className="llm-section-title">
+                    <span className="llm-icon">🎯</span>
+                    정밀 분석 결과
+                  </h3>
+                  
+                  <div className="llm-pinpoint-content">
+                    {/* 파일 정보 */}
+                    <div className="llm-pinpoint-file">
+                      <span className="llm-pinpoint-file-label">문제 파일:</span>
+                      <span className="llm-pinpoint-file-value">{pinpointResult.file}</span>
+                    </div>
+
+                    {/* 라인 범위 */}
+                    {(pinpointResult.startLine !== undefined || pinpointResult.endLine !== undefined) && (
+                      <div className="llm-pinpoint-lines">
+                        <span className="llm-pinpoint-lines-label">수정 범위:</span>
+                        <span className="llm-pinpoint-lines-value">
+                          {pinpointResult.startLine !== undefined && pinpointResult.endLine !== undefined
+                            ? `${pinpointResult.startLine} - ${pinpointResult.endLine}줄`
+                            : pinpointResult.startLine !== undefined
+                            ? `${pinpointResult.startLine}줄부터`
+                            : `${pinpointResult.endLine}줄까지`
+                          }
+                        </span>
+                      </div>
+                    )}
+
+                    {/* 신뢰도 */}
+                    {pinpointResult.confidence !== undefined && (
+                      <div className="llm-pinpoint-confidence">
+                        <span className="llm-pinpoint-confidence-label">신뢰도:</span>
+                        <span className="llm-pinpoint-confidence-value">
+                          {Math.round(pinpointResult.confidence * 100)}%
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Unified Diff */}
+                    {pinpointResult.unifiedDiff && (
+                      <div className="llm-pinpoint-diff">
+                        <div className="llm-pinpoint-diff-label">제안된 수정 사항:</div>
+                        <div className="llm-pinpoint-diff-content">
+                          <pre><code>{pinpointResult.unifiedDiff}</code></pre>
+                        </div>
+                        <button 
+                          className="llm-copy-btn"
+                          onClick={() => {
+                            navigator.clipboard.writeText(pinpointResult.unifiedDiff || '');
+                            // TODO: 복사 완료 피드백 추가
+                          }}
+                        >
+                          📋 복사
+                        </button>
+                      </div>
+                    )}
+
+                    {/* 체크리스트 */}
+                    {pinpointResult.checklist && pinpointResult.checklist.length > 0 && (
+                      <div className="llm-pinpoint-checklist">
+                        <div className="llm-pinpoint-checklist-label">PR 전 확인 사항:</div>
+                        <ul className="llm-pinpoint-checklist-items">
+                          {pinpointResult.checklist.map((item, index) => (
+                            <li key={index} className="llm-pinpoint-checklist-item">
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
               </div>
