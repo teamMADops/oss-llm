@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar/Sidebar';
 import DashboardPage from './pages/Dashboard/Dashboard';
 import EditorPage from './pages/Editor/Editor';
@@ -6,7 +7,7 @@ import HistoryPage from './pages/History/History';
 import SettingsModal, { SettingsData } from './components/SettingsModal/SettingsModal';
 import { LLMResult } from '../../llm/types'; // Import LLMResult type
 import { Action } from './components/Sidebar/types'; // Import Action type
-import { getActions } from './api/github'; // [MOD] analyzeRun import 제거
+import { getActions } from './api/github'; // analyzeRun import 제거
 import './styles/theme.css';
 
 // VSCode API 선언
@@ -35,7 +36,7 @@ const getVscode = () => {
 function App() {
   console.log('[App.tsx] App 컴포넌트 렌더링 시작');
   
-  const [currentPage, setCurrentPage] = useState<string>('dashboard');
+  const [currentPage, setCurrentPage] = useState<string>('history');
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null); // [ADD] 선택된 run ID
   const [llmAnalysisResult, setLlmAnalysisResult] = useState<LLMResult | null>(null);
@@ -50,6 +51,18 @@ function App() {
   const [settingsData, setSettingsData] = useState<Partial<SettingsData>>({});
 
   console.log('[App.tsx] 현재 상태:', { currentPage, showSettingsModal, isInitialSetup });
+
+  // Actions를 로드하는 함수 (대시보드에서만 사용)
+  const loadActions = useCallback(async () => {
+    try {
+      console.log('[App.tsx] loadActions 시작');
+      const fetchedActions = await getActions();
+      console.log('[App.tsx] loadActions 결과:', fetchedActions);
+      setActions(fetchedActions);
+    } catch (error) {
+      console.error('[App.tsx] Failed to load actions:', error);
+    }
+  }, []);
 
   useEffect(() => {
     console.log('[App.tsx] useEffect 실행됨');
@@ -88,7 +101,7 @@ function App() {
           // 설정 저장 후 actions 다시 불러오기 (모달은 닫은 상태 유지)
           setTimeout(() => {
             console.log('[App.tsx] 설정 저장 후 actions 새로고침 시작');
-            fetchActions();
+            loadActions();
           }, 100);
           break;
         // Add other message handlers here
@@ -97,7 +110,7 @@ function App() {
 
     window.addEventListener('message', handleMessage);
 
-    // Fetch actions when component mounts
+    // Fetch actions when component mounts (첫 번째 action 자동 선택)
     const fetchActions = async () => {
       try {
         console.log('[App.tsx] fetchActions 시작');
@@ -105,13 +118,15 @@ function App() {
         console.log('[App.tsx] fetchActions 결과:', fetchedActions);
         setActions(fetchedActions);
         
-        // [ADD] 첫 번째 action 자동 선택
+        // 첫 번째 action 자동 선택하여 History 화면 표시
         if (fetchedActions.length > 0) {
           const firstAction = fetchedActions[0];
           console.log(`[App.tsx] 첫 번째 action 자동 선택: ${firstAction.id}`);
           setSelectedActionId(firstAction.id);
-          // 대시보드로 이동하여 가장 최근 run 정보 표시
-          setCurrentPage('dashboard');
+          // 첫 번째 action의 드롭다운도 활성화
+          setDropdownActive(true);
+          setActionHighlighted(true);
+          // 이미 history 페이지이므로 페이지 변경 불필요
         }
       } catch (error) {
         console.error('[App.tsx] Failed to fetch actions:', error);
@@ -145,14 +160,17 @@ function App() {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [loadActions]);
 
   const onSelectPage = (pageName: string) => {
     setCurrentPage(pageName);
-    // dropdown item 클릭 시 action 하이라이트 비활성화
-    setActionHighlighted(false);
-    // dropdown은 열린 상태 유지
-    setDropdownActive(true);
+    // 페이지 선택 시 action은 하이라이트 유지하되, dropdown은 활성 상태 유지
+    // (사용자가 명시적으로 페이지를 선택했으므로 드롭다운을 닫지 않음)
+    
+    // Actions가 비어있고 대시보드로 이동하는 경우 로드
+    if (pageName === 'dashboard' && actions.length === 0) {
+      loadActions();
+    }
     // [ADD] 페이지 변경 시 선택된 run ID 초기화
     setSelectedRunId(null);
   };
@@ -175,9 +193,19 @@ function App() {
       setSelectedActionId(actionId);
       setDropdownActive(true); // dropdown 활성화
       setActionHighlighted(true); // action 하이라이트 활성화
+      
+      // 현재 페이지에 따라 적절한 페이지로 이동
+      if (currentPage === 'dashboard') {
+        // Dashboard에 있으면 새로운 action의 History로 이동
+        setCurrentPage('history');
+      }
+      // History나 Editor에 있으면 현재 페이지 유지
     }
-    // 항상 dashboard로 이동
-    setCurrentPage('dashboard');
+    
+    // Actions가 비어있으면 로드
+    if (actions.length === 0) {
+      loadActions();
+    }
     // [ADD] 새로운 action 선택 시 선택된 run ID 초기화
     setSelectedRunId(null);
   };
@@ -196,6 +224,11 @@ function App() {
     // 대시보드로 이동
     setCurrentPage('dashboard');
     // [FIX] 사이드바 상태 유지를 위해 dropdown/highlight 초기화 제거
+    // Actions가 비어있으면 로드
+    if (actions.length === 0) {
+      loadActions();
+    }
+    // 사이드바 상태는 유지 (드롭다운 상태 초기화하지 않음)
   };
 
   // Settings 저장 핸들러

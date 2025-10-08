@@ -17,19 +17,12 @@ import { printToOutput } from "./output/printToOutput";
 import { getFailedStepsAndPrompts } from "./log/getFailedLogs";
 import { analyzePrompts } from "./llm/analyze";
 
-import * as dotenv from "dotenv";
-
 /**
  * It is automatically called when the extension is activated.
  * It register functions as commands.
  * @param context - vscode.ExtensionContext
  */
 export function activate(context: vscode.ExtensionContext) {
-  // 개발 모드(F5)일 때만 .env 파일을 로드
-  if (context.extensionMode === vscode.ExtensionMode.Development) {
-    dotenv.config({ path: path.join(context.extensionPath, ".env") });
-  }
-  // 여기까지 지우기
 
   const functionRegister = (functionHandler: () => any) => {
     const cmd = vscode.commands.registerCommand(
