@@ -213,6 +213,11 @@ export function activate(context: vscode.ExtensionContext) {
     createAndShowWebview(context, "dashboard");
   };
   functionRegister(openDashboard);
+
+  // Extension 활성화 시 자동으로 대시보드 열기
+  setTimeout(() => {
+    openDashboard();
+  }, 100);
 }
 
 const panels: { [key: string]: vscode.WebviewPanel } = {};
