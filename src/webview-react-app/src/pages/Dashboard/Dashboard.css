@@ -509,6 +509,37 @@
   background-color: var(--hover-color);
 }
 
+/* LLM 버튼 비활성화 상태 */
+.llm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--background-color);
+}
+
+/* Refresh 버튼 로딩 상태 */
+.llm-btn-refresh.loading {
+  background-color: #0969da;
+  color: white;
+  pointer-events: none;
+}
+
+/* Export 버튼 상태별 스타일 */
+.llm-btn-export.copying {
+  background-color: #fb8500;
+  color: white;
+  pointer-events: none;
+}
+
+.llm-btn-export.success {
+  background-color: #2da44e;
+  color: white;
+}
+
+.llm-btn-export.error {
+  background-color: #da3633;
+  color: white;
+}
+
 /* LLM 분석 내용이 표시되는 영역 */
 .llm-analysis-content {
   flex: 1;
