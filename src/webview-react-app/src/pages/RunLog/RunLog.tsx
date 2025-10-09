@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
-import './Dashboard.css';
+import './RunLog.css';
 import { LLMResult, PinpointResult, SuspectedPath } from '../../../../llm/types';
 import { getRunDetails, getRunLogs, analyzeRun, getLatestRunFromAllActions } from '@/api/github';
 import { analyzePinpoint } from '@/api/llm';
 
-interface DashboardPageProps {
+interface RunLogPageProps {
   actionId: string | null;
   runId: string | null; // [ADD] 선택된 run ID
   isSidebarOpen: boolean;
@@ -66,7 +66,7 @@ interface RunDetails {
   jobs?: any[];
 }
 
-const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSidebarOpen, llmAnalysisResult }) => {
+const RunLogPage: React.FC<RunLogPageProps> = ({ actionId, runId, isSidebarOpen, llmAnalysisResult }) => {
   const [selectedPanel, setSelectedPanel] = useState<number>(1);
   const [runDetails, setRunDetails] = useState<RunDetails | null>(null);
   const [runLogs, setRunLogs] = useState<string>('');
@@ -285,12 +285,12 @@ ${llmAnalysisResult.suggestion}`;
 
   if (!actionId) {
     return (
-      <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-        <div className="dashboard-main">
+      <div className={`runLog-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+        <div className="runLog-main">
           <div className="main-header">
             <h1 className="main-title">Run Log</h1>
           </div>
-          <div className="dashboard-content">
+          <div className="runLog-content">
             <div className="llm-analysis-empty">
               <p className="llm-empty-text">액션을 선택해주세요.</p>
             </div>
@@ -313,12 +313,12 @@ ${llmAnalysisResult.suggestion}`;
 
   if (isLoading) {
     return (
-      <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-        <div className="dashboard-main">
+      <div className={`runLog-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+        <div className="runLog-main">
           <div className="main-header">
             <h1 className="main-title">Run Log</h1>
           </div>
-          <div className="dashboard-content">
+          <div className="runLog-content">
             <div className="llm-analysis-empty">
               <div className="llm-loading-spinner"></div>
               <p className="llm-empty-text">데이터를 불러오는 중...</p>
@@ -342,9 +342,9 @@ ${llmAnalysisResult.suggestion}`;
   }
 
   return (
-    <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+    <div className={`runLog-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       {/* Central Dashboard Section */}
-      <div className="dashboard-main">
+      <div className="runLog-main">
         {/* Main Header */}
         <div className="main-header">
           <h1 className="main-title">
@@ -353,7 +353,7 @@ ${llmAnalysisResult.suggestion}`;
         </div>
 
         {/* Dashboard Content */}
-        <div className="dashboard-content">
+        <div className="runLog-content">
           {/* Panel Selection */}
           <div className="panel-selector">
             <button
@@ -386,7 +386,7 @@ ${llmAnalysisResult.suggestion}`;
           <div className="panel-content">
             {selectedPanel === 1 && runDetails && (
               <div className="panel-section panel-container">
-                <h2 className="dashboard-section-title">Run Information</h2>
+                <h2 className="runLog-section-title">Run Information</h2>
                 <div className="run-info-card">
                   <div className="run-info-row">
                     <span className="run-info-label">Run ID:</span>
@@ -432,7 +432,7 @@ ${llmAnalysisResult.suggestion}`;
 
             {selectedPanel === 2 && (
               <div className="panel-section panel-container">
-                <h2 className="dashboard-section-title">Detailed Log</h2>
+                <h2 className="runLog-section-title">Detailed Log</h2>
                 <div className="log-viewer">
                   <div className="log-header">
                     <span className="log-title">build.log</span>
@@ -465,7 +465,7 @@ ${llmAnalysisResult.suggestion}`;
 
             {selectedPanel === 3 && runDetails?.jobs && (
               <div className="panel-section panel-container">
-                <h2 className="dashboard-section-title">Jobs</h2>
+                <h2 className="runLog-section-title">Jobs</h2>
                 <div className="jobs-list">
                   {runDetails.jobs.map((job: any, index: number) => (
                     <div key={index} className="job-item">
@@ -487,7 +487,7 @@ ${llmAnalysisResult.suggestion}`;
 
             {selectedPanel === 4 && (
               <div className="panel-section panel-container">
-                <h2 className="dashboard-section-title">Artifacts</h2>
+                <h2 className="runLog-section-title">Artifacts</h2>
                 <div className="artifacts-placeholder">
                   <p>아티팩트 정보가 여기에 표시됩니다.</p>
                 </div>
@@ -878,4 +878,4 @@ ${llmAnalysisResult.suggestion}`;
   );
 };
 
-export default DashboardPage;
+export default RunLogPage;

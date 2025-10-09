@@ -3,7 +3,7 @@ export interface PageProps {
   isSidebarOpen: boolean;
 }
 
-export interface DashboardPageProps extends PageProps {
+export interface RunLogPageProps extends PageProps {
   runId: string | null;
   // TODO: 실제 `llmAnalysisResult` 타입으로 변경 필요
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

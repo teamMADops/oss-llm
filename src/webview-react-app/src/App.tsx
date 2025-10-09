@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar/Sidebar';
-import DashboardPage from './pages/Dashboard/Dashboard';
+import RunLogPage from '@/pages/RunLog/RunLog.tsx';
 import EditorPage from './pages/Editor/Editor';
 import HistoryPage from './pages/History/History';
 import SettingsModal, { SettingsData } from './components/SettingsModal/SettingsModal';
@@ -83,7 +83,7 @@ function App() {
           break;
         case 'llmAnalysisResult': // New case for LLM analysis result
           setLlmAnalysisResult(message.payload);
-          setCurrentPage('dashboard'); // Ensure dashboard is active when result arrives
+          setCurrentPage('runLog'); // Ensure runLog is active when result arrives
           break;
         case 'showSettings': // 설정 모달 표시 요청
           console.log('[App.tsx] showSettings 메시지 받음:', message.payload);
@@ -190,7 +190,7 @@ function App() {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
-  // [MOD] 실행(run) 분석을 시작하는 함수 - runId를 Dashboard로 전달
+  // [MOD] 실행(run) 분석을 시작하는 함수 - runId를 runLog로 전달
   const handleRunClick = (runId: string) => {
     console.log(`[App.tsx] Run 클릭됨: ${runId}`);
     // [FIX] 이전 LLM 분석 결과 초기화
@@ -198,7 +198,7 @@ function App() {
     // 선택된 run ID 설정
     setSelectedRunId(runId);
     // 대시보드로 이동
-    setCurrentPage('dashboard');
+    setCurrentPage('runLog');
     // [FIX] 사이드바 상태 유지를 위해 dropdown/highlight 초기화 제거
   };
 
@@ -260,7 +260,7 @@ function App() {
             <p className="llm-empty-text" style={{ fontSize: '18px' }}>워크플로우를 선택해주세요</p>
           </div>
         )}
-        {currentPage === 'dashboard' && <DashboardPage actionId={selectedActionId} runId={selectedRunId} isSidebarOpen={!sidebarCollapsed} llmAnalysisResult={llmAnalysisResult} />}
+        {currentPage === 'runLog' && <RunLogPage actionId={selectedActionId} runId={selectedRunId} isSidebarOpen={!sidebarCollapsed} llmAnalysisResult={llmAnalysisResult} />}
         {currentPage === 'editor' && <EditorPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />}
         {currentPage === 'history' && <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} onRunClick={handleRunClick} />}
       </main>
