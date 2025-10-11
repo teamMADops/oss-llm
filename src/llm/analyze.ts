@@ -1,10 +1,13 @@
 import { OpenAI } from "openai";
 import * as vscode from "vscode";
-import type { LLMResult,FailureType} from "./types";
+import type { LLMResult, FailureType } from "./types";
 import { extractSuspects } from "./suspects";
 import { SYSTEM_PROMPTS } from "./systemPrompts";
 import { buildFirstPassPrompt } from "./prompts";
 import { preprocessLogForLLM } from "./logPreprocess";
+
+// Constant for batching API requests
+const ANALYSIS_BATCH_SIZE = 5;
 
 function parseJsonLenient(text: string): LLMResult {
   const stripped = text.replace(/```(?:json)?/gi, "").replace(/```/g, "").trim();
@@ -79,81 +82,109 @@ async function getOpenAIKey(context: vscode.ExtensionContext): Promise<string | 
   return null;
 }
 
-export async function analyzePrompts(
-  context: vscode.ExtensionContext,
-  prompts: string[]
+// Helper function to perform analysis for a single prompt
+async function performSingleAnalysis(
+  client: OpenAI,
+  prompt: string
 ): Promise<LLMResult> {
-  const key = await getOpenAIKey(context);
-  if (!key) {
-    throw new Error(
-      "OpenAI API Key가 설정되지 않았습니다."
-    );
-  }
-
-  const client = new OpenAI({ apiKey: key });
-  const topN = Math.max(1, Math.min(3, prompts.length));
-  const chosen = prompts.slice(0, topN);
-
-  const results: LLMResult[] = [];
-  for (const p of chosen) {
-    const safeLog = preprocessLogForLLM(p, {
+  const safeLog = preprocessLogForLLM(prompt, {
     maxTokens: 16000,
-    safetyMargin: 1500,  
-    tailCount: 700,     
-    });
+    safetyMargin: 1500,
+    tailCount: 700,
+  });
 
-    const userPrompt = buildFirstPassPrompt(safeLog);
-    const chat = await client.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      temperature: 0,
-      messages: [
-        SYSTEM_PROMPTS.FIRST_PASS,
-        { role: "user", content: userPrompt },
-      ],
+  const userPrompt = buildFirstPassPrompt(safeLog);
+  const chat = await client.chat.completions.create({
+    model: "gpt-3.5-turbo",
+    temperature: 0,
+    messages: [
+      SYSTEM_PROMPTS.FIRST_PASS,
+      { role: "user", content: userPrompt },
+    ],
   });
 
   const raw = chat.choices[0].message?.content ?? "{}";
   console.log("=== LLM 원본 응답 ===");
   console.log(raw);
   console.log("==================");
-  
+
   const parsed = parseJsonLenient(raw);
   console.log("=== 파싱된 결과 ===");
   console.log(JSON.stringify(parsed, null, 2));
   console.log("==================");
 
-  // suspectedPaths 없으면 로컬 규칙으로 보강
-if (!parsed.suspectedPaths || parsed.suspectedPaths.length === 0) {
-  console.log("⚠️ LLM이 suspectedPaths를 반환하지 않아 로컬 규칙으로 보강합니다.");
-  const suspects = extractSuspects(p, { max: 6, excerptPadding: 30 });
-  if (suspects.length) {
-    parsed.suspectedPaths = suspects;
-    console.log(`✅ 로컬 규칙으로 ${suspects.length}개의 의심 경로를 추가했습니다.`);
-    console.log(JSON.stringify(suspects, null, 2));
+  // Augment with local rules if LLM fails to provide suspectedPaths
+  if (!parsed.suspectedPaths || parsed.suspectedPaths.length === 0) {
+    console.log("⚠️ LLM이 suspectedPaths를 반환하지 않아 로컬 규칙으로 보강합니다.");
+    const suspects = extractSuspects(prompt, { max: 6, excerptPadding: 30 });
+    if (suspects.length) {
+      parsed.suspectedPaths = suspects;
+      console.log(`✅ 로컬 규칙으로 ${suspects.length}개의 의심 경로를 추가했습니다.`);
+      console.log(JSON.stringify(suspects, null, 2));
+    } else {
+      console.log("❌ 로컬 규칙으로도 의심 경로를 찾지 못했습니다.");
+    }
   } else {
-    console.log("❌ 로컬 규칙으로도 의심 경로를 찾지 못했습니다.");
+    console.log(`✅ LLM이 ${parsed.suspectedPaths.length}개의 의심 경로를 반환했습니다.`);
   }
-} else {
-  console.log(`✅ LLM이 ${parsed.suspectedPaths.length}개의 의심 경로를 반환했습니다.`);
+
+  return parsed;
 }
 
-  results.push(parsed);
+export async function analyzePrompts(
+  context: vscode.ExtensionContext,
+  prompts: string[]
+): Promise<LLMResult> {
+  const key = await getOpenAIKey(context);
+  if (!key) {
+    throw new Error("OpenAI API Key가 설정되지 않았습니다.");
+  }
 
-}
+  const client = new OpenAI({ apiKey: key });
+  const topN = Math.max(1, Math.min(3, prompts.length));
+  const chosen = prompts.slice(0, topN);
+
+  const allResults: LLMResult[] = [];
+
+  // Process prompts in batches
+  for (let i = 0; i < chosen.length; i += ANALYSIS_BATCH_SIZE) {
+    const batch = chosen.slice(i, i + ANALYSIS_BATCH_SIZE);
+    
+    const analysisPromises = batch.map(p => performSingleAnalysis(client, p));
+    
+    const settledResults = await Promise.allSettled(analysisPromises);
+
+    settledResults.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        allResults.push(result.value);
+      } else {
+        console.error(`Analysis for prompt ${i + index} failed:`, result.reason);
+        // Optionally create a placeholder error result
+        allResults.push({
+          summary: `An error occurred during analysis: ${result.reason}`,
+          rootCause: "Analysis failed",
+          suggestion: "Check the extension's output logs for more details.",
+          confidence: 0.1,
+        });
+      }
+    });
+  }
   
-  // suspectedPaths가 있는 결과들을 우선 선택
-  const withSuspects = results.filter(r => r.suspectedPaths && r.suspectedPaths.length > 0);
-  const withoutSuspects = results.filter(r => !r.suspectedPaths || r.suspectedPaths.length === 0);
+  if (allResults.length === 0) {
+      throw new Error("All analyses failed. Please check logs for details.");
+  }
+
+  // Select the best result from all collected results
+  const withSuspects = allResults.filter(r => r.suspectedPaths && r.suspectedPaths.length > 0);
+  const withoutSuspects = allResults.filter(r => !r.suspectedPaths || r.suspectedPaths.length === 0);
   
   let finalResult: LLMResult;
   
   if (withSuspects.length > 0) {
-    // suspectedPaths가 있는 결과들 중 confidence가 가장 높은 것 선택
     withSuspects.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
     finalResult = withSuspects[0];
     console.log(`✅ suspectedPaths가 있는 결과 선택 (confidence: ${finalResult.confidence})`);
   } else {
-    // suspectedPaths가 있는 결과가 없으면 일반 confidence 순으로 선택
     withoutSuspects.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
     finalResult = withoutSuspects[0];
     console.log(`⚠️ suspectedPaths가 있는 결과가 없어서 confidence 순으로 선택 (confidence: ${finalResult.confidence})`);
