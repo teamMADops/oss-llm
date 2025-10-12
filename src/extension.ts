@@ -13,19 +13,24 @@ import {
 
 import { getRunIdFromQuickPick } from "./github/getRunList";
 import { printToOutput } from "./output/printToOutput";
-
 import { getFailedStepsAndPrompts } from "./log/getFailedLogs";
 import { analyzePrompts } from "./llm/analyze";
 import { analyzeSecondPass } from "./llm/secondPass";
-import type { SecondPassInput } from "./llm/types";
+import type { SecondPassInput } from "./llm/types/types";
 
+import { llmCache } from "./llm/cache/llmCache";
+import { pinpointCache } from "./llm/cache/pinpointCache";
 
-/**
- * It is automatically called when the extension is activated.
- * It register functions as commands.
- * @param context - vscode.ExtensionContext
- */
 export function activate(context: vscode.ExtensionContext) {
+
+  // 캐시 초기화 (한 번만)
+  try {
+    llmCache.init(context);
+    pinpointCache.init(context);
+    console.log("[MAD Ops] LLM 캐시 초기화 완료");
+  } catch (e) {
+    console.error("⚠️ 캐시 초기화 실패:", e);
+  }
 
   const functionRegister = (functionHandler: () => any) => {
     const cmd = vscode.commands.registerCommand(

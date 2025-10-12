@@ -1,10 +1,12 @@
 import { OpenAI } from "openai";
 import * as vscode from "vscode";
-import type { LLMResult, FailureType } from "./types";
+import type { LLMResult, FailureType } from "./types/types";
 import { extractSuspects } from "./suspects";
-import { SYSTEM_PROMPTS } from "./systemPrompts";
-import { buildFirstPassPrompt } from "./prompts";
+import { SYSTEM_PROMPTS } from "./prompts/systemPrompts";
+import { buildFirstPassPrompt } from "./prompts/prompts";
 import { preprocessLogForLLM } from "./logPreprocess";
+import { llmCache } from "./cache/llmCache";
+
 
 // Constant for batching API requests
 const ANALYSIS_BATCH_SIZE = 5;
@@ -94,6 +96,16 @@ async function performSingleAnalysis(
   });
 
   const userPrompt = buildFirstPassPrompt(safeLog);
+
+  // 캐시 키 구성
+  const cacheKey = {
+    namespace: "first-pass" as const,
+    model: "gpt-3.5-turbo",
+    systemPromptVersion: "fp-2025-10-12", // 날짜나 버전 문자열은 SYSTEM_PROMPTS 버전과 맞춰줘
+    prompt: userPrompt,
+  };
+
+  const parsed = await llmCache.getOrCompute(cacheKey, async () => {
   const chat = await client.chat.completions.create({
     model: "gpt-3.5-turbo",
     temperature: 0,
@@ -108,10 +120,13 @@ async function performSingleAnalysis(
   console.log(raw);
   console.log("==================");
 
-  const parsed = parseJsonLenient(raw);
+  const result = parseJsonLenient(raw);
   console.log("=== 파싱된 결과 ===");
-  console.log(JSON.stringify(parsed, null, 2));
+  console.log(JSON.stringify(result, null, 2));
   console.log("==================");
+
+  return { result, raw };
+    });
 
   // Augment with local rules if LLM fails to provide suspectedPaths
   if (!parsed.suspectedPaths || parsed.suspectedPaths.length === 0) {
@@ -135,6 +150,7 @@ export async function analyzePrompts(
   context: vscode.ExtensionContext,
   prompts: string[]
 ): Promise<LLMResult> {
+
   const key = await getOpenAIKey(context);
   if (!key) {
     throw new Error("OpenAI API Key가 설정되지 않았습니다.");
