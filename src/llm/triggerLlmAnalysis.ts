@@ -6,42 +6,35 @@ import { printToOutput } from '../output/printToOutput';
 import type { LLMResult } from './types';
 import type { RepoInfo } from '../github';
 import type { Octokit } from '@octokit/rest';
+import { llmCache } from "./cache/llmCache";
 
-/**
- * Triggers the entire LLM analysis process for a given workflow run.
- * It fetches logs, preprocesses them to extract relevant parts, and then calls the LLM.
- *
- * @param context - The VS Code extension context.
- * @param octokit - The Octokit instance for GitHub API calls.
- * @param repo - The repository information.
- * @param runId - The ID of the workflow run to analyze.
- * @param logMode - The mode for log fetching ('all' or 'error').
- * @returns A promise that resolves to the LLM analysis result.
- * @throws An error if no logs are found to analyze.
- */
 export async function triggerLlmAnalysis(
     context: vscode.ExtensionContext,
     octokit: Octokit,
     repo: RepoInfo,
     runId: number,
     logMode: 'all' | 'error'
-): Promise<LLMResult> {
+): Promise<LLMResult | null> {
     // 1. Get failed steps and their corresponding log prompts.
-    const { failedSteps, prompts } = await getFailedStepsAndPrompts(
-        octokit,
-        repo.owner,
-        repo.repo,
-        runId,
-        logMode
-    );
+    try {
+    
 
-    printToOutput(`Run #${runId} 실패한 Step 목록`, failedSteps);
+
+        const { failedSteps, prompts } = await getFailedStepsAndPrompts(
+            octokit,
+            repo.owner,
+            repo.repo,
+            runId,
+            logMode
+        );
+
+        printToOutput(`Run #${runId} 실패한 Step 목록`, failedSteps);
 
     // 2. If there are no prompts, there's nothing to analyze.
-    if (prompts.length === 0) {
-        // The caller should catch this and inform the user.
-        throw new Error("분석할 로그가 없습니다.");
-    }
+        if (prompts.length === 0) {
+        printToOutput(`Run #${runId}`, ["분석할 로그가 없습니다."]);
+        return null; 
+        }
 
     // 3. **PERFORMANCE OPTIMIZATION**
     // Extract only the relevant parts of the logs (around errors) to create smaller prompts.
@@ -53,4 +46,9 @@ export async function triggerLlmAnalysis(
 
     // 5. Return the final analysis.
     return analysis;
+    } catch (err:any) {
+        console.error(`[triggerLlmAnalysis] 실패:`, err);
+        vscode.window.showErrorMessage(`❌ LLM 분석 중 오류 발생: ${err?.message ?? err}`);
+    return null;
+    }
 }
