@@ -1,6 +1,6 @@
 // src/llm/cache/cache.ts
 import * as vscode from "vscode";
-import type { LLMResult } from "../types";
+import type { LLMResult } from "../types/types";
 import {
   cacheStore,
   type KeyParts,

@@ -1,5 +1,5 @@
 import { createCache } from "./cache";
-import type { LLMResult } from "../types";
+import type { LLMResult } from "../types/types";
 
 /**
  * LLM 전용 캐시 인스턴스

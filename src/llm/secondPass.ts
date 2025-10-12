@@ -1,8 +1,8 @@
 import { OpenAI } from "openai";
 import * as vscode from "vscode";
-import { SYSTEM_PROMPTS } from "./systemPrompts";
-import { buildSecondPassPrompt } from "./prompts";
-import type { SecondPassInput, PinpointResult } from "./types";
+import { SYSTEM_PROMPTS } from "./prompts/systemPrompts";
+import { buildSecondPassPrompt } from "./prompts/prompts";
+import type { SecondPassInput, PinpointResult } from "./types/types";
 import { pinpointCache } from "./cache/pinpointCache";
 
 export async function analyzeSecondPass(

@@ -1,6 +1,6 @@
 // src/llm/cache/pinpointCache.ts
 import { createCache } from "./cache";
-import type { PinpointResult } from "../types";
+import type { PinpointResult } from "../types/types";
 
 /**
  * PinpointResult 전용 캐시 인스턴스

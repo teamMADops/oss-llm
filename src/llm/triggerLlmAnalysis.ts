@@ -3,7 +3,7 @@ import { getFailedStepsAndPrompts } from '../log/getFailedLogs';
 import { extractRelevantLog } from '../log/extractRelevantLog';
 import { analyzePrompts } from './analyze';
 import { printToOutput } from '../output/printToOutput';
-import type { LLMResult } from './types';
+import type { LLMResult } from './types/types';
 import type { RepoInfo } from '../github';
 import type { Octokit } from '@octokit/rest';
 import { llmCache } from "./cache/llmCache";

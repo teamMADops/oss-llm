@@ -1,5 +1,5 @@
 // src/llm/prompts.ts
-import type { SecondPassInput, SuspectedPath } from "./types";
+import type { SecondPassInput, SuspectedPath } from "../types/types";
 
 /**
  * 1차(로그만) 분석용 프롬프트 빌더

@@ -16,7 +16,7 @@ import { printToOutput } from "./output/printToOutput";
 import { getFailedStepsAndPrompts } from "./log/getFailedLogs";
 import { analyzePrompts } from "./llm/analyze";
 import { analyzeSecondPass } from "./llm/secondPass";
-import type { SecondPassInput } from "./llm/types";
+import type { SecondPassInput } from "./llm/types/types";
 
 import { llmCache } from "./llm/cache/llmCache";
 import { pinpointCache } from "./llm/cache/pinpointCache";

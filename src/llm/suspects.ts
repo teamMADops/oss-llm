@@ -1,5 +1,5 @@
 // src/llm/suspects.ts
-import type { SuspectedPath } from "./types";
+import type { SuspectedPath } from "./types/types";
 
 /**
  * 실패 로그에서 파일/라인 패턴을 찾아 의심 지점을 추출하고 간단 스코어를 매겨 반환.

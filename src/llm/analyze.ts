@@ -1,9 +1,9 @@
 import { OpenAI } from "openai";
 import * as vscode from "vscode";
-import type { LLMResult, FailureType } from "./types";
+import type { LLMResult, FailureType } from "./types/types";
 import { extractSuspects } from "./suspects";
-import { SYSTEM_PROMPTS } from "./systemPrompts";
-import { buildFirstPassPrompt } from "./prompts";
+import { SYSTEM_PROMPTS } from "./prompts/systemPrompts";
+import { buildFirstPassPrompt } from "./prompts/prompts";
 import { preprocessLogForLLM } from "./logPreprocess";
 import { llmCache } from "./cache/llmCache";
 
