@@ -10,6 +10,7 @@ export function buildFirstPassPrompt(logChunk: string): string {
   const guide = [
     "다음은 GitHub Actions 실패 로그의 일부입니다.",
     "핵심만 분석하여 JSON만 출력하세요. 마크다운, 코드펜스, 설명 문장 금지.",
+    "만약 로그 내용이 비어 있거나 분석할 수 없는 경우, '분석할 로그가 없습니다.'와 같은 메시지를 summary 필드에 담아 JSON 형식으로 반환해 주세요.",
     "",
     "요구 키:",
     "- summary: 2~3문장 요약(~습니다).",
