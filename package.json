@@ -3,7 +3,7 @@
   "name": "gh-actions-analyzer",
   "displayName": "MADops: GitHub Actions 분석기",
   "description": "GitHub Actions 실패 로그를 자동 분석하고, 원인과 해결책을 AI가 제시합니다.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "icon": "images/logo-128.png",
   "galleryBanner": {
     "color": "#1c1c1c",
