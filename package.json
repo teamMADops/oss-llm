@@ -3,30 +3,65 @@
   "name": "gh-actions-analyzer",
   "displayName": "MADops: GitHub Actions 분석기",
   "description": "GitHub Actions 실패 로그를 자동 분석하고, 원인과 해결책을 AI가 제시합니다.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "icon": "images/logo-128.png",
   "galleryBanner": {
     "color": "#1c1c1c",
     "theme": "dark"
   },
-  "categories": ["Other", "Machine Learning", "AI"],
-  "extensionKind": ["workspace"],
+  "categories": [
+    "Other",
+    "Machine Learning",
+    "AI"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
   "engines": {
     "vscode": "^1.101.0"
   },
   "main": "./out/extension.js",
-  "activationEvents": ["*"],
+  "activationEvents": [
+    "*"
+  ],
   "contributes": {
     "commands": [
-      { "command": "extension.setRepository", "title": "GitHub Actions: 레포 저장/수정" },
-      { "command": "extension.clearRepository", "title": "GitHub Actions: 저장된 레포 삭제" },
-      { "command": "extension.showRepository", "title": "GitHub Actions: 현재 레포 보기" },
-      { "command": "extension.loginGithub", "title": "GitHub: 로그인 (VS Code 계정 인증)" },
-      { "command": "extension.logoutGithub", "title": "GitHub: 로그아웃 (VS Code 계정 인증)" },
-      { "command": "extension.analyzeGitHubActions", "title": "GitHub Actions: 실패 Step 분석 및 LLM 프롬프트 생성" },
-      { "command": "extension.openDashboard", "title": "MADops: 대시보드 열기" },
-      { "command": "extension.setOpenAiKey", "title": "OpenAI: API 키 설정" },
-      { "command": "extension.clearOpenAiKey", "title": "OpenAI: API 키 삭제" }
+      {
+        "command": "extension.setRepository",
+        "title": "GitHub Actions: 레포 저장/수정"
+      },
+      {
+        "command": "extension.clearRepository",
+        "title": "GitHub Actions: 저장된 레포 삭제"
+      },
+      {
+        "command": "extension.showRepository",
+        "title": "GitHub Actions: 현재 레포 보기"
+      },
+      {
+        "command": "extension.loginGithub",
+        "title": "GitHub: 로그인 (VS Code 계정 인증)"
+      },
+      {
+        "command": "extension.logoutGithub",
+        "title": "GitHub: 로그아웃 (VS Code 계정 인증)"
+      },
+      {
+        "command": "extension.analyzeGitHubActions",
+        "title": "GitHub Actions: 실패 Step 분석 및 LLM 프롬프트 생성"
+      },
+      {
+        "command": "extension.openDashboard",
+        "title": "MADops: 대시보드 열기"
+      },
+      {
+        "command": "extension.setOpenAiKey",
+        "title": "OpenAI: API 키 설정"
+      },
+      {
+        "command": "extension.clearOpenAiKey",
+        "title": "OpenAI: API 키 삭제"
+      }
     ]
   },
   "scripts": {
@@ -68,7 +103,14 @@
     "type": "git",
     "url": "https://github.com/angkmfirefoxygal/oss-llm"
   },
-  "keywords": ["github-actions", "ai", "llm", "debugging", "devops", "automation"],
+  "keywords": [
+    "github-actions",
+    "ai",
+    "llm",
+    "debugging",
+    "devops",
+    "automation"
+  ],
   "author": "MADops Team",
   "license": "MIT",
   "bugs": {
