@@ -325,43 +325,70 @@ sequenceDiagram
 
 - **Node.js ≥ 18**
 - **VS Code ≥ 1.85**
-- **GitHub Personal Access Token** (Actions 로그 열람 권한 권장: `repo`)
-- **OpenAI API Key** (`OPENAI_API_KEY`)
+- **GitHub 계정** (Actions 로그 열람 권한)
+- **OpenAI API Key** (GPT 모델 사용)
 
-### 1) 클론 & 설치
+### 1) 프로젝트 클론
 
 ```bash
 git clone https://github.com/teamMADops/oss-llm.git
 cd oss-llm
+```
 
-# VS Code 확장(백엔드)
+### 2) VS Code에서 프로젝트 열기
+
+VS Code를 실행하고 `File > Open Folder`를 선택하여 클론한 `oss-llm` 폴더를 엽니다.
+
+### 3) 의존성 설치
+
+터미널에서 다음 명령을 실행합니다:
+
+**Windows (PowerShell)**
+```powershell
 npm install
+npm run setup:webview
+npm run build:webview
+```
 
-# Webview(프론트엔드)
-cd src/webview-react-app
+**macOS/Linux**
+```bash
 npm install
-npm run build
+npm run setup:webview
+npm run build:webview
 ```
 
-### 2) 환경 변수 설정
-프로젝트 루트에 `.env` 파일을 생성하고 아래 내용을 추가하세요.
+### 4) 확장 프로그램 디버그 실행
+
+**Windows**: `F5` 키를 누릅니다.  
+**macOS**: `Fn + F5` 또는 `Cmd + F5` 키를 누릅니다.
+
+또는 VS Code에서 `Run and Debug` 패널 (Ctrl/Cmd + Shift + D)을 열고 **"Launch Extension"**을 클릭합니다.
+
+새로운 **Extension Development Host** 창이 열립니다.
+
+### 5) 초기 설정
+
+새로 열린 Extension Development Host 창에서 Command Palette를 열고 (`Ctrl/Cmd + Shift + P`) 다음 단계를 순서대로 진행합니다:
+
+#### 5-1) GitHub 계정 연동
 ```
-OPENAI_API_KEY="sk-..."
+GitHub: 로그인 (VS Code 계정 인증)
 ```
+명령을 실행하여 GitHub 계정에 로그인합니다.
 
-### 3) 확장 실행 (개발 모드)
+#### 5-2) OpenAI API 키 등록
+```
+OpenAI: API 키 설정
+```
+명령을 실행하여 OpenAI API 키를 입력합니다. (예: `sk-...`)
 
-1. VS Code에서 이 저장소 폴더를 엽니다.
-2. `Run and Debug` ▶️ **Launch Extension**를 실행합니다.
-3. 새로 열린 **Extension Development Host** 창에서 아래 명령을 사용합니다.
-
-### 4) 기본 명령 (Ctrl/Cmd + Shift + P)
-
-- **MAD Ops: Set Repository** — 분석 대상 `owner/repo` 설정 (예: `octocat/Hello-World`)
-- **MAD Ops: Open Dashboard** — 메인 대시보드 패널 열기
-- **MAD Ops: Analyze GitHub Actions** — 실행 목록에서 실패 run 선택 → 자동 분석
-
---- 
+#### 5-3) 분석 대상 레포지토리 설정
+```
+GitHub Actions: 레포 저장/수정
+```
+명령을 실행하여 분석할 GitHub 레포지토리를 설정합니다.
+- 형식: `owner/repo` (예: `angkmfirefoxygal/oss`)
+- 또는 전체 GitHub URL 입력 가능
 
 ## 📄 License
 
