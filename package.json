@@ -71,7 +71,8 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "setup:webview": "cd src/webview-react-app && npm install",
-    "build:webview": "cd src/webview-react-app && npm run build"
+    "build:webview": "cd src/webview-react-app && npm run build",
+    "release": "npm version patch && git tag -a RELEASE-v$(node -p \"require('./package.json').version\") -m \"Release v$(node -p \"require('./package.json').version\")\" && git push origin RELEASE-v$(node -p \"require('./package.json').version\")"
   },
   "dependencies": {
     "@octokit/rest": "^19.0.13",
