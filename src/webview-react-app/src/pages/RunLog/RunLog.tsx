@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import './RunLog.css';
-import { LLMResult, PinpointResult, SuspectedPath } from '../../../../llm/types';
+import { LLMResult, PinpointResult, SuspectedPath } from '../../../../llm/types/types';
 import { getRunDetails, getRunLogs, analyzeRun, getLatestRunFromAllActions } from '@/api/github';
 import { analyzePinpoint } from '@/api/llm';
 

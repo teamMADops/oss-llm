@@ -5,7 +5,7 @@ import RunLogPage from '@/pages/RunLog/RunLog.tsx';
 import EditorPage from './pages/Editor/Editor';
 import HistoryPage from './pages/History/History';
 import SettingsModal, { SettingsData } from './components/SettingsModal/SettingsModal';
-import { LLMResult } from '../../llm/types'; // Import LLMResult type
+import { LLMResult } from '../../llm/types/types'; // Import LLMResult type
 import { Action } from './components/Sidebar/types'; // Import Action type
 import { getActions } from './api/github'; // analyzeRun import 제거
 import './styles/theme.css';
