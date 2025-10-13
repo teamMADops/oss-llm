@@ -556,9 +556,9 @@ ${llmAnalysisResult.suggestion}`;
               disabled={!llmAnalysisResult || exportStatus === 'copying'}
               title="LLM 분석 결과를 클립보드로 복사합니다"
             >
-              {exportStatus === 'copying' ? '복사 중...' : 
-               exportStatus === 'success' ? '복사 완료!' : 
-               exportStatus === 'error' ? '복사 실패' : 'Export'}
+              {exportStatus === 'copying' ? 'Copying...' : 
+               exportStatus === 'success' ? 'Copied!' : 
+               exportStatus === 'error' ? 'Copy failed' : 'Export'}
             </button>
           </div>
         </div>
@@ -680,7 +680,7 @@ ${llmAnalysisResult.suggestion}`;
                     }}
                   >
                     {/* TODO: 여기 버튼은 복사 기능이 구현이 되어 있는것 같은데? */}
-                    📋 복사
+                    📋 Copy
                   </button>
                 </div>
               </div>
@@ -868,7 +868,7 @@ ${llmAnalysisResult.suggestion}`;
                             // TODO: 복사 완료 피드백 추가
                           }}
                         >
-                          📋 복사
+                          📋 Copy
                         </button>
                       </div>
                     )}

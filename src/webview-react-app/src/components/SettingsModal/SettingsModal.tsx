@@ -352,7 +352,7 @@ const SettingsModal = ({
               className="settings-button settings-button-secondary"
               onClick={onClose}
             >
-              취소
+              Cancel
             </button>
           )}
           <button 
@@ -360,7 +360,7 @@ const SettingsModal = ({
             className="settings-button settings-button-primary"
             onClick={handleSave}
           >
-            저장
+            Save
           </button>
         </div>
       </div>

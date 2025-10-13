@@ -220,7 +220,6 @@ body {
   border-radius: var(--border-radius);
   font-size: var(--font-size-caption);
   font-weight: var(--font-weight-medium);
-  text-transform: uppercase;
   letter-spacing: 0.025em;
 }
 
