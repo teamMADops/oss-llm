@@ -86,7 +86,7 @@ const SettingsModal = ({
         });
       } else {
         console.error('[SettingsModal] vscode 객체가 없어서 GitHub 로그인 요청 실패');
-        setErrors({ ...errors, github: 'VSCode API에 접근할 수 없습니다.' });
+        setErrors({ ...errors, github: 'Cannot access VSCode API.' });
         setIsAuthenticating(false);
       }
       
@@ -94,7 +94,7 @@ const SettingsModal = ({
       // 실제 인증 성공 여부는 extension에서 응답으로 전달됨
     } catch (error) {
       console.error('GitHub 로그인 요청 실패:', error);
-      setErrors({ ...errors, github: 'GitHub 로그인 요청에 실패했습니다.' });
+      setErrors({ ...errors, github: 'GitHub login request failed.' });
       setIsAuthenticating(false);
     }
   };
@@ -103,24 +103,24 @@ const SettingsModal = ({
     const newErrors: { [key: string]: string } = {};
 
     if (!githubAuthenticated) {
-      newErrors.github = 'GitHub 로그인이 필요합니다.';
+      newErrors.github = 'GitHub login required.';
     }
 
     if (!openaiApiKey.trim()) {
-      newErrors.openaiApiKey = 'OpenAI API 키를 입력해주세요.';
+      newErrors.openaiApiKey = 'Please enter OpenAI API key.';
     } else if (!openaiApiKey.startsWith('sk-')) {
-      newErrors.openaiApiKey = '올바른 OpenAI API 키 형식이 아닙니다. (sk-로 시작해야 함)';
+      newErrors.openaiApiKey = 'Invalid OpenAI API key format. (must start with sk-)';
     }
 
     if (!repositoryUrl.trim()) {
-      newErrors.repositoryUrl = '레포지토리 URL을 입력해주세요.';
+      newErrors.repositoryUrl = 'Please enter repository URL.';
     } else {
       // owner/repo 형식 또는 GitHub URL 형식 검증
       const isOwnerRepoFormat = /^[^/]+\/[^/]+$/.test(repositoryUrl.trim());
       const isGithubUrl = /github[^/:]*[:/]+([^/]+)\/([^/]+?)(?:\.git)?$/i.test(repositoryUrl.trim());
       
       if (!isOwnerRepoFormat && !isGithubUrl) {
-        newErrors.repositoryUrl = 'owner/repo 형식 또는 유효한 GitHub URL을 입력해주세요.';
+        newErrors.repositoryUrl = 'Please enter in owner/repo format or valid GitHub URL.';
       }
     }
 
@@ -154,7 +154,7 @@ const SettingsModal = ({
         }, 500);
       } else {
         console.error('[SettingsModal] vscode 객체가 없어서 설정 저장 실패');
-        setErrors({ ...errors, general: 'VSCode API에 접근할 수 없습니다.' });
+        setErrors({ ...errors, general: 'Cannot access VSCode API.' });
       }
     }
   };
@@ -181,7 +181,7 @@ const SettingsModal = ({
         } else {
           setGithubAuthenticated(false);
           setGithubUser(null);
-          setErrors({ ...errors, github: message.payload.error || 'GitHub 로그인에 실패했습니다.' });
+          setErrors({ ...errors, github: message.payload.error || 'GitHub login failed.' });
         }
         setIsAuthenticating(false);
       }
@@ -204,9 +204,9 @@ const SettingsModal = ({
     <div className="settings-modal-overlay" onClick={isInitialSetup ? undefined : onClose}>
       <div className="settings-modal" onClick={(e) => e.stopPropagation()} onKeyPress={handleKeyPress}>
         <div className="settings-modal-header">
-          <h2>🛠️ MAD Ops 설정</h2>
+          <h2>🛠️ MAD Ops Settings</h2>
           {!isInitialSetup && onClose && (
-            <button className="settings-modal-close" onClick={onClose} aria-label="닫기">
+            <button className="settings-modal-close" onClick={onClose} aria-label="Close">
               ×
             </button>
           )}
@@ -215,14 +215,14 @@ const SettingsModal = ({
         <div className="settings-modal-body">
           {isInitialSetup && (
             <div className="settings-welcome-message">
-              <p>MAD Ops를 사용하기 위해 먼저 설정을 완료해주세요.</p>
+              <p>Please complete the settings to use MAD Ops.</p>
             </div>
           )}
 
           {/* GitHub 로그인 섹션 */}
           <div className="settings-section">
             <label className="settings-label">
-              <span className="settings-label-text">1. GitHub 로그인</span>
+              <span className="settings-label-text">1. GitHub Login</span>
               <span className="settings-label-required">*</span>
             </label>
             <div className="settings-github-login">
@@ -242,7 +242,7 @@ const SettingsModal = ({
                     </div>
                     <div className="settings-status-success">
                       <span className="settings-status-icon">✓</span>
-                      <span>로그인 완료</span>
+                      <span>Logged in</span>
                     </div>
                   </div>
                 )
@@ -259,14 +259,14 @@ const SettingsModal = ({
             </div>
             {errors.github && <div className="settings-error">{errors.github}</div>}
             <div className="settings-help-text">
-              VS Code의 GitHub 계정 인증을 통해 로그인합니다.
+              Login with VS Code GitHub authentication.
             </div>
           </div>
 
           {/* OpenAI API 키 섹션 */}
           <div className="settings-section">
             <label htmlFor="openai-api-key" className="settings-label">
-              <span className="settings-label-text">2. OpenAI API 키</span>
+              <span className="settings-label-text">2. OpenAI API Key</span>
               <span className="settings-label-required">*</span>
             </label>
             <div className="settings-input-wrapper">
@@ -284,7 +284,7 @@ const SettingsModal = ({
                   type="button"
                   className="settings-input-toggle"
                   onClick={() => setShowApiKey(!showApiKey)}
-                  aria-label={showApiKey ? "API 키 숨기기" : "API 키 보기"}
+                  aria-label={showApiKey ? "Hide API key" : "Show API key"}
                 >
                   {showApiKey ? (
                     // 일반 눈 아이콘
@@ -304,7 +304,7 @@ const SettingsModal = ({
             </div>
             {errors.openaiApiKey && <div className="settings-error">{errors.openaiApiKey}</div>}
             <div className="settings-help-text">
-              LLM 분석을 위한 OpenAI API 키를 입력하세요. 
+              Enter OpenAI API key for LLM analysis. 
               <a 
                 href="#"
                 onClick={(e) => {
@@ -319,7 +319,7 @@ const SettingsModal = ({
                 }}
                 className="settings-link"
               >
-                API 키 발급받기
+                Get API key
               </a>
             </div>
           </div>
@@ -327,20 +327,20 @@ const SettingsModal = ({
           {/* 레포지토리 URL 섹션 */}
           <div className="settings-section">
             <label htmlFor="repository-url" className="settings-label">
-              <span className="settings-label-text">3. 분석할 레포지토리</span>
+              <span className="settings-label-text">3. Repository to Analyze</span>
               <span className="settings-label-required">*</span>
             </label>
             <input
               id="repository-url"
               type="text"
               className={`settings-input ${errors.repositoryUrl ? 'settings-input-error' : ''}`}
-              placeholder="owner/repo 또는 https://github.com/owner/repo"
+              placeholder="owner/repo or https://github.com/owner/repo"
               value={repositoryUrl}
               onChange={(e) => setRepositoryUrl(e.target.value)}
             />
             {errors.repositoryUrl && <div className="settings-error">{errors.repositoryUrl}</div>}
             <div className="settings-help-text">
-              분석할 GitHub 저장소를 입력하세요. (예: facebook/react)
+              Enter GitHub repository to analyze. (e.g. facebook/react)
             </div>
           </div>
         </div>
