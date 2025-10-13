@@ -41,12 +41,19 @@ const getRunList_1 = require("./github/getRunList");
 const printToOutput_1 = require("./output/printToOutput");
 const getFailedLogs_1 = require("./log/getFailedLogs");
 const analyze_1 = require("./llm/analyze");
-/**
- * It is automatically called when the extension is activated.
- * It register functions as commands.
- * @param context - vscode.ExtensionContext
- */
+const secondPass_1 = require("./llm/secondPass");
+const llmCache_1 = require("./llm/cache/llmCache");
+const pinpointCache_1 = require("./llm/cache/pinpointCache");
 function activate(context) {
+    // 캐시 초기화 (한 번만)
+    try {
+        llmCache_1.llmCache.init(context);
+        pinpointCache_1.pinpointCache.init(context);
+        console.log("[MAD Ops] LLM 캐시 초기화 완료");
+    }
+    catch (e) {
+        console.error("⚠️ 캐시 초기화 실패:", e);
+    }
     const functionRegister = (functionHandler) => {
         const cmd = vscode.commands.registerCommand(`extension.${functionHandler.name}`, functionHandler);
         context.subscriptions.push(cmd);
@@ -269,19 +276,73 @@ function createAndShowWebview(context, page) {
                     repositoryUrl: savedRepo ? `${savedRepo.owner}/${savedRepo.repo}` : '',
                 };
                 console.log('[extension.ts] 전달할 설정 데이터:', currentSettings);
+                // 설정이 완료되지 않았을 때만 모달 표시
+                if (!isConfigured) {
+                    console.log('[extension.ts] 설정이 완료되지 않음 - 초기 설정 모달 표시');
+                    panel.webview.postMessage({
+                        command: "showSettings",
+                        payload: {
+                            isInitialSetup: true,
+                            currentSettings: currentSettings
+                        }
+                    });
+                }
+                else {
+                    console.log('[extension.ts] 설정이 이미 완료되어 있음 - 모달 표시하지 않음');
+                }
+                return;
+            }
+            case 'openSettings': {
+                // 사용자가 수동으로 설정 버튼을 클릭했을 때 (항상 모달 표시)
+                console.log('[extension.ts] 수동 설정 열기 요청');
+                const githubSession = await (0, github_1.getExistingGitHubSession)();
+                const savedRepo = (0, github_1.getSavedRepoInfo)(context);
+                const hasOpenAiKey = !!(await context.secrets.get("openaiApiKey"));
+                // API 키 가져오기
+                let apiKeyValue = '';
+                if (hasOpenAiKey) {
+                    const actualKey = await context.secrets.get("openaiApiKey");
+                    if (actualKey) {
+                        apiKeyValue = actualKey;
+                    }
+                }
+                // GitHub 사용자 정보 가져오기
+                let githubUserInfo = null;
+                if (githubSession) {
+                    try {
+                        const octokit = await (0, github_1.getOctokitViaVSCodeAuth)();
+                        if (octokit) {
+                            const { data: user } = await octokit.rest.users.getAuthenticated();
+                            githubUserInfo = {
+                                username: user.login,
+                                avatarUrl: user.avatar_url,
+                                name: user.name || user.login
+                            };
+                        }
+                    }
+                    catch (error) {
+                        console.error('[extension.ts] GitHub 사용자 정보 가져오기 실패:', error);
+                        githubUserInfo = {
+                            username: githubSession.account.label,
+                            avatarUrl: '',
+                            name: githubSession.account.label
+                        };
+                    }
+                }
+                const currentSettings = {
+                    githubAuthenticated: !!githubSession,
+                    githubUser: githubUserInfo,
+                    openaiApiKey: apiKeyValue,
+                    repositoryUrl: savedRepo ? `${savedRepo.owner}/${savedRepo.repo}` : '',
+                };
+                console.log('[extension.ts] 수동 설정 모달 표시');
                 panel.webview.postMessage({
                     command: "showSettings",
                     payload: {
-                        isInitialSetup: !isConfigured, // 설정이 완료되지 않았을 때만 초기 설정으로 표시
+                        isInitialSetup: false, // 수동 열기이므로 초기 설정이 아님
                         currentSettings: currentSettings
                     }
                 });
-                if (!isConfigured) {
-                    console.log('[extension.ts] 설정이 완료되지 않음 - 모달 표시');
-                }
-                else {
-                    console.log('[extension.ts] 설정이 이미 완료되어 있음 - 테스트용 모달 표시');
-                }
                 return;
             }
             case 'requestGithubLogin': {
@@ -855,6 +916,52 @@ function createAndShowWebview(context, page) {
                     send(panel, "error", "LLM 분석을 시작하는 데 실패했습니다.");
                 }
                 break;
+            case "analyzeSecondPass":
+                try {
+                    const payload = message.payload || {};
+                    const targetPath = String(payload.path || "");
+                    if (!targetPath) {
+                        send(panel, "error", "2차 분석: path가 비어있습니다.");
+                        break;
+                    }
+                    const lineHint = Number.isFinite(Number(payload.lineHint)) ? Number(payload.lineHint) : undefined;
+                    const logExcerpt = String(payload.logExcerpt || "");
+                    const contextMeta = (payload.context && typeof payload.context === "object") ? payload.context : undefined;
+                    const radius = Number.isFinite(Number(payload.radius)) ? Number(payload.radius) : 30;
+                    const ref = payload.ref ? String(payload.ref) : "main";
+                    // 코드 본문 읽기
+                    const fullText = await getRepoFileText(octokit, repo, targetPath, ref);
+                    if (!fullText) {
+                        send(panel, "error", `파일을 읽을 수 없습니다: ${targetPath} @ ${ref}`);
+                        break;
+                    }
+                    const codeWindow = buildCodeWindow(fullText, lineHint, radius);
+                    const input = {
+                        path: targetPath,
+                        logExcerpt,
+                        codeWindow,
+                        lineHint,
+                        context: contextMeta,
+                    };
+                    // LLM 2차 분석
+                    const result = await (0, secondPass_1.analyzeSecondPass)(context, input);
+                    // 출력/전달
+                    (0, printToOutput_1.printToOutput)("LLM 2차 분석 결과", [JSON.stringify(result, null, 2)]);
+                    if (panels["dashboard"]) {
+                        panels["dashboard"].webview.postMessage({
+                            command: "secondPassResult",
+                            payload: { ...result, file: targetPath },
+                        });
+                    }
+                    else {
+                        send(panel, "secondPassResult", { ...result, file: targetPath });
+                    }
+                }
+                catch (error) {
+                    console.error("2차 분석 중 오류:", error);
+                    send(panel, "error", `2차 분석 실패: ${error?.message || error}`);
+                }
+                break;
             case "analyzeLog":
                 send(panel, "error", "로그 분석은 아직 구현되지 않았습니다.");
                 break;
@@ -946,4 +1053,29 @@ function ensureWorkflowPathFromWorkflow(wf) {
     if (!wf?.path)
         throw new Error("워크플로우 경로를 찾을 수 없습니다.");
     return wf.path;
+}
+// 레포에서 텍스트 파일 가져오기 (main 기준)
+async function getRepoFileText(octokit, repo, filePath, ref = "main") {
+    const r = await octokit.repos.getContent({
+        owner: repo.owner,
+        repo: repo.repo,
+        path: filePath,
+        ref,
+    });
+    if (Array.isArray(r.data))
+        return "";
+    const base64 = r.data.content?.replace(/\n/g, "") ?? "";
+    return Buffer.from(base64, "base64").toString("utf8");
+}
+// 라인 힌트 중심 ±radius 줄 코드 윈도우 만들기
+function buildCodeWindow(fullText, lineHint, radius = 30) {
+    const lines = fullText.split(/\r?\n/);
+    if (!lineHint || lineHint < 1 || lineHint > lines.length) {
+        // 라인 힌트 없으면 앞쪽 일부만
+        return lines.slice(0, Math.min(200, lines.length)).join("\n");
+    }
+    const idx = lineHint - 1;
+    const start = Math.max(0, idx - radius);
+    const end = Math.min(lines.length, idx + radius + 1);
+    return lines.slice(start, end).join("\n");
 }
