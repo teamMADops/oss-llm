@@ -336,19 +336,76 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
           
           console.log('[extension.ts] 전달할 설정 데이터:', currentSettings);
           
+          // 설정이 완료되지 않았을 때만 모달 표시
+          if (!isConfigured) {
+            console.log('[extension.ts] 설정이 완료되지 않음 - 초기 설정 모달 표시');
+            panel.webview.postMessage({
+              command: "showSettings",
+              payload: {
+                isInitialSetup: true,
+                currentSettings: currentSettings
+              }
+            });
+          } else {
+            console.log('[extension.ts] 설정이 이미 완료되어 있음 - 모달 표시하지 않음');
+          }
+          return;
+        }
+
+        case 'openSettings': {
+          // 사용자가 수동으로 설정 버튼을 클릭했을 때 (항상 모달 표시)
+          console.log('[extension.ts] 수동 설정 열기 요청');
+          const githubSession = await getExistingGitHubSession();
+          const savedRepo = getSavedRepoInfo(context);
+          const hasOpenAiKey = !!(await context.secrets.get("openaiApiKey"));
+          
+          // API 키 가져오기
+          let apiKeyValue = '';
+          if (hasOpenAiKey) {
+            const actualKey = await context.secrets.get("openaiApiKey");
+            if (actualKey) {
+              apiKeyValue = actualKey;
+            }
+          }
+          
+          // GitHub 사용자 정보 가져오기
+          let githubUserInfo = null;
+          if (githubSession) {
+            try {
+              const octokit = await getOctokitViaVSCodeAuth();
+              if (octokit) {
+                const { data: user } = await octokit.rest.users.getAuthenticated();
+                githubUserInfo = {
+                  username: user.login,
+                  avatarUrl: user.avatar_url,
+                  name: user.name || user.login
+                };
+              }
+            } catch (error) {
+              console.error('[extension.ts] GitHub 사용자 정보 가져오기 실패:', error);
+              githubUserInfo = {
+                username: githubSession.account.label,
+                avatarUrl: '',
+                name: githubSession.account.label
+              };
+            }
+          }
+          
+          const currentSettings = {
+            githubAuthenticated: !!githubSession,
+            githubUser: githubUserInfo,
+            openaiApiKey: apiKeyValue,
+            repositoryUrl: savedRepo ? `${savedRepo.owner}/${savedRepo.repo}` : '',
+          };
+          
+          console.log('[extension.ts] 수동 설정 모달 표시');
           panel.webview.postMessage({
             command: "showSettings",
             payload: {
-              isInitialSetup: !isConfigured, // 설정이 완료되지 않았을 때만 초기 설정으로 표시
+              isInitialSetup: false, // 수동 열기이므로 초기 설정이 아님
               currentSettings: currentSettings
             }
           });
-
-          if (!isConfigured) {
-            console.log('[extension.ts] 설정이 완료되지 않음 - 모달 표시');
-          } else {
-            console.log('[extension.ts] 설정이 이미 완료되어 있음 - 테스트용 모달 표시');
-          }
           return;
         }
 

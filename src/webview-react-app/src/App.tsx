@@ -217,14 +217,14 @@ function App() {
     }
   };
 
-  // Settings 모달 열기 (최신 설정 데이터 요청)
+  // Settings 모달 열기 (수동 설정 버튼 클릭)
   const handleOpenSettings = () => {
-    console.log('[App.tsx] 설정 모달 열기 요청');
+    console.log('[App.tsx] 수동 설정 모달 열기 요청');
     const vscode = getVscode();
     if (vscode) {
-      // Extension에 최신 설정 데이터 요청
+      // Extension에 수동 설정 열기 요청 (항상 모달 표시)
       vscode.postMessage({
-        command: 'checkSettings'
+        command: 'openSettings'
       });
     } else {
       // VSCode API가 없으면 그냥 빈 데이터로 모달 열기
