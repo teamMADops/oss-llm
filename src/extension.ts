@@ -13,16 +13,24 @@ import {
 
 import { getRunIdFromQuickPick } from "./github/getRunList";
 import { printToOutput } from "./output/printToOutput";
-
 import { getFailedStepsAndPrompts } from "./log/getFailedLogs";
 import { analyzePrompts } from "./llm/analyze";
+import { analyzeSecondPass } from "./llm/secondPass";
+import type { SecondPassInput } from "./llm/types/types";
 
-/**
- * It is automatically called when the extension is activated.
- * It register functions as commands.
- * @param context - vscode.ExtensionContext
- */
+import { llmCache } from "./llm/cache/llmCache";
+import { pinpointCache } from "./llm/cache/pinpointCache";
+
 export function activate(context: vscode.ExtensionContext) {
+
+  // 캐시 초기화 (한 번만)
+  try {
+    llmCache.init(context);
+    pinpointCache.init(context);
+    console.log("[MAD Ops] LLM 캐시 초기화 완료");
+  } catch (e) {
+    console.error("⚠️ 캐시 초기화 실패:", e);
+  }
 
   const functionRegister = (functionHandler: () => any) => {
     const cmd = vscode.commands.registerCommand(
@@ -268,6 +276,7 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
       console.log('[extension.ts] 받은 메시지:', message.command, message);
       
       switch (message.command) {
+
         case 'checkSettings': {
           // 초기 설정 확인
           console.log('[extension.ts] 설정 확인 중...');
@@ -467,6 +476,7 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
       }
 
       switch (message.command) {
+        
         case "getActions":
           try {
             const { data: workflows } = await octokit.actions.listRepoWorkflows(
@@ -1043,6 +1053,59 @@ function createAndShowWebview(context: vscode.ExtensionContext, page: Page) {
           }
           break;
 
+        case "analyzeSecondPass":
+          try {
+            const payload = message.payload || {};
+            const targetPath: string = String(payload.path || "");
+            if (!targetPath) {
+              send(panel, "error", "2차 분석: path가 비어있습니다.");
+              break;
+            }
+
+            const lineHint: number | undefined =
+            Number.isFinite(Number(payload.lineHint)) ? Number(payload.lineHint) : undefined;
+            const logExcerpt: string = String(payload.logExcerpt || "");
+            const contextMeta = (payload.context && typeof payload.context === "object") ? payload.context : undefined;
+            const radius: number = Number.isFinite(Number(payload.radius)) ? Number(payload.radius) : 30;
+            const ref: string = payload.ref ? String(payload.ref) : "main";
+
+            // 코드 본문 읽기
+            const fullText = await getRepoFileText(octokit, repo, targetPath, ref);
+            if (!fullText) {
+              send(panel, "error", `파일을 읽을 수 없습니다: ${targetPath} @ ${ref}`);
+              break;
+            }
+            const codeWindow = buildCodeWindow(fullText, lineHint, radius);
+
+            const input: SecondPassInput = {
+              path: targetPath,
+              logExcerpt,
+              codeWindow,
+              lineHint,
+              context: contextMeta,
+              };
+
+              // LLM 2차 분석
+              const result = await analyzeSecondPass(context, input);
+
+              // 출력/전달
+              printToOutput("LLM 2차 분석 결과", [JSON.stringify(result, null, 2)]);
+
+              if (panels["dashboard"]) {
+                panels["dashboard"].webview.postMessage({
+                command: "secondPassResult",
+                payload: { ...result, file: targetPath },
+              });
+              } else {
+              send(panel, "secondPassResult", { ...result, file: targetPath });
+            }
+          } catch (error: any) {
+          console.error("2차 분석 중 오류:", error);
+          send(panel, "error", `2차 분석 실패: ${error?.message || error}`);
+          }
+          break;
+
+
         case "analyzeLog":
           send(panel, "error", "로그 분석은 아직 구현되지 않았습니다.");
           break;
@@ -1157,5 +1220,36 @@ function isNumericId(s: string) {
 function ensureWorkflowPathFromWorkflow(wf: any) {
   if (!wf?.path) throw new Error("워크플로우 경로를 찾을 수 없습니다.");
   return wf.path as string;
+}
+
+// 레포에서 텍스트 파일 가져오기 (main 기준)
+async function getRepoFileText(
+  octokit: any,
+  repo: RepoInfo,
+  filePath: string,
+  ref = "main"
+): Promise<string> {
+  const r = await octokit.repos.getContent({
+    owner: repo.owner,
+    repo: repo.repo,
+    path: filePath,
+    ref,
+  });
+  if (Array.isArray(r.data)) return "";
+  const base64 = (r.data as any).content?.replace(/\n/g, "") ?? "";
+  return Buffer.from(base64, "base64").toString("utf8");
+}
+
+// 라인 힌트 중심 ±radius 줄 코드 윈도우 만들기
+function buildCodeWindow(fullText: string, lineHint?: number, radius = 30): string {
+  const lines = fullText.split(/\r?\n/);
+  if (!lineHint || lineHint < 1 || lineHint > lines.length) {
+    // 라인 힌트 없으면 앞쪽 일부만
+    return lines.slice(0, Math.min(200, lines.length)).join("\n");
+  }
+  const idx = lineHint - 1;
+  const start = Math.max(0, idx - radius);
+  const end = Math.min(lines.length, idx + radius + 1);
+  return lines.slice(start, end).join("\n");
 }
 

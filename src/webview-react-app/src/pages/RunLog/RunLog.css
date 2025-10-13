@@ -1,7 +1,7 @@
-/* DashboardPage 컴포넌트 스타일 */
+/* RunLogPage 컴포넌트 스타일 */
 
 /* 대시보드 페이지 전체를 감싸는 최상위 컨테이너 */
-.dashboard-container {
+.runLog-container {
   display: flex;
   width: 100%;
   height: 100%;
@@ -14,7 +14,7 @@
 }
 
 /* 대시보드의 메인 콘텐츠 영역(중앙 패널) */
-.dashboard-main {
+.runLog-main {
   position: fixed;
   right: 37.5%; /* LLM 분석 패널 왼쪽에 고정 */
   top: 0;
@@ -57,12 +57,12 @@
 }
 
 /* 사이드바가 닫혔을 때 메인 타이틀을 오른쪽으로 밀기 */
-.dashboard-container.sidebar-closed .main-title {
+.runLog-container.sidebar-closed .main-title {
   margin-left: 30px; /* 오른쪽으로 밀기 */
 }
 
 /* 대시보드 콘텐츠(패널 선택 버튼 및 패널 내용)를 감싸는 영역 */
-.dashboard-content {
+.runLog-content {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -98,10 +98,7 @@
   flex-direction: column;
 }
 
-/* Run Info 카드 */
-.run-info-card {
-  /* 내용물에 따라 자연스럽게 늘어나고, panel-section이 스크롤 */
-}
+/* Run Info 카드 - 내용물에 따라 자연스럽게 늘어나고, panel-section이 스크롤 */
 
 /* Log Viewer - panel-container 크기에 맞춤 */
 .log-viewer {
@@ -150,8 +147,8 @@
 }
 
 /* 활성화된(선택된) 패널 선택 버튼 - 강력한 선택자로 덮어쓰기 */
-.dashboard-container .panel-selector .panel-btn.active,
-.dashboard-container .panel-selector .panel-btn.active:hover {
+.runLog-container .panel-selector .panel-btn.active,
+.runLog-container .panel-selector .panel-btn.active:hover {
   background-color: #DBE8F2 !important; /* theme.css의 white 색상으로 통일 */
   color: #000000 !important; /* 검은색 텍스트 강제 적용 */
   border-color: var(--border-color) !important;
@@ -161,16 +158,6 @@
   margin-bottom: -2px !important; /* 하단 구분선과 겹치도록 마진 조정 */
   transform: none !important; /* 선택된 상태에서는 hover 효과 비활성화 */
 }
-
-
-
-
-
-
-
-
-
-
 
 /* Run Info 카드 스타일 */
 .run-info-card {
@@ -223,19 +210,31 @@
   color: var(--text-color);
 }
 
-/* 성공(success) 상태 텍스트 색상 */
+/* 성공(success) 상태 스타일 - Run Info용 */
 .status-success {
-  color: var(--success-color);
+  color: #ffffff;
+  background: var(--status-success-color);  /* #238636 */
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
-/* 실패(failure) 상태 텍스트 색상 */
+/* 실패(failure) 상태 스타일 - Run Info용 */
 .status-failure {
-  color: var(--error-color);
+  color: #ffffff;
+  background: var(--status-failed-color);  /* #da3633 */
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
-/* 취소(cancelled) 상태 텍스트 색상 */
+/* 취소(cancelled) 상태 스타일 - Run Info용 */
 .status-cancelled {
-  color: var(--warning-color);
+  color: #ffffff;
+  background: #bf8700;  /* 노란색 */
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
 /* Run Log 뷰어 */
@@ -303,6 +302,31 @@
   color: #000000; /* 검은색 텍스트 */
   border-color: #DBE8F2; /* #DBE8F2 색상으로 변경 */
   /* transform 제거 */
+}
+
+/* Copy 버튼 상태별 스타일 */
+.log-btn-copy.copying {
+  background: #ffc107;
+  color: #000;
+  border-color: #ffc107;
+  cursor: wait;
+}
+
+.log-btn-copy.success {
+  background: #28a745;
+  color: #fff;
+  border-color: #28a745;
+}
+
+.log-btn-copy.error {
+  background: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
+}
+
+.log-btn-copy:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* 로그 뷰어 전체를 감싸는 컨테이너 - 위에서 이미 정의됨, 여기서 추가 스타일만 */
@@ -600,7 +624,7 @@
 }
 
 /* 대시보드에 선택된 액션이 없을 때 표시되는 영역 */
-.dashboard-empty-state {
+.runLog-empty-state {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -682,17 +706,17 @@
 }
 
 .status-badge.status-success {
-  background: #238636;
+  background: var(--status-success-color);  /* #238636 */
   color: #DBE8F2;
 }
 
 .status-badge.status-failure {
-  background: #da3633;
+  background: var(--status-failed-color);  /* #da3633 */
   color: #DBE8F2;
 }
 
 .status-badge.status-cancelled {
-  background: #9e6a03;
+  background: #bf8700;  /* 노란색 */
   color: #DBE8F2;
 }
 
@@ -724,7 +748,7 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-container {
+  .runLog-container {
     flex-direction: column;
   }
   
@@ -737,7 +761,7 @@
 }
 
 /* 사이드바가 열려있을 때의 대시보드 컨테이너 */
-.dashboard-container.sidebar-open {
+.runLog-container.sidebar-open {
   /* 사이드바가 열려있을 때: 메인 패널과 LLM 분석 패널 반반 분할 */
   width: 100%;
   margin: 0;
@@ -746,7 +770,7 @@
 }
 
 /* 사이드바가 닫혔을 때의 대시보드 컨테이너 */
-.dashboard-container.sidebar-closed {
+.runLog-container.sidebar-closed {
   /* 사이드바가 닫혀있을 때: 메인 패널과 LLM 분석 패널 반반 분할 (전체 화면) */
   width: 100vw;
   position: absolute;
@@ -756,7 +780,7 @@
 }
 
 /* 사이드바가 닫혔을 때 대시보드 메인 패널의 너비 조정 */
-.dashboard-container.sidebar-closed .dashboard-main {
+.runLog-container.sidebar-closed .runLog-main {
   right: 50% !important; /* 전체 화면의 절반 지점에 고정 (오른쪽 고정) */
   width: 50% !important; /* 전체 화면의 50% */
   padding: 0px 20px 0px 20px !important; /* 하단 패딩 제거 */
@@ -765,7 +789,7 @@
 }
 
 /* 사이드바가 닫혔을 때 LLM 분석 패널의 너비 조정 */
-.dashboard-container.sidebar-closed .llm-analysis-container {
+.runLog-container.sidebar-closed .llm-analysis-container {
   width: 50% !important; /* 전체 화면의 50% */
   right: 0 !important; /* 오른쪽 고정 */
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important; /* 일관된 전환 효과 */
@@ -774,7 +798,7 @@
 
 
 /* 사이드바가 열렸을 때 메인 패널의 너비 조정 */
-.dashboard-container.sidebar-open .dashboard-main {
+.runLog-container.sidebar-open .runLog-main {
   right: 37.5% !important; /* LLM 분석 패널 왼쪽에 고정 유지 */
   width: 37.5% !important; /* 사이드바 열림 후: 37.5% */
   padding: 0px 20px 0px 20px !important; /* 하단 패딩 제거 */
@@ -783,7 +807,7 @@
 }
 
 /* 사이드바가 열렸을 때 LLM 분석 패널의 너비 조정 */
-.dashboard-container.sidebar-open .llm-analysis-container {
+.runLog-container.sidebar-open .llm-analysis-container {
   width: 37.5% !important; /* 사이드바 열림 후: 37.5% */
   right: 0;
   margin-left: 0 !important; /* 왼쪽 마진 명시적 제거 */
@@ -905,7 +929,7 @@
 }
 
 /* 공통 섹션 제목 스타일 (Dashboard 전용) */
-.dashboard-section-title {
+.runLog-section-title {
   font-size: 18px;
   font-weight: 600;
   margin: 32px 0 24px 0; /* 위쪽 마진을 20px에서 32px로 증가 */
@@ -1325,5 +1349,277 @@
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* ==================== 의심 경로 섹션 (Suspected Paths) ==================== */
+
+.llm-suspected-paths-section {
+  background: linear-gradient(135deg, #1e1e24 0%, #161b22 100%);
+  border: 1px solid #6e7681;
+}
+
+.llm-suspected-paths-content {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.llm-suspected-path-item {
+  background: #0d1117;
+  border: 2px solid #21262d;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.llm-suspected-path-item:hover {
+  background: #161b22;
+  border-color: #58a6ff;
+  box-shadow: 0 2px 8px rgba(88, 166, 255, 0.2);
+}
+
+.llm-suspected-path-item.selected {
+  background: #161b22;
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.3);
+}
+
+.llm-suspected-path-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.llm-suspected-path-icon {
+  font-size: 18px;
+}
+
+.llm-suspected-path-path {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #58a6ff;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  word-break: break-all;
+}
+
+.llm-suspected-path-score {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2ea043;
+  background: rgba(46, 160, 67, 0.15);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.llm-suspected-path-reason {
+  font-size: 13px;
+  color: #c9d1d9;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.llm-suspected-path-line {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.llm-suspected-path-line-label {
+  color: #8b949e;
+  font-weight: 600;
+}
+
+.llm-suspected-path-line-value {
+  color: #58a6ff;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+}
+
+.llm-suspected-path-log {
+  margin-top: 12px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.llm-suspected-path-log-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.llm-suspected-path-log-content {
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 12px;
+  color: #ff7b72;
+  white-space: pre-wrap;
+  word-break: break-all;
+  display: block;
+  margin-top: 4px;
+}
+
+/* ==================== 정밀 분석 결과 섹션 (Pinpoint Result) ==================== */
+
+.llm-pinpoint-section {
+  background: linear-gradient(135deg, #1a2026 0%, #161b22 100%);
+  border: 2px solid #58a6ff;
+  box-shadow: 0 4px 16px rgba(88, 166, 255, 0.2);
+}
+
+.llm-pinpoint-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.llm-pinpoint-file {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+}
+
+.llm-pinpoint-file-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b949e;
+}
+
+.llm-pinpoint-file-value {
+  font-size: 13px;
+  color: #58a6ff;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  word-break: break-all;
+  flex: 1;
+}
+
+.llm-pinpoint-lines {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+}
+
+.llm-pinpoint-lines-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b949e;
+}
+
+.llm-pinpoint-lines-value {
+  font-size: 13px;
+  color: #2ea043;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+}
+
+.llm-pinpoint-confidence {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+}
+
+.llm-pinpoint-confidence-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b949e;
+}
+
+.llm-pinpoint-confidence-value {
+  font-size: 13px;
+  color: #2ea043;
+  font-weight: 600;
+}
+
+.llm-pinpoint-diff {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.llm-pinpoint-diff-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b949e;
+  margin-bottom: 12px;
+}
+
+.llm-pinpoint-diff-content {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding: 16px;
+  overflow-x: auto;
+  margin-bottom: 12px;
+}
+
+.llm-pinpoint-diff-content pre {
+  margin: 0;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.llm-pinpoint-diff-content code {
+  color: #c9d1d9;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+}
+
+.llm-pinpoint-checklist {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.llm-pinpoint-checklist-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b949e;
+  margin-bottom: 12px;
+}
+
+.llm-pinpoint-checklist-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.llm-pinpoint-checklist-item {
+  font-size: 13px;
+  color: #c9d1d9;
+  padding: 8px 12px;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 4px;
+  padding-left: 32px;
+  position: relative;
+}
+
+.llm-pinpoint-checklist-item::before {
+  content: "☐";
+  position: absolute;
+  left: 12px;
+  color: #8b949e;
+  font-size: 16px;
 }
 

@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
-import './Dashboard.css';
-import { LLMResult } from '../../../../llm/types';
+import './RunLog.css';
+import { LLMResult, PinpointResult, SuspectedPath } from '../../../../llm/types/types';
 import { getRunDetails, getRunLogs, analyzeRun, getLatestRunFromAllActions } from '@/api/github';
+import { analyzePinpoint } from '@/api/llm';
 
-interface DashboardPageProps {
+interface RunLogPageProps {
   actionId: string | null;
   runId: string | null; // [ADD] 선택된 run ID
   isSidebarOpen: boolean;
@@ -65,14 +66,39 @@ interface RunDetails {
   jobs?: any[];
 }
 
-const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSidebarOpen, llmAnalysisResult }) => {
+const RunLogPage: React.FC<RunLogPageProps> = ({ actionId, runId, isSidebarOpen, llmAnalysisResult }) => {
   const [selectedPanel, setSelectedPanel] = useState<number>(1);
   const [runDetails, setRunDetails] = useState<RunDetails | null>(null);
   const [runLogs, setRunLogs] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [isErrorDetailsOpen, setIsErrorDetailsOpen] = useState(false);
+  const [isSuspectedPathsOpen, setIsSuspectedPathsOpen] = useState(false);
+  const [selectedSuspectedPath, setSelectedSuspectedPath] = useState<SuspectedPath | null>(null);
+  const [pinpointResult, setPinpointResult] = useState<PinpointResult | null>(null);
+  const [isPinpointLoading, setIsPinpointLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [exportStatus, setExportStatus] = useState<'idle' | 'copying' | 'success' | 'error'>('idle');
+  const [logCopyStatus, setLogCopyStatus] = useState<'idle' | 'copying' | 'success' | 'error'>('idle');
+
+  // 2차 분석 결과 및 LLM 분석 결과 메시지 수신
+  useEffect(() => {
+    const messageHandler = (event: MessageEvent) => {
+      const message = event.data;
+      if (message.command === 'secondPassResult') {
+        console.log('2차 분석 결과 수신:', message.payload);
+        setPinpointResult(message.payload);
+        setIsPinpointLoading(false);
+      } else if (message.command === 'llmAnalysisResult') {
+        console.log('LLM 분석 결과 수신 (Refresh 완료)');
+        setIsRefreshing(false);
+      }
+    };
+
+    window.addEventListener('message', messageHandler);
+    return () => {
+      window.removeEventListener('message', messageHandler);
+    };
+  }, []);
 
   useEffect(() => {
     if (runId) {
@@ -170,13 +196,16 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ actionId, runId, isSideba
       if (runDetails.conclusion !== 'success' && runDetails.conclusion !== null) {
         console.log(`LLM 분석 재실행: Run ID ${runDetails.id}`);
         analyzeRun(runDetails.id);
+        // isRefreshing은 LLM 분석 결과를 받을 때 (llmAnalysisResult 메시지) false로 설정됨
+      } else {
+        // 성공한 Run은 LLM 분석이 필요 없으므로 바로 로딩 종료
+        setIsRefreshing(false);
       }
       
-      console.log('Refresh 완료');
+      console.log('Refresh 완료 (LLM 분석 대기 중)');
     } catch (error) {
       console.error('Refresh 실패:', error);
-    } finally {
-      setIsRefreshing(false);
+      setIsRefreshing(false); // 에러 시에는 바로 로딩 종료
     }
   };
 
@@ -255,14 +284,44 @@ ${llmAnalysisResult.suggestion}`;
     }
   };
 
+  // Log Copy 기능: 상세 로그를 클립보드로 복사
+  const handleLogCopy = async () => {
+    if (!runLogs) {
+      console.warn('Log Copy: 로그 내용이 없습니다.');
+      return;
+    }
+
+    setLogCopyStatus('copying');
+    try {
+      // 로그 내용을 클립보드에 복사
+      await navigator.clipboard.writeText(runLogs);
+      setLogCopyStatus('success');
+      console.log('로그 내용이 클립보드에 복사되었습니다.');
+      
+      // 3초 후 상태 초기화
+      setTimeout(() => {
+        setLogCopyStatus('idle');
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Log Copy 실패:', error);
+      setLogCopyStatus('error');
+      
+      // 3초 후 상태 초기화
+      setTimeout(() => {
+        setLogCopyStatus('idle');
+      }, 3000);
+    }
+  };
+
   if (!actionId) {
     return (
-      <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-        <div className="dashboard-main">
+      <div className={`runLog-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+        <div className="runLog-main">
           <div className="main-header">
             <h1 className="main-title">Run Log</h1>
           </div>
-          <div className="dashboard-content">
+          <div className="runLog-content">
             <div className="llm-analysis-empty">
               <p className="llm-empty-text">액션을 선택해주세요.</p>
             </div>
@@ -285,12 +344,12 @@ ${llmAnalysisResult.suggestion}`;
 
   if (isLoading) {
     return (
-      <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-        <div className="dashboard-main">
+      <div className={`runLog-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+        <div className="runLog-main">
           <div className="main-header">
             <h1 className="main-title">Run Log</h1>
           </div>
-          <div className="dashboard-content">
+          <div className="runLog-content">
             <div className="llm-analysis-empty">
               <div className="llm-loading-spinner"></div>
               <p className="llm-empty-text">데이터를 불러오는 중...</p>
@@ -314,9 +373,9 @@ ${llmAnalysisResult.suggestion}`;
   }
 
   return (
-    <div className={`dashboard-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+    <div className={`runLog-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       {/* Central Dashboard Section */}
-      <div className="dashboard-main">
+      <div className="runLog-main">
         {/* Main Header */}
         <div className="main-header">
           <h1 className="main-title">
@@ -325,7 +384,7 @@ ${llmAnalysisResult.suggestion}`;
         </div>
 
         {/* Dashboard Content */}
-        <div className="dashboard-content">
+        <div className="runLog-content">
           {/* Panel Selection */}
           <div className="panel-selector">
             <button
@@ -358,7 +417,7 @@ ${llmAnalysisResult.suggestion}`;
           <div className="panel-content">
             {selectedPanel === 1 && runDetails && (
               <div className="panel-section panel-container">
-                <h2 className="dashboard-section-title">Run Information</h2>
+                <h2 className="runLog-section-title">Run Information</h2>
                 <div className="run-info-card">
                   <div className="run-info-row">
                     <span className="run-info-label">Run ID:</span>
@@ -404,12 +463,21 @@ ${llmAnalysisResult.suggestion}`;
 
             {selectedPanel === 2 && (
               <div className="panel-section panel-container">
-                <h2 className="dashboard-section-title">Detailed Log</h2>
+                <h2 className="runLog-section-title">Detailed Log</h2>
                 <div className="log-viewer">
                   <div className="log-header">
                     <span className="log-title">build.log</span>
                     <div className="log-actions">
-                      <button className="log-btn log-btn-copy">Copy</button>
+                      <button 
+                        className={`log-btn log-btn-copy ${logCopyStatus !== 'idle' ? logCopyStatus : ''}`}
+                        onClick={handleLogCopy}
+                        disabled={!runLogs || logCopyStatus === 'copying'}
+                        title="로그 내용을 클립보드로 복사합니다"
+                      >
+                        {logCopyStatus === 'copying' ? '복사 중...' : 
+                         logCopyStatus === 'success' ? '복사 완료!' : 
+                         logCopyStatus === 'error' ? '복사 실패' : 'Copy'}
+                      </button>
                     </div>
                   </div>
                   <div className="log-content">
@@ -437,7 +505,7 @@ ${llmAnalysisResult.suggestion}`;
 
             {selectedPanel === 3 && runDetails?.jobs && (
               <div className="panel-section panel-container">
-                <h2 className="dashboard-section-title">Jobs</h2>
+                <h2 className="runLog-section-title">Jobs</h2>
                 <div className="jobs-list">
                   {runDetails.jobs.map((job: any, index: number) => (
                     <div key={index} className="job-item">
@@ -459,7 +527,7 @@ ${llmAnalysisResult.suggestion}`;
 
             {selectedPanel === 4 && (
               <div className="panel-section panel-container">
-                <h2 className="dashboard-section-title">Artifacts</h2>
+                <h2 className="runLog-section-title">Artifacts</h2>
                 <div className="artifacts-placeholder">
                   <p>아티팩트 정보가 여기에 표시됩니다.</p>
                 </div>
@@ -495,7 +563,13 @@ ${llmAnalysisResult.suggestion}`;
           </div>
         </div>
         <div className="llm-analysis-content">
-          {llmAnalysisResult ? (
+          {isRefreshing ? (
+            // Refresh 로딩 중
+            <div className="llm-analysis-empty">
+              <div className="llm-loading-spinner"></div>
+              <p className="llm-empty-text">LLM 분석을 다시 실행하고 있습니다...</p>
+            </div>
+          ) : llmAnalysisResult ? (
             llmAnalysisResult.summary === "성공한 작업입니다!" ? (
               // [ADD] 성공 상태 UI - 섹션 형태로 통일
               <div className="llm-analysis-result">
@@ -605,6 +679,7 @@ ${llmAnalysisResult.suggestion}`;
                       // TODO: 복사 완료 피드백 추가
                     }}
                   >
+                    {/* TODO: 여기 버튼은 복사 기능이 구현이 되어 있는것 같은데? */}
                     📋 복사
                   </button>
                 </div>
@@ -652,6 +727,168 @@ ${llmAnalysisResult.suggestion}`;
                   )}
                 </div>
               )}
+
+              {/* 5. 의심 경로 목록 (Suspected Paths) */}
+              {llmAnalysisResult.suspectedPaths && llmAnalysisResult.suspectedPaths.length > 0 && (
+                <div className="llm-section llm-suspected-paths-section">
+                  <button 
+                    className="llm-accordion-header"
+                    onClick={() => setIsSuspectedPathsOpen(!isSuspectedPathsOpen)}
+                  >
+                    <h3 className="llm-section-title">
+                      <span className="llm-icon">🔍</span>
+                      의심 경로 목록 ({llmAnalysisResult.suspectedPaths.length}개)
+                    </h3>
+                    <span className={`llm-accordion-arrow ${isSuspectedPathsOpen ? 'open' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  
+                  {isSuspectedPathsOpen && (
+                    <div className="llm-suspected-paths-content">
+                      {llmAnalysisResult.suspectedPaths.map((suspectedPath, index) => (
+                        <div 
+                          key={index} 
+                          className={`llm-suspected-path-item ${selectedSuspectedPath === suspectedPath ? 'selected' : ''}`}
+                          onClick={() => {
+                            setSelectedSuspectedPath(suspectedPath);
+                            setIsPinpointLoading(true);
+                            
+                            // 2차 LLM 분석 요청
+                            analyzePinpoint({
+                              path: suspectedPath.path,
+                              lineHint: suspectedPath.lineHint,
+                              logExcerpt: suspectedPath.logExcerpt || '',
+                              context: {
+                                workflow: runDetails?.workflow,
+                                step: llmAnalysisResult.affectedStep,
+                              },
+                              radius: 30,
+                              ref: 'main'
+                            });
+                            
+                            console.log('2차 LLM 분석 요청 전송:', suspectedPath);
+                          }}
+                        >
+                          <div className="llm-suspected-path-header">
+                            <span className="llm-suspected-path-icon">📄</span>
+                            <span className="llm-suspected-path-path">{suspectedPath.path}</span>
+                            {suspectedPath.score !== undefined && (
+                              <span className="llm-suspected-path-score">
+                                {Math.round(suspectedPath.score * 100)}%
+                              </span>
+                            )}
+                          </div>
+                          <div className="llm-suspected-path-reason">
+                            {suspectedPath.reason}
+                          </div>
+                          {suspectedPath.lineHint !== undefined && (
+                            <div className="llm-suspected-path-line">
+                              <span className="llm-suspected-path-line-label">라인:</span>
+                              <span className="llm-suspected-path-line-value">{suspectedPath.lineHint}</span>
+                            </div>
+                          )}
+                          {suspectedPath.logExcerpt && (
+                            <div className="llm-suspected-path-log">
+                              <div className="llm-suspected-path-log-label">로그 발췌:</div>
+                              <code className="llm-suspected-path-log-content">{suspectedPath.logExcerpt}</code>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 6. 2차 분석 결과 (Pinpoint Result) */}
+              {isPinpointLoading && (
+                <div className="llm-section llm-pinpoint-section">
+                  <h3 className="llm-section-title">
+                    <span className="llm-icon">🎯</span>
+                    정밀 분석 중...
+                  </h3>
+                  <div className="llm-analysis-empty">
+                    <div className="llm-loading-spinner"></div>
+                    <p className="llm-empty-text">선택한 파일을 정밀 분석하고 있습니다...</p>
+                  </div>
+                </div>
+              )}
+              
+              {!isPinpointLoading && pinpointResult && (
+                <div className="llm-section llm-pinpoint-section">
+                  <h3 className="llm-section-title">
+                    <span className="llm-icon">🎯</span>
+                    정밀 분석 결과
+                  </h3>
+                  
+                  <div className="llm-pinpoint-content">
+                    {/* 파일 정보 */}
+                    <div className="llm-pinpoint-file">
+                      <span className="llm-pinpoint-file-label">문제 파일:</span>
+                      <span className="llm-pinpoint-file-value">{pinpointResult.file}</span>
+                    </div>
+
+                    {/* 라인 범위 */}
+                    {(pinpointResult.startLine !== undefined || pinpointResult.endLine !== undefined) && (
+                      <div className="llm-pinpoint-lines">
+                        <span className="llm-pinpoint-lines-label">수정 범위:</span>
+                        <span className="llm-pinpoint-lines-value">
+                          {pinpointResult.startLine !== undefined && pinpointResult.endLine !== undefined
+                            ? `${pinpointResult.startLine} - ${pinpointResult.endLine}줄`
+                            : pinpointResult.startLine !== undefined
+                            ? `${pinpointResult.startLine}줄부터`
+                            : `${pinpointResult.endLine}줄까지`
+                          }
+                        </span>
+                      </div>
+                    )}
+
+                    {/* 신뢰도 */}
+                    {pinpointResult.confidence !== undefined && (
+                      <div className="llm-pinpoint-confidence">
+                        <span className="llm-pinpoint-confidence-label">신뢰도:</span>
+                        <span className="llm-pinpoint-confidence-value">
+                          {Math.round(pinpointResult.confidence * 100)}%
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Unified Diff */}
+                    {pinpointResult.unifiedDiff && (
+                      <div className="llm-pinpoint-diff">
+                        <div className="llm-pinpoint-diff-label">제안된 수정 사항:</div>
+                        <div className="llm-pinpoint-diff-content">
+                          <pre><code>{pinpointResult.unifiedDiff}</code></pre>
+                        </div>
+                        <button 
+                          className="llm-copy-btn"
+                          onClick={() => {
+                            navigator.clipboard.writeText(pinpointResult.unifiedDiff || '');
+                            // TODO: 복사 완료 피드백 추가
+                          }}
+                        >
+                          📋 복사
+                        </button>
+                      </div>
+                    )}
+
+                    {/* 체크리스트 */}
+                    {pinpointResult.checklist && pinpointResult.checklist.length > 0 && (
+                      <div className="llm-pinpoint-checklist">
+                        <div className="llm-pinpoint-checklist-label">PR 전 확인 사항:</div>
+                        <ul className="llm-pinpoint-checklist-items">
+                          {pinpointResult.checklist.map((item, index) => (
+                            <li key={index} className="llm-pinpoint-checklist-item">
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               </div>
             )
           ) : runDetails && runDetails.conclusion === 'success' ? (
@@ -682,4 +919,4 @@ ${llmAnalysisResult.suggestion}`;
   );
 };
 
-export default DashboardPage;
+export default RunLogPage;

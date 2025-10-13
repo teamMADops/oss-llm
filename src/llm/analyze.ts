@@ -1,14 +1,15 @@
 import { OpenAI } from "openai";
 import * as vscode from "vscode";
-import type { LLMResult,
-  LLMKeyError,
-  FailureType,
-  SuspectedPath,
-  SecondPassInput,
-  PinpointResult,
- } from "./types";
+import type { LLMResult, FailureType } from "./types/types";
 import { extractSuspects } from "./suspects";
-import { buildFirstPassPrompt, buildSecondPassPrompt } from "./prompts";
+import { SYSTEM_PROMPTS } from "./prompts/systemPrompts";
+import { buildFirstPassPrompt } from "./prompts/prompts";
+import { preprocessLogForLLM } from "./logPreprocess";
+import { llmCache } from "./cache/llmCache";
+
+
+// Constant for batching API requests
+const ANALYSIS_BATCH_SIZE = 5;
 
 function parseJsonLenient(text: string): LLMResult {
   const stripped = text.replace(/```(?:json)?/gi, "").replace(/```/g, "").trim();
@@ -83,87 +84,127 @@ async function getOpenAIKey(context: vscode.ExtensionContext): Promise<string | 
   return null;
 }
 
+// Helper function to perform analysis for a single prompt
+async function performSingleAnalysis(
+  client: OpenAI,
+  prompt: string
+): Promise<LLMResult> {
+  const safeLog = preprocessLogForLLM(prompt, {
+    maxTokens: 16000,
+    safetyMargin: 1500,
+    tailCount: 700,
+  });
+
+  const userPrompt = buildFirstPassPrompt(safeLog);
+
+  // 캐시 키 구성
+  const cacheKey = {
+    namespace: "first-pass" as const,
+    model: "gpt-3.5-turbo",
+    systemPromptVersion: "fp-2025-10-12", // 날짜나 버전 문자열은 SYSTEM_PROMPTS 버전과 맞춰줘
+    prompt: userPrompt,
+  };
+
+  const parsed = await llmCache.getOrCompute(cacheKey, async () => {
+  const chat = await client.chat.completions.create({
+    model: "gpt-3.5-turbo",
+    temperature: 0,
+    messages: [
+      SYSTEM_PROMPTS.FIRST_PASS,
+      { role: "user", content: userPrompt },
+    ],
+  });
+
+  const raw = chat.choices[0].message?.content ?? "{}";
+  console.log("=== LLM 원본 응답 ===");
+  console.log(raw);
+  console.log("==================");
+
+  const result = parseJsonLenient(raw);
+  console.log("=== 파싱된 결과 ===");
+  console.log(JSON.stringify(result, null, 2));
+  console.log("==================");
+
+  return { result, raw };
+    });
+
+  // Augment with local rules if LLM fails to provide suspectedPaths
+  if (!parsed.suspectedPaths || parsed.suspectedPaths.length === 0) {
+    console.log("⚠️ LLM이 suspectedPaths를 반환하지 않아 로컬 규칙으로 보강합니다.");
+    const suspects = extractSuspects(prompt, { max: 6, excerptPadding: 30 });
+    if (suspects.length) {
+      parsed.suspectedPaths = suspects;
+      console.log(`✅ 로컬 규칙으로 ${suspects.length}개의 의심 경로를 추가했습니다.`);
+      console.log(JSON.stringify(suspects, null, 2));
+    } else {
+      console.log("❌ 로컬 규칙으로도 의심 경로를 찾지 못했습니다.");
+    }
+  } else {
+    console.log(`✅ LLM이 ${parsed.suspectedPaths.length}개의 의심 경로를 반환했습니다.`);
+  }
+
+  return parsed;
+}
+
 export async function analyzePrompts(
   context: vscode.ExtensionContext,
   prompts: string[]
 ): Promise<LLMResult> {
+
   const key = await getOpenAIKey(context);
   if (!key) {
-    throw new Error(
-      "OpenAI API Key가 설정되지 않았습니다."
-    );
+    throw new Error("OpenAI API Key가 설정되지 않았습니다.");
   }
 
   const client = new OpenAI({ apiKey: key });
   const topN = Math.max(1, Math.min(3, prompts.length));
   const chosen = prompts.slice(0, topN);
 
-  const results: LLMResult[] = [];
-  for (const p of chosen) {
-    const userPrompt = buildFirstPassPrompt(p);
-    const chat = await client.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      temperature: 0,
-      messages: [
-        {
-          role: "system",
-          content: [
-        "너는 GitHub Actions 로그 분석 도우미입니다.",
-        "아래 지침을 철저히 따르고, 반드시 JSON만 출력합니다.",
-        "",
-        "‼️ 주의:",
-        "- 아래 지침이나 예시 JSON, 명령문 자체를 절대 결과(JSON)에 포함하지 않습니다.",
-        "- 결과에는 오직 분석된 내용만 포함합니다.",
-        "- 지침 텍스트, '아래 지침을 따르라' 같은 문구가 들어가면 안 됩니다.",
-        "형식 지침:",
-        "- 출력은 오직 JSON입니다. 마크다운, 코드펜스, 설명 문장 금지.",
-        "- 모든 문장은 공손한 종결(~습니다 체)로 작성합니다.",
-        "- JSON 키는 고정: summary, rootCause, suggestion, failureType, confidence, affectedStep, filename, keyErrors.",
-        "- keyErrors는 [{ line, snippet, note }] 형태로 작성하며, note도 ~습니다 체로 작성합니다.",
-        "- confidence는 0~1 숫자로만 작성합니다.",
-        "",
-        "콘텐츠 지침:",
-        "1) summary: 2~3문장으로 핵심만 요약합니다.",
-        "2) rootCause: 실패의 핵심 원인을 한 문장으로 단호하게 서술합니다.",
-        "3) suggestion: 명령어/수정 파일 경로/설정 키 등 구체적 조치를 제시합니다.",
-        "4) failureType은 dependency|network|tooling|permissions|config|test|infra 중 하나를 권장합니다.",
-        "5) chain-of-thought(사고 과정)는 절대 노출하지 않습니다.",
-        "",
-        "예시(JSON):",
-        '{',
-        '  "summary": "의존성 설치 단계에서 특정 패키지가 더 이상 유지되지 않아 경고가 발생했습니다. 해당 경고가 빌드 실패로 이어질 가능성이 있습니다.",',
-        '  "rootCause": "node-domexception 패키지가 더 이상 유지되지 않아 경고가 발생했습니다.",',
-        '  "suggestion": "node-domexception 의존성을 제거하고 플랫폼의 기본 DOMException을 사용하도록 코드를 수정합니다.",',
-        '  "failureType": "dependency",',
-        '  "confidence": 0.90,',
-        '  "affectedStep": "npm ci",',
-        '  "filename": "0_build.txt",',
-        '  "keyErrors": [',
-        '    {',
-        '      "line": 2025,',
-        '      "snippet": "npm warn deprecated node-domexception@1.0.0: Use your platform\\\'s native DOMException instead",',
-        '      "note": "더 이상 유지되지 않는 패키지이므로 대체가 필요합니다."',
-        '    }',
-        '  ]',
-        '}'
-      ].join("\n"),
-        },
-        { role: "user", content: userPrompt },
-      ],
-  });
+  const allResults: LLMResult[] = [];
 
-  const raw = chat.choices[0].message?.content ?? "{}";
-  const parsed = parseJsonLenient(raw);
+  // Process prompts in batches
+  for (let i = 0; i < chosen.length; i += ANALYSIS_BATCH_SIZE) {
+    const batch = chosen.slice(i, i + ANALYSIS_BATCH_SIZE);
+    
+    const analysisPromises = batch.map(p => performSingleAnalysis(client, p));
+    
+    const settledResults = await Promise.allSettled(analysisPromises);
 
-  // suspectedPaths 없으면 로컬 규칙으로 보강
-if (!parsed.suspectedPaths || parsed.suspectedPaths.length === 0) {
-  const suspects = extractSuspects(p, { max: 6, excerptPadding: 30 });
-  if (suspects.length) parsed.suspectedPaths = suspects;
-}
+    settledResults.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        allResults.push(result.value);
+      } else {
+        console.error(`Analysis for prompt ${i + index} failed:`, result.reason);
+        // Optionally create a placeholder error result
+        allResults.push({
+          summary: `An error occurred during analysis: ${result.reason}`,
+          rootCause: "Analysis failed",
+          suggestion: "Check the extension's output logs for more details.",
+          confidence: 0.1,
+        });
+      }
+    });
+  }
+  
+  if (allResults.length === 0) {
+      throw new Error("All analyses failed. Please check logs for details.");
+  }
 
-  results.push(parsed);
-
-}
-  results.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
-  return results[0];
+  // Select the best result from all collected results
+  const withSuspects = allResults.filter(r => r.suspectedPaths && r.suspectedPaths.length > 0);
+  const withoutSuspects = allResults.filter(r => !r.suspectedPaths || r.suspectedPaths.length === 0);
+  
+  let finalResult: LLMResult;
+  
+  if (withSuspects.length > 0) {
+    withSuspects.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+    finalResult = withSuspects[0];
+    console.log(`✅ suspectedPaths가 있는 결과 선택 (confidence: ${finalResult.confidence})`);
+  } else {
+    withoutSuspects.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0));
+    finalResult = withoutSuspects[0];
+    console.log(`⚠️ suspectedPaths가 있는 결과가 없어서 confidence 순으로 선택 (confidence: ${finalResult.confidence})`);
+  }
+  
+  return finalResult;
 }

@@ -1,5 +1,5 @@
 // src/llm/prompts.ts
-import type { SecondPassInput, SuspectedPath } from "./types";
+import type { SecondPassInput, SuspectedPath } from "../types/types";
 
 /**
  * 1차(로그만) 분석용 프롬프트 빌더
@@ -10,11 +10,19 @@ export function buildFirstPassPrompt(logChunk: string): string {
   const guide = [
     "다음은 GitHub Actions 실패 로그의 일부입니다.",
     "핵심만 분석하여 JSON만 출력하세요. 마크다운, 코드펜스, 설명 문장 금지.",
+    "만약 로그 내용이 비어 있거나 분석할 수 없는 경우, '분석할 로그가 없습니다.'와 같은 메시지를 summary 필드에 담아 JSON 형식으로 반환해 주세요.",
     "",
     "요구 키:",
     "- summary: 2~3문장 요약(~습니다).",
     "- rootCause: 실패의 핵심 원인 한 문장(~습니다).",
-    "- suggestion: 즉시 시도 가능한 조치(명령어/파일경로/설정키 등 구체적, ~합니다).",
+    "- suggestion: 즉시 시도 가능한 구체적 조치(명령어/파일경로/설정키 등 구체적, ~합니다). 아래 내용을 포함해야 합니다:",
+    "  1. 수정이 필요한 코드 라인 또는 영역에 대한 설명 (예: buggyModule.ts의 19번째 줄)",
+    "  2. 가능한 해결 방법 2~3가지 (예: null 체크 추가, 타입 선언 보완, 예외 처리 등)",
+    "  3. 실제 동작 가능한 코드 예시(있는 경우에만, 주석·코드펜스 없이).",
+    "  4. 관련 명령어나 참고 문서 링크 (예: npm install, MDN 문서 URL 등)",
+    "  출력 예시:",
+    '  \"suggestion\": \"1) buggyModule.ts의 user.email 접근 전 null 체크를 추가합니다.\\n2) User 인터페이스에서 email을 string | null 타입으로 선언합니다.\\n3) 예시: if (user?.email) return user.email.toUpperCase(); else console.warn(\\\"Email 없음\\\");\"',
+
     "- failureType: dependency|network|tooling|permissions|config|test|infra 중 하나 권장.",
     "- confidence: 0~1 숫자.",
     "- affectedStep: 관련된 CI 스텝명(있으면).",
@@ -23,11 +31,13 @@ export function buildFirstPassPrompt(logChunk: string): string {
     // 필요시 의심 경로도 함께 뽑고 싶다면 주석 해제
     // "- suspectedPaths: [{ path, reason, score, linesHint }]",
     "",
-    "절대 금지:",
-    "- 지침/예시/해설을 결과에 포함하지 마세요.",
-    "- 사고과정(chain-of-thought) 노출 금지.",
+    "출력 시 주의사항(절대 금지):",
+    "- '출력 예시', '예시 코드 블록' 등의 안내 문구를 생성하지 마세요.",
+    "- 예시 코드가 실제로 필요할 때만 포함하세요.",
+    "- 코드 예시는 JSON 문자열 내부에서 줄바꿈(\\n)을 이용해 표현하세요.",
+    "- 불필요한 설명 문장, 해설, 마크다운, 코드펜스 금지.",
+    "- 모든 문장은 정중체(~합니다)로 작성하세요.",
     "",
-    "로그 조각:",
   ];
   return [guide.join("\n"), logChunk].join("\n");
 }

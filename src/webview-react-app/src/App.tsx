@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar/Sidebar';
-import DashboardPage from './pages/Dashboard/Dashboard';
+import RunLogPage from '@/pages/RunLog/RunLog.tsx';
 import EditorPage from './pages/Editor/Editor';
 import HistoryPage from './pages/History/History';
 import SettingsModal, { SettingsData } from './components/SettingsModal/SettingsModal';
-import { LLMResult } from '../../llm/types'; // Import LLMResult type
+import { LLMResult } from '../../llm/types/types'; // Import LLMResult type
 import { Action } from './components/Sidebar/types'; // Import Action type
 import { getActions } from './api/github'; // analyzeRun import 제거
 import './styles/theme.css';
@@ -83,7 +83,7 @@ function App() {
           break;
         case 'llmAnalysisResult': // New case for LLM analysis result
           setLlmAnalysisResult(message.payload);
-          setCurrentPage('dashboard'); // Ensure dashboard is active when result arrives
+          setCurrentPage('runLog'); // Ensure runLog is active when result arrives
           break;
         case 'showSettings': // 설정 모달 표시 요청
           console.log('[App.tsx] showSettings 메시지 받음:', message.payload);
@@ -190,7 +190,7 @@ function App() {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
-  // [MOD] 실행(run) 분석을 시작하는 함수 - runId를 Dashboard로 전달
+  // [MOD] 실행(run) 분석을 시작하는 함수 - runId를 runLog로 전달
   const handleRunClick = (runId: string) => {
     console.log(`[App.tsx] Run 클릭됨: ${runId}`);
     // [FIX] 이전 LLM 분석 결과 초기화
@@ -198,7 +198,7 @@ function App() {
     // 선택된 run ID 설정
     setSelectedRunId(runId);
     // 대시보드로 이동
-    setCurrentPage('dashboard');
+    setCurrentPage('runLog');
     // [FIX] 사이드바 상태 유지를 위해 dropdown/highlight 초기화 제거
   };
 
@@ -214,6 +214,22 @@ function App() {
       });
     } else {
       console.error('[App.tsx] vscode 객체가 없어서 설정 저장 실패');
+    }
+  };
+
+  // Settings 모달 열기 (최신 설정 데이터 요청)
+  const handleOpenSettings = () => {
+    console.log('[App.tsx] 설정 모달 열기 요청');
+    const vscode = getVscode();
+    if (vscode) {
+      // Extension에 최신 설정 데이터 요청
+      vscode.postMessage({
+        command: 'checkSettings'
+      });
+    } else {
+      // VSCode API가 없으면 그냥 빈 데이터로 모달 열기
+      setSettingsData({});
+      setShowSettingsModal(true);
     }
   };
 
@@ -236,7 +252,7 @@ function App() {
         onSelectAction={onSelectAction}
         onSelectPage={onSelectPage}
         onSidebarToggle={onSidebarToggle}
-        onOpenSettings={() => setShowSettingsModal(true)}
+        onOpenSettings={handleOpenSettings}
       />
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-closed' : 'sidebar-open'}`}>
         {currentPage === 'none' && (
@@ -244,7 +260,7 @@ function App() {
             <p className="llm-empty-text" style={{ fontSize: '18px' }}>워크플로우를 선택해주세요</p>
           </div>
         )}
-        {currentPage === 'dashboard' && <DashboardPage actionId={selectedActionId} runId={selectedRunId} isSidebarOpen={!sidebarCollapsed} llmAnalysisResult={llmAnalysisResult} />}
+        {currentPage === 'runLog' && <RunLogPage actionId={selectedActionId} runId={selectedRunId} isSidebarOpen={!sidebarCollapsed} llmAnalysisResult={llmAnalysisResult} />}
         {currentPage === 'editor' && <EditorPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} />}
         {currentPage === 'history' && <HistoryPage actionId={selectedActionId} isSidebarOpen={!sidebarCollapsed} onRunClick={handleRunClick} />}
       </main>

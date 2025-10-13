@@ -65,7 +65,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "setup": "npm install && cd src/webview-react-app && npm install",
+    "setup:webview": "cd src/webview-react-app && npm install",
     "build:webview": "cd src/webview-react-app && npm run build"
   },
   "dependencies": {
