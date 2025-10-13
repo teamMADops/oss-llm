@@ -78,6 +78,7 @@ const RunLogPage: React.FC<RunLogPageProps> = ({ actionId, runId, isSidebarOpen,
   const [isPinpointLoading, setIsPinpointLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [exportStatus, setExportStatus] = useState<'idle' | 'copying' | 'success' | 'error'>('idle');
+  const [logCopyStatus, setLogCopyStatus] = useState<'idle' | 'copying' | 'success' | 'error'>('idle');
 
   // 2차 분석 결과 및 LLM 분석 결과 메시지 수신
   useEffect(() => {
@@ -283,6 +284,36 @@ ${llmAnalysisResult.suggestion}`;
     }
   };
 
+  // Log Copy 기능: 상세 로그를 클립보드로 복사
+  const handleLogCopy = async () => {
+    if (!runLogs) {
+      console.warn('Log Copy: 로그 내용이 없습니다.');
+      return;
+    }
+
+    setLogCopyStatus('copying');
+    try {
+      // 로그 내용을 클립보드에 복사
+      await navigator.clipboard.writeText(runLogs);
+      setLogCopyStatus('success');
+      console.log('로그 내용이 클립보드에 복사되었습니다.');
+      
+      // 3초 후 상태 초기화
+      setTimeout(() => {
+        setLogCopyStatus('idle');
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Log Copy 실패:', error);
+      setLogCopyStatus('error');
+      
+      // 3초 후 상태 초기화
+      setTimeout(() => {
+        setLogCopyStatus('idle');
+      }, 3000);
+    }
+  };
+
   if (!actionId) {
     return (
       <div className={`runLog-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
@@ -437,7 +468,16 @@ ${llmAnalysisResult.suggestion}`;
                   <div className="log-header">
                     <span className="log-title">build.log</span>
                     <div className="log-actions">
-                      <button className="log-btn log-btn-copy">Copy</button>
+                      <button 
+                        className={`log-btn log-btn-copy ${logCopyStatus !== 'idle' ? logCopyStatus : ''}`}
+                        onClick={handleLogCopy}
+                        disabled={!runLogs || logCopyStatus === 'copying'}
+                        title="로그 내용을 클립보드로 복사합니다"
+                      >
+                        {logCopyStatus === 'copying' ? '복사 중...' : 
+                         logCopyStatus === 'success' ? '복사 완료!' : 
+                         logCopyStatus === 'error' ? '복사 실패' : 'Copy'}
+                      </button>
                     </div>
                   </div>
                   <div className="log-content">
@@ -639,6 +679,7 @@ ${llmAnalysisResult.suggestion}`;
                       // TODO: 복사 완료 피드백 추가
                     }}
                   >
+                    {/* TODO: 여기 버튼은 복사 기능이 구현이 되어 있는것 같은데? */}
                     📋 복사
                   </button>
                 </div>

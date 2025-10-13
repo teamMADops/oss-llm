@@ -304,6 +304,31 @@
   /* transform 제거 */
 }
 
+/* Copy 버튼 상태별 스타일 */
+.log-btn-copy.copying {
+  background: #ffc107;
+  color: #000;
+  border-color: #ffc107;
+  cursor: wait;
+}
+
+.log-btn-copy.success {
+  background: #28a745;
+  color: #fff;
+  border-color: #28a745;
+}
+
+.log-btn-copy.error {
+  background: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
+}
+
+.log-btn-copy:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* 로그 뷰어 전체를 감싸는 컨테이너 - 위에서 이미 정의됨, 여기서 추가 스타일만 */
 .log-viewer {
   background: #161b22;
