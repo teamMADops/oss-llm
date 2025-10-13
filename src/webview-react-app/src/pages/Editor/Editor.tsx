@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import YamlViewer from './YamlViewer';
 import { getWorkflowFile, saveWorkflowFile } from '@/api/github';
+import * as yaml from 'js-yaml';
 import './Editor.css';
 
 // Props: App.tsx로부터 받음
@@ -159,26 +160,84 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
   // 동적 섹션 상태 관리
   const [dynamicSections, setDynamicSections] = useState<{[key: string]: any}>({});
 
+  // 초기 로드 여부 플래그
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // YAML 파싱 함수
+  const parseYamlToState = (yamlContent: string) => {
+    try {
+      const parsed = yaml.load(yamlContent) as any;
+      
+      // Workflow name 파싱
+      if (parsed.name) {
+        setWorkflowName(parsed.name);
+      }
+      
+      // Triggers 파싱
+      if (parsed.on) {
+        const triggers = {
+          push: { 
+            branches: parsed.on.push?.branches || [], 
+            enabled: !!parsed.on.push 
+          },
+          pull_request: { 
+            types: parsed.on.pull_request?.types || [], 
+            branches: parsed.on.pull_request?.branches || [],
+            paths: parsed.on.pull_request?.paths || [],
+            enabled: !!parsed.on.pull_request 
+          }
+        };
+        setWorkflowTriggers(triggers);
+      }
+      
+      // Jobs 파싱
+      if (parsed.jobs) {
+        const parsedJobs = Object.keys(parsed.jobs).map(jobKey => {
+          const job = parsed.jobs[jobKey];
+          return {
+            name: jobKey,
+            runsOn: Array.isArray(job['runs-on']) ? job['runs-on'] : [job['runs-on']],
+            steps: (job.steps || []).map((step: any) => ({
+              name: step.name || '',
+              uses: step.uses || '',
+              run: step.run || ''
+            }))
+          };
+        });
+        setJobs(parsedJobs);
+      }
+    } catch (error) {
+      console.error('YAML 파싱 오류:', error);
+    }
+  };
+
   // --- Effects ---
   useEffect(() => {
     if (actionId) {
       setIsLoading(true);
+      setIsInitialLoad(true); // 초기 로드 시작
       getWorkflowFile(actionId)
         .then(content => {
           setWorkflowContent(content);
-          // TODO: content(YAML)를 파싱해서 workflowName 등의 상태를 업데이트해야 함
+          // YAML 파싱해서 상태 업데이트
+          parseYamlToState(content);
+          // 파싱 완료 후 초기 로드 완료 표시
+          setTimeout(() => setIsInitialLoad(false), 100);
         })
         .catch(console.error)
         .finally(() => setIsLoading(false));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actionId]);
 
-  // YAML 내용을 workflowContent에 반영
+  // YAML 내용을 workflowContent에 반영 (초기 로드가 아닐 때만)
   useEffect(() => {
-    const generatedYaml = generateYaml();
-    setWorkflowContent(generatedYaml);
+    if (!isInitialLoad) {
+      const generatedYaml = generateYaml();
+      setWorkflowContent(generatedYaml);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workflowName, workflowTriggers, jobs, dynamicSections, isAdvancedMode, sectionOrder]);
+  }, [workflowName, workflowTriggers, jobs, dynamicSections, isAdvancedMode, sectionOrder, isInitialLoad]);
 
   // --- Handlers ---
   const handleSave = async () => {
@@ -301,7 +360,7 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
   // 섹션 삭제 함수
   const deleteSection = (sectionId: string) => {
     if (sectionId === 'workflow-name' || sectionId === 'yaml-content') {
-      alert('워크플로우 이름과 YAML 콘텐츠는 삭제할 수 없습니다.');
+      alert('Workflow name and YAML content cannot be deleted.');
       return;
     }
     
@@ -1535,7 +1594,7 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
                   onFocus={() => handleInputFocus(sectionId)}
                   onBlur={handleInputBlur}
                 />
-                <small className="input-hint">쉼표로 구분하여 입력하세요</small>
+                <small className="input-hint">Separate with commas</small>
               </div>
             </div>
             <div className="field-group">
@@ -1553,7 +1612,7 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
                   onFocus={() => handleInputFocus(sectionId)}
                   onBlur={handleInputBlur}
                 />
-                <small className="input-hint">쉼표로 구분하여 입력하세요</small>
+                <small className="input-hint">Separate with commas</small>
               </div>
             </div>
           </div>
@@ -1581,7 +1640,7 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
     return (
       <div className="editor-main-content">
         <div className="llm-analysis-empty">
-          <p className="llm-empty-text">워크플로우를 선택해주세요.</p>
+          <p className="llm-empty-text">Please select a workflow.</p>
         </div>
       </div>
     );
@@ -1592,7 +1651,7 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
       <div className="editor-main-content">
         <div className="llm-analysis-empty">
           <div className="llm-loading-spinner"></div>
-          <p className="llm-empty-text">워크플로우를 불러오는 중...</p>
+          <p className="llm-empty-text">Loading workflow...</p>
         </div>
       </div>
     );
@@ -1687,7 +1746,7 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
             {showAddSectionDropdown && (
               <div className="add-section-dropdown">
                 <div className="add-section-header">
-                  <span>섹션 추가</span>
+                  <span>Add Section</span>
                 </div>
                 <div className="add-section-list">
                   {availableSections.map((section) => (

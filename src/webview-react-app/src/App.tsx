@@ -257,7 +257,7 @@ function App() {
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-closed' : 'sidebar-open'}`}>
         {currentPage === 'none' && (
           <div className="llm-analysis-empty" style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <p className="llm-empty-text" style={{ fontSize: '18px' }}>워크플로우를 선택해주세요</p>
+            <p className="llm-empty-text" style={{ fontSize: '18px' }}>Please select a workflow</p>
           </div>
         )}
         {currentPage === 'runLog' && <RunLogPage actionId={selectedActionId} runId={selectedRunId} isSidebarOpen={!sidebarCollapsed} llmAnalysisResult={llmAnalysisResult} />}

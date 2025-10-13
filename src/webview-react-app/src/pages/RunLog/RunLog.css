@@ -292,7 +292,6 @@
   /* transition 제거 */
   position: relative; /* z-index를 위한 상대 위치 */
   z-index: 10; /* 다른 요소들 위에 표시되도록 */
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
@@ -701,7 +700,6 @@
   border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
@@ -870,7 +868,6 @@
   line-height: 60px;
   margin: 0 0 24px 0;
   color: var(--text-color);
-  text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 2px solid #DBE8F2;
   padding-bottom: 8px;
@@ -910,7 +907,6 @@
   line-height: 60px;
   margin: 0 0 24px 0;
   color: var(--text-color);
-  text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 2px solid #DBE8F2;
   padding-bottom: 8px;
@@ -934,7 +930,6 @@
   font-weight: 600;
   margin: 32px 0 24px 0; /* 위쪽 마진을 20px에서 32px로 증가 */
   color: var(--text-color);
-  text-transform: uppercase; /* 대문자로 변환 */
   letter-spacing: 0.5px; /* 글자 간격 추가 */
   padding-bottom: 8px; /* 구분선과 텍스트 사이 간격 */
   border-bottom: 1px solid #30363d; /* sidebar와 같은 스타일의 구분선 */
@@ -969,6 +964,8 @@
   color: #58a6ff;
   margin: 0 0 16px 0;
   line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-metadata {
@@ -985,7 +982,6 @@
   border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
@@ -1081,6 +1077,8 @@
   line-height: 1.6;
   margin: 0;
   font-weight: 500;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* 3. 권장 해결책 섹션 */
@@ -1098,6 +1096,8 @@
   color: #c9d1d9;
   line-height: 1.6;
   margin-bottom: 12px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-suggestion-step {
@@ -1105,6 +1105,8 @@
   padding-left: 8px;
   font-weight: 500;
   color: #58a6ff;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-suggestion-item {
@@ -1112,11 +1114,15 @@
   margin-left: 20px;
   color: #c9d1d9;
   list-style-type: disc;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-suggestion-para {
   margin: 8px 0;
   color: #c9d1d9;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-copy-btn {
@@ -1169,11 +1175,11 @@
   font-size: 12px;
   color: #8b949e;
   transition: transform 0.2s;
-  transform: rotate(-90deg);
+  transform: rotate(0deg); /* 기본: 아래 방향 */
 }
 
 .llm-accordion-arrow.open {
-  transform: rotate(0deg);
+  transform: rotate(180deg); /* 열렸을 때: 위 방향 */
 }
 
 .llm-errors-content {
@@ -1200,7 +1206,6 @@
 .llm-error-label {
   color: #8b949e;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
@@ -1238,6 +1243,8 @@
   color: #c9d1d9;
   line-height: 1.5;
   margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* 빈 상태 */
@@ -1322,6 +1329,8 @@
   color: #8b949e;
   line-height: 1.6;
   margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-error-detail-box {
@@ -1336,7 +1345,6 @@
   font-size: 12px;
   font-weight: 600;
   color: #8b949e;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
 }
@@ -1356,6 +1364,8 @@
 .llm-suspected-paths-section {
   background: linear-gradient(135deg, #1e1e24 0%, #161b22 100%);
   border: 1px solid #6e7681;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-suspected-paths-content {
@@ -1451,7 +1461,6 @@
   font-size: 11px;
   font-weight: 600;
   color: #8b949e;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
 }
@@ -1613,6 +1622,8 @@
   border-radius: 4px;
   padding-left: 32px;
   position: relative;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-pinpoint-checklist-item::before {
