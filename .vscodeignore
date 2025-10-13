@@ -1,0 +1,24 @@
+# 개발 전용 폴더
+.vscode/
+.git/
+.idea/
+src/
+tests/
+scripts/
+dist/
+logs/
+
+# 설정 및 문서
+.vscodeignore
+.gitignore
+tsconfig.json
+package-lock.json
+README.md
+LICENSE
+*.log
+*.md
+**/*.map
+
+# 기타 임시 파일
+.DS_Store
+.env

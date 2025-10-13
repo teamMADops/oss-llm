@@ -1,62 +1,32 @@
 {
+  "publisher": "madops-hj",
   "name": "gh-actions-analyzer",
-  "displayName": "GitHub Actions 분석기",
-  "description": "GitHub Actions 실패 로그를 분석하고 LLM 프롬프트로 만들어줍니다.",
+  "displayName": "MADops: GitHub Actions 분석기",
+  "description": "GitHub Actions 실패 로그를 자동 분석하고, 원인과 해결책을 AI가 제시합니다.",
   "version": "0.0.1",
-  "publisher": "angkmfirefoxygal",
+  "icon": "images/logo-128.png",
+  "galleryBanner": {
+    "color": "#1c1c1c",
+    "theme": "dark"
+  },
+  "categories": ["Other", "Machine Learning", "AI"],
+  "extensionKind": ["workspace"],
   "engines": {
-    "vscode": "^1.80.0"
+    "vscode": "^1.101.0"
   },
   "main": "./out/extension.js",
-  "activationEvents": [
-    "*"
-  ],
+  "activationEvents": ["*"],
   "contributes": {
-    "title": "OSS Actions",
-    "properties": {
-      "oss.serverBase": {
-        "type": "string",
-        "default": "http://localhost:4310",
-        "description": "백엔드 API 베이스 URL (예: https://api.yourdomain.com)"
-      }
-    },
     "commands": [
-      {
-        "command": "extension.setRepository",
-        "title": "GitHub Actions: 레포 저장/수정"
-      },
-      {
-        "command": "extension.clearRepository",
-        "title": "GitHub Actions: 저장된 레포 삭제"
-      },
-      {
-        "command": "extension.showRepository",
-        "title": "GitHub Actions: 현재 레포 보기"
-      },
-      {
-        "command": "extension.loginGithub",
-        "title": "GitHub: 로그인 (VS Code 계정 인증)"
-      },
-      {
-        "command": "extension.logoutGithub",
-        "title": "GitHub: 로그아웃 (VS Code 계정 인증)"
-      },
-      {
-        "command": "extension.analyzeGitHubActions",
-        "title": "GitHub Actions: 실패 Step 분석 및 LLM 프롬프트 생성"
-      },
-      {
-        "command": "extension.openDashboard",
-        "title": "MAD Ops: 대시보드 열기"
-      },
-      {
-        "command": "extension.setOpenAiKey",
-        "title": "OpenAI: API 키 설정"
-      },
-      {
-        "command": "extension.clearOpenAiKey",
-        "title": "OpenAI: API 키 삭제"
-      }
+      { "command": "extension.setRepository", "title": "GitHub Actions: 레포 저장/수정" },
+      { "command": "extension.clearRepository", "title": "GitHub Actions: 저장된 레포 삭제" },
+      { "command": "extension.showRepository", "title": "GitHub Actions: 현재 레포 보기" },
+      { "command": "extension.loginGithub", "title": "GitHub: 로그인 (VS Code 계정 인증)" },
+      { "command": "extension.logoutGithub", "title": "GitHub: 로그아웃 (VS Code 계정 인증)" },
+      { "command": "extension.analyzeGitHubActions", "title": "GitHub Actions: 실패 Step 분석 및 LLM 프롬프트 생성" },
+      { "command": "extension.openDashboard", "title": "MADops: 대시보드 열기" },
+      { "command": "extension.setOpenAiKey", "title": "OpenAI: API 키 설정" },
+      { "command": "extension.clearOpenAiKey", "title": "OpenAI: API 키 삭제" }
     ]
   },
   "scripts": {
@@ -96,13 +66,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/angkmfirefoxygal/oss.git"
+    "url": "https://github.com/angkmfirefoxygal/oss-llm"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["github-actions", "ai", "llm", "debugging", "devops", "automation"],
+  "author": "MADops Team",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/angkmfirefoxygal/oss/issues"
+    "url": "https://github.com/angkmfirefoxygal/oss-llm/issues"
   },
-  "homepage": "https://github.com/angkmfirefoxygal/oss#readme"
+  "homepage": "https://github.com/angkmfirefoxygal/oss-llm#readme"
 }
