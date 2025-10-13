@@ -292,7 +292,6 @@
   /* transition 제거 */
   position: relative; /* z-index를 위한 상대 위치 */
   z-index: 10; /* 다른 요소들 위에 표시되도록 */
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
@@ -701,7 +700,6 @@
   border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
@@ -870,7 +868,6 @@
   line-height: 60px;
   margin: 0 0 24px 0;
   color: var(--text-color);
-  text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 2px solid #DBE8F2;
   padding-bottom: 8px;
@@ -910,7 +907,6 @@
   line-height: 60px;
   margin: 0 0 24px 0;
   color: var(--text-color);
-  text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 2px solid #DBE8F2;
   padding-bottom: 8px;
@@ -934,7 +930,6 @@
   font-weight: 600;
   margin: 32px 0 24px 0; /* 위쪽 마진을 20px에서 32px로 증가 */
   color: var(--text-color);
-  text-transform: uppercase; /* 대문자로 변환 */
   letter-spacing: 0.5px; /* 글자 간격 추가 */
   padding-bottom: 8px; /* 구분선과 텍스트 사이 간격 */
   border-bottom: 1px solid #30363d; /* sidebar와 같은 스타일의 구분선 */
@@ -985,7 +980,6 @@
   border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
@@ -1169,11 +1163,11 @@
   font-size: 12px;
   color: #8b949e;
   transition: transform 0.2s;
-  transform: rotate(-90deg);
+  transform: rotate(0deg); /* 기본: 아래 방향 */
 }
 
 .llm-accordion-arrow.open {
-  transform: rotate(0deg);
+  transform: rotate(180deg); /* 열렸을 때: 위 방향 */
 }
 
 .llm-errors-content {
@@ -1200,7 +1194,6 @@
 .llm-error-label {
   color: #8b949e;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
@@ -1336,7 +1329,6 @@
   font-size: 12px;
   font-weight: 600;
   color: #8b949e;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
 }
@@ -1451,7 +1443,6 @@
   font-size: 11px;
   font-weight: 600;
   color: #8b949e;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
 }

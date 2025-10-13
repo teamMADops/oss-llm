@@ -802,7 +802,6 @@
   font-size: 13px;
   font-weight: 500;
   color: #8b949e;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
@@ -819,7 +818,6 @@
   transition: all 0.3s ease;
   position: relative;
   z-index: 10;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
@@ -936,7 +934,6 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
   height: 32px; /* 고정 높이 설정 */
   min-width: 60px; /* 최소 너비 설정 */
@@ -1022,7 +1019,6 @@
   font-size: 12px;
   font-weight: 500;
   color: #8b949e;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
