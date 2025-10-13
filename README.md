@@ -368,7 +368,7 @@ npm run build:webview
 
 ### 5) 초기 설정
 
-새로 열린 Extension Development Host 창에서 Command Palette를 열고 (`Ctrl/Cmd + Shift + P`) 다음 단계를 순서대로 진행합니다:
+새로 열린 Extension Development Host 창에서 설정이 완료되지 않아 설정 모달창이 나오면, 다음 단계를 순서대로 진행합니다:
 
 #### 5-1) GitHub 계정 연동
 ```
