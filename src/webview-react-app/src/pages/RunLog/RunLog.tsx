@@ -149,7 +149,7 @@ const RunLogPage: React.FC<RunLogPageProps> = ({ actionId, runId, isSidebarOpen,
         jobs: []
       };
       setRunDetails(fallbackDetails);
-      setRunLogs('로그를 불러올 수 없습니다.');
+      setRunLogs('Unable to load logs.');
     } finally {
       setIsLoading(false);
     }
@@ -166,12 +166,12 @@ const RunLogPage: React.FC<RunLogPageProps> = ({ actionId, runId, isSidebarOpen,
       } else {
         console.log('가장 최근 run이 없습니다.');
         setRunDetails(null);
-        setRunLogs('실행 기록이 없습니다.');
+        setRunLogs('No execution history available.');
       }
     } catch (error) {
       console.error('최근 run 로드 실패:', error);
       setRunDetails(null);
-      setRunLogs('최근 실행 기록을 불러올 수 없습니다.');
+      setRunLogs('Unable to load recent execution history.');
     } finally {
       setIsLoading(false);
     }
@@ -222,34 +222,34 @@ const RunLogPage: React.FC<RunLogPageProps> = ({ actionId, runId, isSidebarOpen,
       let exportText = '';
       
       if (llmAnalysisResult.summary === "성공한 작업입니다!") {
-        exportText = `=== LLM 분석 결과 ===
-상태: 성공
-내용: 이 워크플로우는 성공적으로 완료되었습니다.`;
+        exportText = `=== LLM Analysis Result ===
+Status: Success
+Description: This workflow has been completed successfully.`;
       } else if (llmAnalysisResult.summary === "분석이 실패했습니다") {
-        exportText = `=== LLM 분석 결과 ===
-상태: 분석 실패
-내용: LLM 분석 중 문제가 발생했습니다.`;
+        exportText = `=== LLM Analysis Result ===
+Status: Analysis Failed
+Description: An error occurred during LLM analysis.`;
         if ((llmAnalysisResult as any).error) {
-          exportText += `\n에러: ${(llmAnalysisResult as any).error}`;
+          exportText += `\nError: ${(llmAnalysisResult as any).error}`;
         }
       } else {
         // 실패 분석 결과
-        exportText = `=== LLM 분석 결과 ===
-요약: ${llmAnalysisResult.summary}
-실패 유형: ${llmAnalysisResult.failureType || 'N/A'}
-신뢰도: ${llmAnalysisResult.confidence ? Math.round(llmAnalysisResult.confidence * 100) + '%' : 'N/A'}
-영향받은 단계: ${llmAnalysisResult.affectedStep || 'N/A'}
+        exportText = `=== LLM Analysis Result ===
+Summary: ${llmAnalysisResult.summary}
+Failure Type: ${llmAnalysisResult.failureType || 'N/A'}
+Confidence: ${llmAnalysisResult.confidence ? Math.round(llmAnalysisResult.confidence * 100) + '%' : 'N/A'}
+Affected Step: ${llmAnalysisResult.affectedStep || 'N/A'}
 
-=== 핵심 실패 원인 ===
+=== Root Cause ===
 ${llmAnalysisResult.rootCause}
 
-=== 권장 조치 및 해결 방법 ===
+=== Recommended Actions ===
 ${llmAnalysisResult.suggestion}`;
 
         if (llmAnalysisResult.keyErrors && llmAnalysisResult.keyErrors.length > 0) {
-          exportText += '\n\n=== 오류 로그 상세 정보 ===';
+          exportText += '\n\n=== Error Log Details ===';
           llmAnalysisResult.keyErrors.forEach((error, index) => {
-            exportText += `\n\n[오류 ${index + 1}]`;
+            exportText += `\n\n[Error ${index + 1}]`;
             if (error.line !== undefined) {
               exportText += `\nLine: ${error.line}`;
             }
@@ -323,7 +323,7 @@ ${llmAnalysisResult.suggestion}`;
           </div>
           <div className="runLog-content">
             <div className="llm-analysis-empty">
-              <p className="llm-empty-text">액션을 선택해주세요.</p>
+              <p className="llm-empty-text">Please select an action.</p>
             </div>
           </div>
         </div>
@@ -334,7 +334,7 @@ ${llmAnalysisResult.suggestion}`;
           </div>
           <div className="llm-analysis-content">
             <div className="llm-analysis-empty">
-              <p className="llm-empty-text">워크플로우를 선택해주세요.</p>
+              <p className="llm-empty-text">Please select a workflow.</p>
             </div>
           </div>
         </div>
@@ -352,7 +352,7 @@ ${llmAnalysisResult.suggestion}`;
           <div className="runLog-content">
             <div className="llm-analysis-empty">
               <div className="llm-loading-spinner"></div>
-              <p className="llm-empty-text">데이터를 불러오는 중...</p>
+              <p className="llm-empty-text">Loading data...</p>
             </div>
           </div>
         </div>
@@ -364,7 +364,7 @@ ${llmAnalysisResult.suggestion}`;
           <div className="llm-analysis-content">
             <div className="llm-analysis-empty">
               <div className="llm-loading-spinner"></div>
-              <p className="llm-empty-text">데이터를 불러오는 중...</p>
+              <p className="llm-empty-text">Loading data...</p>
             </div>
           </div>
         </div>
@@ -379,7 +379,7 @@ ${llmAnalysisResult.suggestion}`;
         {/* Main Header */}
         <div className="main-header">
           <h1 className="main-title">
-            Run Log {runDetails ? `#${runDetails.id}` : '(최근 실행)'}
+            Run Log {runDetails ? `#${runDetails.id}` : '(Latest Run)'}
           </h1>
         </div>
 
@@ -472,11 +472,11 @@ ${llmAnalysisResult.suggestion}`;
                         className={`log-btn log-btn-copy ${logCopyStatus !== 'idle' ? logCopyStatus : ''}`}
                         onClick={handleLogCopy}
                         disabled={!runLogs || logCopyStatus === 'copying'}
-                        title="로그 내용을 클립보드로 복사합니다"
+                        title="Copy log content to clipboard"
                       >
-                        {logCopyStatus === 'copying' ? '복사 중...' : 
-                         logCopyStatus === 'success' ? '복사 완료!' : 
-                         logCopyStatus === 'error' ? '복사 실패' : 'Copy'}
+                        {logCopyStatus === 'copying' ? 'Copying...' : 
+                         logCopyStatus === 'success' ? 'Copied!' : 
+                         logCopyStatus === 'error' ? 'Copy failed' : 'Copy'}
                       </button>
                     </div>
                   </div>
@@ -494,7 +494,7 @@ ${llmAnalysisResult.suggestion}`;
                         })
                       ) : (
                         <div className="log-empty">
-                          <p>로그를 불러올 수 없습니다.</p>
+                          <p>Unable to load logs.</p>
                         </div>
                       )}
                     </div>
@@ -546,19 +546,19 @@ ${llmAnalysisResult.suggestion}`;
               className={`llm-btn llm-btn-refresh ${isRefreshing ? 'loading' : ''}`}
               onClick={handleRefresh}
               disabled={isRefreshing || !runDetails?.id}
-              title="현재 Run의 로그를 다시 가져와 LLM 분석을 재실행합니다"
+              title="Refresh logs and re-run LLM analysis"
             >
-              {isRefreshing ? '새로고침 중...' : 'Refresh'}
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
             </button>
             <button 
               className={`llm-btn llm-btn-export ${exportStatus !== 'idle' ? exportStatus : ''}`}
               onClick={handleExport}
               disabled={!llmAnalysisResult || exportStatus === 'copying'}
-              title="LLM 분석 결과를 클립보드로 복사합니다"
+              title="Copy LLM analysis result to clipboard"
             >
-              {exportStatus === 'copying' ? '복사 중...' : 
-               exportStatus === 'success' ? '복사 완료!' : 
-               exportStatus === 'error' ? '복사 실패' : 'Export'}
+              {exportStatus === 'copying' ? 'Copying...' : 
+               exportStatus === 'success' ? 'Copied!' : 
+               exportStatus === 'error' ? 'Copy failed' : 'Export'}
             </button>
           </div>
         </div>
@@ -567,7 +567,7 @@ ${llmAnalysisResult.suggestion}`;
             // Refresh 로딩 중
             <div className="llm-analysis-empty">
               <div className="llm-loading-spinner"></div>
-              <p className="llm-empty-text">LLM 분석을 다시 실행하고 있습니다...</p>
+              <p className="llm-empty-text">Re-running LLM analysis...</p>
             </div>
           ) : llmAnalysisResult ? (
             llmAnalysisResult.summary === "성공한 작업입니다!" ? (
@@ -576,12 +576,12 @@ ${llmAnalysisResult.suggestion}`;
                 <div className="llm-section llm-success-section">
                   <div className="llm-status-header">
                     <span className="llm-status-icon">✅</span>
-                    <h2 className="llm-status-title">성공한 작업입니다!</h2>
+                    <h2 className="llm-status-title">Successful Execution!</h2>
                   </div>
                   <div className="llm-status-content">
                     <p className="llm-status-message">
-                      이 워크플로우는 성공적으로 완료되었습니다. 
-                      추가적인 분석이 필요하지 않습니다.
+                      This workflow has been completed successfully. 
+                      No further analysis is required.
                     </p>
                   </div>
                 </div>
@@ -592,15 +592,15 @@ ${llmAnalysisResult.suggestion}`;
                 <div className="llm-section llm-error-section">
                   <div className="llm-status-header">
                     <span className="llm-status-icon">❌</span>
-                    <h2 className="llm-status-title">분석이 실패했습니다</h2>
+                    <h2 className="llm-status-title">Analysis Failed</h2>
                   </div>
                   <div className="llm-status-content">
                     <p className="llm-status-message">
-                      LLM 분석 중 문제가 발생했습니다.
+                      An error occurred during LLM analysis.
                     </p>
                     {(llmAnalysisResult as any).error && (
                       <div className="llm-content-box llm-error-detail-box">
-                        <div className="llm-error-detail-label">에러 상세</div>
+                        <div className="llm-error-detail-label">Error Details</div>
                         <p className="llm-error-detail-text">{(llmAnalysisResult as any).error}</p>
                       </div>
                     )}
@@ -622,21 +622,21 @@ ${llmAnalysisResult.suggestion}`;
                   )}
                   {llmAnalysisResult.confidence !== undefined && (
                     <span className="llm-confidence">
-                      신뢰도: {Math.round(llmAnalysisResult.confidence * 100)}%
+                      Confidence: {Math.round(llmAnalysisResult.confidence * 100)}%
                     </span>
                   )}
                 </div>
 
                 {llmAnalysisResult.affectedStep && (
                   <div className="llm-info-item">
-                    <span className="llm-info-label">영향받은 단계:</span>
+                    <span className="llm-info-label">Affected Step:</span>
                     <span className="llm-info-value">{llmAnalysisResult.affectedStep}</span>
                   </div>
                 )}
                 
                 {llmAnalysisResult.filename && (
                   <div className="llm-info-item">
-                    <span className="llm-info-label">로그 파일:</span>
+                    <span className="llm-info-label">Log File:</span>
                     <span className="llm-info-value">{llmAnalysisResult.filename}</span>
                   </div>
                 )}
@@ -646,7 +646,7 @@ ${llmAnalysisResult.suggestion}`;
               <div className="llm-section llm-rootcause-section">
                 <h3 className="llm-section-title">
                   <span className="llm-icon">🚨</span>
-                  핵심 실패 원인
+                  Root Cause
                 </h3>
                 <div className="llm-content-box llm-rootcause-box">
                   <p className="llm-rootcause-text">{llmAnalysisResult.rootCause}</p>
@@ -657,7 +657,7 @@ ${llmAnalysisResult.suggestion}`;
               <div className="llm-section llm-suggestion-section">
                 <h3 className="llm-section-title">
                   <span className="llm-icon">🛠️</span>
-                  권장 조치 및 해결 방법
+                  Recommended Actions
                 </h3>
                 <div className="llm-content-box llm-suggestion-box">
                   <div className="llm-suggestion-text">
@@ -680,7 +680,7 @@ ${llmAnalysisResult.suggestion}`;
                     }}
                   >
                     {/* TODO: 여기 버튼은 복사 기능이 구현이 되어 있는것 같은데? */}
-                    📋 복사
+                    📋 Copy
                   </button>
                 </div>
               </div>
@@ -694,7 +694,7 @@ ${llmAnalysisResult.suggestion}`;
                   >
                     <h3 className="llm-section-title">
                       <span className="llm-icon">🧩</span>
-                      오류 로그 상세 정보
+                      Error Log Details
                     </h3>
                     <span className={`llm-accordion-arrow ${isErrorDetailsOpen ? 'open' : ''}`}>
                       ▼
@@ -737,7 +737,7 @@ ${llmAnalysisResult.suggestion}`;
                   >
                     <h3 className="llm-section-title">
                       <span className="llm-icon">🔍</span>
-                      의심 경로 목록 ({llmAnalysisResult.suspectedPaths.length}개)
+                      Suspected Paths ({llmAnalysisResult.suspectedPaths.length})
                     </h3>
                     <span className={`llm-accordion-arrow ${isSuspectedPathsOpen ? 'open' : ''}`}>
                       ▼
@@ -784,13 +784,13 @@ ${llmAnalysisResult.suggestion}`;
                           </div>
                           {suspectedPath.lineHint !== undefined && (
                             <div className="llm-suspected-path-line">
-                              <span className="llm-suspected-path-line-label">라인:</span>
+                              <span className="llm-suspected-path-line-label">Line:</span>
                               <span className="llm-suspected-path-line-value">{suspectedPath.lineHint}</span>
                             </div>
                           )}
                           {suspectedPath.logExcerpt && (
                             <div className="llm-suspected-path-log">
-                              <div className="llm-suspected-path-log-label">로그 발췌:</div>
+                              <div className="llm-suspected-path-log-label">Log Excerpt:</div>
                               <code className="llm-suspected-path-log-content">{suspectedPath.logExcerpt}</code>
                             </div>
                           )}
@@ -806,11 +806,11 @@ ${llmAnalysisResult.suggestion}`;
                 <div className="llm-section llm-pinpoint-section">
                   <h3 className="llm-section-title">
                     <span className="llm-icon">🎯</span>
-                    정밀 분석 중...
+                    Analyzing in detail...
                   </h3>
                   <div className="llm-analysis-empty">
                     <div className="llm-loading-spinner"></div>
-                    <p className="llm-empty-text">선택한 파일을 정밀 분석하고 있습니다...</p>
+                    <p className="llm-empty-text">Analyzing the selected file in detail...</p>
                   </div>
                 </div>
               )}
@@ -819,26 +819,26 @@ ${llmAnalysisResult.suggestion}`;
                 <div className="llm-section llm-pinpoint-section">
                   <h3 className="llm-section-title">
                     <span className="llm-icon">🎯</span>
-                    정밀 분석 결과
+                    Detailed Analysis
                   </h3>
                   
                   <div className="llm-pinpoint-content">
                     {/* 파일 정보 */}
                     <div className="llm-pinpoint-file">
-                      <span className="llm-pinpoint-file-label">문제 파일:</span>
+                      <span className="llm-pinpoint-file-label">Problem File:</span>
                       <span className="llm-pinpoint-file-value">{pinpointResult.file}</span>
                     </div>
 
                     {/* 라인 범위 */}
                     {(pinpointResult.startLine !== undefined || pinpointResult.endLine !== undefined) && (
                       <div className="llm-pinpoint-lines">
-                        <span className="llm-pinpoint-lines-label">수정 범위:</span>
+                        <span className="llm-pinpoint-lines-label">Fix Range:</span>
                         <span className="llm-pinpoint-lines-value">
                           {pinpointResult.startLine !== undefined && pinpointResult.endLine !== undefined
-                            ? `${pinpointResult.startLine} - ${pinpointResult.endLine}줄`
+                            ? `Lines ${pinpointResult.startLine} - ${pinpointResult.endLine}`
                             : pinpointResult.startLine !== undefined
-                            ? `${pinpointResult.startLine}줄부터`
-                            : `${pinpointResult.endLine}줄까지`
+                            ? `From line ${pinpointResult.startLine}`
+                            : `To line ${pinpointResult.endLine}`
                           }
                         </span>
                       </div>
@@ -847,7 +847,7 @@ ${llmAnalysisResult.suggestion}`;
                     {/* 신뢰도 */}
                     {pinpointResult.confidence !== undefined && (
                       <div className="llm-pinpoint-confidence">
-                        <span className="llm-pinpoint-confidence-label">신뢰도:</span>
+                        <span className="llm-pinpoint-confidence-label">Confidence:</span>
                         <span className="llm-pinpoint-confidence-value">
                           {Math.round(pinpointResult.confidence * 100)}%
                         </span>
@@ -857,7 +857,7 @@ ${llmAnalysisResult.suggestion}`;
                     {/* Unified Diff */}
                     {pinpointResult.unifiedDiff && (
                       <div className="llm-pinpoint-diff">
-                        <div className="llm-pinpoint-diff-label">제안된 수정 사항:</div>
+                        <div className="llm-pinpoint-diff-label">Suggested Changes:</div>
                         <div className="llm-pinpoint-diff-content">
                           <pre><code>{pinpointResult.unifiedDiff}</code></pre>
                         </div>
@@ -868,7 +868,7 @@ ${llmAnalysisResult.suggestion}`;
                             // TODO: 복사 완료 피드백 추가
                           }}
                         >
-                          📋 복사
+                          📋 Copy
                         </button>
                       </div>
                     )}
@@ -876,7 +876,7 @@ ${llmAnalysisResult.suggestion}`;
                     {/* 체크리스트 */}
                     {pinpointResult.checklist && pinpointResult.checklist.length > 0 && (
                       <div className="llm-pinpoint-checklist">
-                        <div className="llm-pinpoint-checklist-label">PR 전 확인 사항:</div>
+                        <div className="llm-pinpoint-checklist-label">Pre-PR Checklist:</div>
                         <ul className="llm-pinpoint-checklist-items">
                           {pinpointResult.checklist.map((item, index) => (
                             <li key={index} className="llm-pinpoint-checklist-item">
@@ -897,12 +897,12 @@ ${llmAnalysisResult.suggestion}`;
               <div className="llm-section llm-success-section">
                 <div className="llm-status-header">
                   <span className="llm-status-icon">✅</span>
-                  <h2 className="llm-status-title">성공한 작업입니다!</h2>
+                  <h2 className="llm-status-title">Successful Execution!</h2>
                 </div>
                 <div className="llm-status-content">
                   <p className="llm-status-message">
-                    이 워크플로우는 성공적으로 완료되었습니다. 
-                    추가적인 분석이 필요하지 않습니다.
+                    This workflow has been completed successfully. 
+                    No further analysis is required.
                   </p>
                 </div>
               </div>
@@ -910,7 +910,7 @@ ${llmAnalysisResult.suggestion}`;
           ) : (
             <div className="llm-analysis-empty">
               <div className="llm-loading-spinner"></div>
-              <p className="llm-empty-text">LLM 분석 결과를 기다리는 중입니다...</p>
+              <p className="llm-empty-text">Waiting for LLM analysis...</p>
             </div>
           )}
         </div>

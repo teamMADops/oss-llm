@@ -23,39 +23,39 @@
     "commands": [
       {
         "command": "extension.setRepository",
-        "title": "GitHub Actions: 레포 저장/수정"
+        "title": "GitHub Actions: Set or Update Repository"
       },
       {
         "command": "extension.clearRepository",
-        "title": "GitHub Actions: 저장된 레포 삭제"
+        "title": "GitHub Actions: Remove Saved Repository"
       },
       {
         "command": "extension.showRepository",
-        "title": "GitHub Actions: 현재 레포 보기"
+        "title": "GitHub Actions: Show Current Repository"
       },
       {
         "command": "extension.loginGithub",
-        "title": "GitHub: 로그인 (VS Code 계정 인증)"
+        "title": "GitHub: Sign In (VS Code Account Authentication)"
       },
       {
         "command": "extension.logoutGithub",
-        "title": "GitHub: 로그아웃 (VS Code 계정 인증)"
+        "title": "GitHub: Sign Out (VS Code Account Authentication)"
       },
       {
         "command": "extension.analyzeGitHubActions",
-        "title": "GitHub Actions: 실패 Step 분석 및 LLM 프롬프트 생성"
+        "title": "GitHub Actions: Analyze Failed Steps and Generate LLM Prompts"
       },
       {
         "command": "extension.openDashboard",
-        "title": "MAD Ops: 대시보드 열기"
+        "title": "MAD Ops: Open Dashboard"
       },
       {
         "command": "extension.setOpenAiKey",
-        "title": "OpenAI: API 키 설정"
+        "title": "OpenAI: Set API Key"
       },
       {
         "command": "extension.clearOpenAiKey",
-        "title": "OpenAI: API 키 삭제"
+        "title": "OpenAI: Delete API Key"
       }
     ]
   },

@@ -21,19 +21,19 @@ const YamlViewer: React.FC<YamlViewerProps> = ({ yamlContent, highlightedLines =
   // YAML 구문 하이라이팅 함수
   const highlightYaml = (yaml: string) => {
     return yaml
-      // 키워드 (on, jobs, runs-on, steps, uses, name, with, run)
-      .replace(/\b(on|jobs|runs-on|steps|uses|name|with|run|env|permissions|concurrency|strategy|needs|outputs|if|types|branches|tags|schedule|release|workflow_dispatch|inputs|description|required|default|choice|options|timeout-minutes|matrix|fail-fast|os|node-version|test-type|environment|secrets|github|workflow|ref|event|push|pull_request|opened|synchronize|reopened|published|contents|packages|security-events|actions|read|write|group|cancel-in-progress|checkout|setup-node|cache|npm|registry-url|ci|audit|lint|format|prettier|typescript|type-check|test|coverage|codecov|upload-artifact|retention-days|trivy|vulnerability|scanner|sarif|codeql|deploy|staging|production|notify|slack|create-release|tag_name|release_name|body|draft|prerelease)\b/g, '<span class="yaml-keyword">$1</span>')
+      // 주석 (먼저 처리하여 주석 내용이 하이라이팅되지 않도록)
+      .replace(/(#.*)$/gm, '<span class="yaml-comment">$1</span>')
+      // GitHub 표현식
+      .replace(/\$\{\{([^}]+)\}\}/g, '<span class="yaml-expression">${{$1}}</span>')
       // 문자열 값 (쌍따옴표와 작은따옴표 모두 인식)
       .replace(/"([^"]*)"/g, '<span class="yaml-string">"$1"</span>')
       .replace(/'([^']*)'/g, '<span class="yaml-string">\'$1\'</span>')
       // 배열 표시
       .replace(/\[([^\]]*)\]/g, '<span class="yaml-array">[$1]</span>')
+      // YAML 키워드 (실제 GitHub Actions YAML 키워드만 포함)
+      .replace(/^(\s*)(on|jobs|runs-on|steps|uses|name|with|run|env|permissions|concurrency|strategy|needs|outputs|if|types|branches|tags|paths|schedule|workflow_dispatch|workflow_call|inputs|outputs|description|required|default|type|timeout-minutes|continue-on-error|matrix|fail-fast|max-parallel|environment|secrets|push|pull_request|pull_request_target|release|issues|issue_comment|workflow_run|repository_dispatch|schedule|contents|packages|deployments|security-events|statuses|checks|actions|id-token|discussions|pages|issues|pull-requests|read|write|none|group|cancel-in-progress|shell|working-directory|defaults|options|choice)(\s*):/gm, '$1<span class="yaml-keyword">$2</span>$3:')
       // 숫자
-      .replace(/\b(\d+)\b/g, '<span class="yaml-number">$1</span>')
-      // 주석
-      .replace(/(#.*)$/gm, '<span class="yaml-comment">$1</span>')
-      // GitHub 표현식
-      .replace(/\$\{\{([^}]+)\}\}/g, '<span class="yaml-expression">${{$1}}</span>')
+      .replace(/:\s*(\d+)\b/g, ': <span class="yaml-number">$1</span>')
       // 들여쓰기 (공백을 &nbsp;로 변환)
       .replace(/^(\s+)/gm, (match) => '&nbsp;'.repeat(match.length));
   };
