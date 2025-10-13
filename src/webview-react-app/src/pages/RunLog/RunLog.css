@@ -964,6 +964,8 @@
   color: #58a6ff;
   margin: 0 0 16px 0;
   line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-metadata {
@@ -1075,6 +1077,8 @@
   line-height: 1.6;
   margin: 0;
   font-weight: 500;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* 3. 권장 해결책 섹션 */
@@ -1092,6 +1096,8 @@
   color: #c9d1d9;
   line-height: 1.6;
   margin-bottom: 12px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-suggestion-step {
@@ -1099,6 +1105,8 @@
   padding-left: 8px;
   font-weight: 500;
   color: #58a6ff;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-suggestion-item {
@@ -1106,11 +1114,15 @@
   margin-left: 20px;
   color: #c9d1d9;
   list-style-type: disc;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-suggestion-para {
   margin: 8px 0;
   color: #c9d1d9;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-copy-btn {
@@ -1231,6 +1243,8 @@
   color: #c9d1d9;
   line-height: 1.5;
   margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* 빈 상태 */
@@ -1315,6 +1329,8 @@
   color: #8b949e;
   line-height: 1.6;
   margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-error-detail-box {
@@ -1348,6 +1364,8 @@
 .llm-suspected-paths-section {
   background: linear-gradient(135deg, #1e1e24 0%, #161b22 100%);
   border: 1px solid #6e7681;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-suspected-paths-content {
@@ -1604,6 +1622,8 @@
   border-radius: 4px;
   padding-left: 32px;
   position: relative;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .llm-pinpoint-checklist-item::before {
