@@ -60,19 +60,19 @@ function activate(context) {
     };
     const setOpenAiKey = async () => {
         const key = await vscode.window.showInputBox({
-            prompt: "OpenAI API Key를 입력하세요",
+            prompt: "Enter your OpenAI API key",
             ignoreFocusOut: true,
             password: true,
         });
         if (key) {
             await context.secrets.store("openaiApiKey", key);
-            vscode.window.showInformationMessage("✅ OpenAI API Key가 저장되었습니다.");
+            vscode.window.showInformationMessage("✅ OpenAI API key stored successfully.");
         }
     };
     functionRegister(setOpenAiKey);
     const clearOpenAiKey = async () => {
         await context.secrets.delete("openaiApiKey");
-        vscode.window.showInformationMessage("🗑️ OpenAI API Key가 삭제되었습니다.");
+        vscode.window.showInformationMessage("🗑️ OpenAI API key successfully deleted.");
     };
     functionRegister(clearOpenAiKey);
     const setRepository = async () => (0, github_1.saveRepo)(context);
@@ -81,7 +81,7 @@ function activate(context) {
     functionRegister(clearRepository);
     const showRepository = async () => {
         const cur = (0, github_1.getSavedRepoInfo)(context);
-        vscode.window.showInformationMessage(`현재 레포: ${cur ? cur.owner + "/" + cur.repo : "(none)"}`);
+        vscode.window.showInformationMessage(`Current repository: ${cur ? cur.owner + "/" + cur.repo : "(none)"}`);
     };
     functionRegister(showRepository);
     const loginGithub = async () => {
@@ -90,22 +90,22 @@ function activate(context) {
         if (ok) {
             const after = await (0, github_1.getExistingGitHubSession)();
             const who = after?.account?.label ?? "GitHub";
-            vscode.window.showInformationMessage(before ? `이미 로그인되어 있습니다: ${who}` : `로그인 완료: ${who}`);
+            vscode.window.showInformationMessage(before ? `You are already logged in as ${who}` : `Successfully logged in as ${who}`);
         }
         else {
-            vscode.window.showErrorMessage("GitHub 로그인에 실패했습니다.");
+            vscode.window.showErrorMessage("GitHub login failed.");
         }
     };
     functionRegister(loginGithub);
     const logoutGithub = async () => {
         const session = await (0, github_1.getExistingGitHubSession)();
         if (!session) {
-            vscode.window.showInformationMessage("이미 로그아웃 상태입니다.");
+            vscode.window.showInformationMessage("You are not logged in.");
             return;
         }
         const isSignOut = await (0, github_1.isSignOutGitHub)();
         if (isSignOut) {
-            vscode.window.showInformationMessage("GitHub 로그아웃 완료.");
+            vscode.window.showInformationMessage("GitHub logout successful.");
         }
     };
     functionRegister(logoutGithub);
@@ -114,66 +114,66 @@ function activate(context) {
         // 우선순위: 명령 인자 > 저장된 레포
         const repo = repoArg ?? (0, github_1.getSavedRepoInfo)(context);
         if (!repo) {
-            vscode.window.showWarningMessage("저장된 레포가 없습니다. 먼저 레포를 등록하세요.");
+            vscode.window.showWarningMessage("No repository found. Please register one first.");
             return;
         }
-        console.log(`[2] ✅ 레포: ${repo.owner}/${repo.repo}`);
+        console.log(`[2] ✅ Repository: ${repo.owner}/${repo.repo}`);
         const octokit = await (0, github_1.getOctokitViaVSCodeAuth)();
         if (!octokit) {
-            vscode.window.showErrorMessage("GitHub 로그인에 실패했습니다.");
+            vscode.window.showErrorMessage("GitHub login failed.");
             return;
         }
         console.log("[3] 🔑 VS Code GitHub 세션 확보");
         const run_id = await (0, getRunList_1.getRunIdFromQuickPick)(octokit, repo.owner, repo.repo);
         if (!run_id) {
-            vscode.window.showInformationMessage("선택된 워크플로우 실행이 없습니다.");
+            vscode.window.showInformationMessage("No workflow run selected.");
             return;
         }
-        console.log(`[4] ✅ 선택된 Run ID: ${run_id}`);
-        const mode = await vscode.window.showQuickPick(["전체 로그", "에러 메세지만"], {
-            placeHolder: "LLM 프롬프트에 포함할 로그 범위 선택",
+        console.log(`[4] ✅ Selected Run ID: ${run_id}`);
+        const mode = await vscode.window.showQuickPick(["All logs", "Error messages only"], {
+            placeHolder: "Select log scope to include in LLM prompt",
         });
-        const logMode = mode === "전체 로그" ? "all" : "error";
+        const logMode = mode === "All logs" ? "all" : "error";
         console.log(`[5] 📄 로그 추출 방식: ${logMode}`);
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: `Run #${run_id} 분석 중...`,
+            title: `Analyzing Run #${run_id}...`,
         }, async (progress) => {
             try {
                 progress.report({
-                    message: "로그 ZIP 다운로드 및 프롬프트 생성 중",
+                    message: "Downloading log ZIP and generating prompts",
                 });
                 const { failedSteps, prompts } = await (0, getFailedLogs_1.getFailedStepsAndPrompts)(octokit, repo.owner, repo.repo, run_id, logMode);
-                (0, printToOutput_1.printToOutput)(`Run #${run_id} 실패한 Step 목록`, failedSteps);
-                (0, printToOutput_1.printToOutput)(`Run #${run_id} → LLM 프롬프트`, prompts);
+                (0, printToOutput_1.printToOutput)(`Run #${run_id} failed steps`, failedSteps);
+                (0, printToOutput_1.printToOutput)(`Run #${run_id} → LLM prompts`, prompts);
                 if (prompts.length === 0) {
-                    vscode.window.showInformationMessage("분석할 로그가 없습니다.");
+                    vscode.window.showInformationMessage("No logs available for analysis.");
                     return;
                 }
-                progress.report({ message: "LLM 호출 중" });
+                progress.report({ message: "Calling LLM" });
                 const analysis = await (0, analyze_1.analyzePrompts)(context, prompts); // { summary, rootCause, suggestion }
-                (0, printToOutput_1.printToOutput)("LLM 분석 결과", [JSON.stringify(analysis, null, 2)]);
+                (0, printToOutput_1.printToOutput)("LLM analysis result", [JSON.stringify(analysis, null, 2)]);
                 if (panels["dashboard"]) {
                     panels["dashboard"].webview.postMessage({
                         command: "llmAnalysisResult",
                         payload: analysis,
                     });
-                    vscode.window.showInformationMessage("LLM 분석 결과가 대시보드에 표시되었습니다.");
+                    vscode.window.showInformationMessage("LLM analysis result has been displayed on the dashboard.");
                 }
                 else {
-                    const summary = analysis.summary ?? "LLM 분석이 완료되었습니다.";
-                    const choice = await vscode.window.showInformationMessage(`🧠 ${summary}`, "출력창 열기", "요약 복사");
-                    if (choice === "출력창 열기") {
+                    const summary = analysis.summary ?? "LLM analysis complete.";
+                    const choice = await vscode.window.showInformationMessage(`🧠 ${summary}`, "Open Output Panel", "Copy Summary");
+                    if (choice === "Open Output Panel") {
                         vscode.commands.executeCommand("workbench.action.output.toggleOutput");
                     }
-                    else if (choice === "요약 복사") {
+                    else if (choice === "Copy Summary") {
                         await vscode.env.clipboard.writeText(summary);
-                        vscode.window.showInformationMessage("📋 요약을 클립보드에 복사했어요.");
+                        vscode.window.showInformationMessage("📋 Summary has been copied to clipboard.");
                     }
                 }
             }
             catch (e) {
-                vscode.window.showErrorMessage(`❌ 분석 실패: ${e?.message ?? e}`);
+                vscode.window.showErrorMessage(`❌ Analysis failed: ${e?.message ?? e}`);
             }
         });
     };
@@ -433,14 +433,14 @@ function createAndShowWebview(context, page) {
                         payload: { success: true }
                     });
                     console.log('[extension.ts] settingsSaved 메시지 전송 완료');
-                    vscode.window.showInformationMessage("✅ 설정이 저장되었습니다.");
+                    vscode.window.showInformationMessage("✅ Settings saved successfully.");
                 }
                 catch (error) {
                     panel.webview.postMessage({
                         command: "error",
-                        payload: `설정 저장 실패: ${error?.message || error}`
+                        payload: `Failed to save settings: ${error?.message || error}`
                     });
-                    vscode.window.showErrorMessage(`설정 저장 실패: ${error?.message || error}`);
+                    vscode.window.showErrorMessage(`Failed to save settings: ${error?.message || error}`);
                 }
                 return;
             }
@@ -448,15 +448,15 @@ function createAndShowWebview(context, page) {
         // 기존 메시지 처리 (GitHub 인증 필요)
         const octokit = await (0, github_1.getOctokitViaVSCodeAuth)();
         if (!octokit) {
-            vscode.window.showErrorMessage("GitHub 로그인에 실패했습니다.");
+            vscode.window.showErrorMessage("Failed to authenticate with GitHub.");
             return;
         }
-        console.log("[3] 🔑 VS Code GitHub 세션 확보");
+        console.log("[3] 🔑 VS Code GitHub session acquired");
         const repo = (0, github_1.getSavedRepoInfo)(context);
         if (!repo) {
             panel.webview.postMessage({
                 command: "error",
-                payload: "GitHub 리포지토리 정보를 찾을 수 없습니다.",
+                payload: "Failed to find GitHub repository information.",
             });
             return;
         }
@@ -843,27 +843,27 @@ function createAndShowWebview(context, page) {
                     const logMode = message.payload?.logMode === "all" ? "all" : "error";
                     await vscode.window.withProgress({
                         location: vscode.ProgressLocation.Notification,
-                        title: `Run #${runId} 분석 중...`,
+                        title: `Analyzing Run #${runId} ...`,
                     }, async (progress) => {
                         try {
                             progress.report({
-                                message: "로그 ZIP 다운로드 및 프롬프트 생성 중",
+                                message: "Downloading log ZIP and generating prompts...",
                             });
                             const { failedSteps, prompts } = await (0, getFailedLogs_1.getFailedStepsAndPrompts)(octokit, repo.owner, repo.repo, runId, logMode);
-                            (0, printToOutput_1.printToOutput)(`Run #${runId} 실패한 Step 목록`, failedSteps);
-                            (0, printToOutput_1.printToOutput)(`Run #${runId} → LLM 프롬프트`, prompts);
+                            (0, printToOutput_1.printToOutput)(`Run #${runId}  Failed steps`, failedSteps);
+                            (0, printToOutput_1.printToOutput)(`Run #${runId} → LLM prompts`, prompts);
                             if (prompts.length === 0) {
                                 send(panel, "llmAnalysisResult", {
                                     runId,
-                                    summary: "분석할 로그가 없습니다.",
+                                    summary: "No logs available for analysis.",
                                     rootCause: null,
                                     suggestion: null,
                                     items: [],
                                 });
-                                vscode.window.showInformationMessage("분석할 로그가 없습니다.");
+                                vscode.window.showInformationMessage("No logs available for analysis.");
                                 return;
                             }
-                            progress.report({ message: "LLM 호출 중" });
+                            progress.report({ message: "Calling LLM..." });
                             // const analysis = await analyzePrompts(prompts);
                             const analysis = await (0, analyze_1.analyzePrompts)(context, prompts);
                             (0, printToOutput_1.printToOutput)("LLM 분석 결과", [
@@ -907,13 +907,13 @@ function createAndShowWebview(context, page) {
                             else {
                                 send(panel, "llmAnalysisResult", errorResult);
                             }
-                            vscode.window.showErrorMessage(`❌ 분석 실패: ${msg}`);
+                            vscode.window.showErrorMessage(`❌ Analysis failed: ${msg}`);
                         }
                     });
                 }
                 catch (error) {
-                    console.error("LLM 분석 시작 중 오류 발생:", error);
-                    send(panel, "error", "LLM 분석을 시작하는 데 실패했습니다.");
+                    console.error("LLM analysis start error:", error);
+                    send(panel, "error", "Failed to start LLM analysis.");
                 }
                 break;
             case "analyzeSecondPass":
@@ -921,7 +921,7 @@ function createAndShowWebview(context, page) {
                     const payload = message.payload || {};
                     const targetPath = String(payload.path || "");
                     if (!targetPath) {
-                        send(panel, "error", "2차 분석: path가 비어있습니다.");
+                        send(panel, "error", "Second analysis: path is empty.");
                         break;
                     }
                     const lineHint = Number.isFinite(Number(payload.lineHint)) ? Number(payload.lineHint) : undefined;
@@ -932,7 +932,7 @@ function createAndShowWebview(context, page) {
                     // 코드 본문 읽기
                     const fullText = await getRepoFileText(octokit, repo, targetPath, ref);
                     if (!fullText) {
-                        send(panel, "error", `파일을 읽을 수 없습니다: ${targetPath} @ ${ref}`);
+                        send(panel, "error", `Unable to read file: ${targetPath} @ ${ref}`);
                         break;
                     }
                     const codeWindow = buildCodeWindow(fullText, lineHint, radius);
@@ -946,7 +946,7 @@ function createAndShowWebview(context, page) {
                     // LLM 2차 분석
                     const result = await (0, secondPass_1.analyzeSecondPass)(context, input);
                     // 출력/전달
-                    (0, printToOutput_1.printToOutput)("LLM 2차 분석 결과", [JSON.stringify(result, null, 2)]);
+                    (0, printToOutput_1.printToOutput)("LLM 2nd Pass Analysis Result", [JSON.stringify(result, null, 2)]);
                     if (panels["dashboard"]) {
                         panels["dashboard"].webview.postMessage({
                             command: "secondPassResult",
@@ -958,12 +958,12 @@ function createAndShowWebview(context, page) {
                     }
                 }
                 catch (error) {
-                    console.error("2차 분석 중 오류:", error);
-                    send(panel, "error", `2차 분석 실패: ${error?.message || error}`);
+                    console.error("2nd Pass analysis error:", error);
+                    send(panel, "error", `2nd Pass analysis failed: ${error?.message || error}`);
                 }
                 break;
             case "analyzeLog":
-                send(panel, "error", "로그 분석은 아직 구현되지 않았습니다.");
+                send(panel, "error", "Log analysis is not yet implemented.");
                 break;
         }
     }, undefined, context.subscriptions);
@@ -1051,7 +1051,7 @@ function isNumericId(s) {
 }
 function ensureWorkflowPathFromWorkflow(wf) {
     if (!wf?.path)
-        throw new Error("워크플로우 경로를 찾을 수 없습니다.");
+        throw new Error("Unable to find the workflow path.");
     return wf.path;
 }
 // 레포에서 텍스트 파일 가져오기 (main 기준)

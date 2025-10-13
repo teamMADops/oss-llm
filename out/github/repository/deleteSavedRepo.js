@@ -44,14 +44,14 @@ const formatRepoInfo_1 = __importDefault(require("./formatRepoInfo"));
 async function deleteSavedRepo(context) {
     const savedRepoInfo = (0, getSavedRepoInfo_1.default)(context);
     if (!savedRepoInfo) {
-        vscode.window.showInformationMessage("저장된 레포가 없습니다.");
+        vscode.window.showInformationMessage("No saved repository found.");
         return;
     }
-    const pick = await vscode.window.showQuickPick(["삭제", "취소"], {
-        placeHolder: `현재: ${(0, formatRepoInfo_1.default)(savedRepoInfo)} — 삭제할까요?`,
+    const pick = await vscode.window.showQuickPick(["Delete", "Cancel"], {
+        placeHolder: `Current: ${(0, formatRepoInfo_1.default)(savedRepoInfo)} — Do you want to delete it?`,
     });
-    if (pick !== "삭제")
+    if (pick !== "Delete")
         return;
     await context.globalState.update(Constants_1.KEY, undefined);
-    vscode.window.showInformationMessage("🗑️ 저장된 레포를 삭제했습니다.");
+    vscode.window.showInformationMessage("🗑️ Saved repository has been deleted.");
 }

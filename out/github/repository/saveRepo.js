@@ -46,19 +46,19 @@ async function saveRepo(context) {
     const repoInfo = await getRepoInfo(context);
     if (repoInfo) {
         await context.globalState.update(Constants_1.KEY, `${repoInfo.owner}/${repoInfo.repo}`);
-        vscode.window.showInformationMessage(`✅ 레포 저장됨: ${(0, formatRepoInfo_1.default)(repoInfo)}`);
+        vscode.window.showInformationMessage(`✅ Repository saved: ${(0, formatRepoInfo_1.default)(repoInfo)}`);
     }
 }
 async function getRepoInfo(context) {
     const savedRepo = (0, getSavedRepoInfo_1.default)(context);
     const input = await vscode.window.showInputBox({
-        prompt: "저장할 GitHub 레포를 입력하세요 (owner/repo 또는 GitHub URL)",
+        prompt: "Enter the GitHub repository to save (owner/repo or GitHub URL)",
         placeHolder: "ex) yourGithubName/yourRepoName",
         value: savedRepo ? (0, formatRepoInfo_1.default)(savedRepo) : "",
         ignoreFocusOut: true,
         validateInput: (text) => (0, normalizeInputAsRepoInfo_1.default)(text)
             ? null
-            : "owner/repo 또는 유효한 GitHub URL 형식이어야 합니다.",
+            : "Input must be in owner/repo format or a valid GitHub URL.",
     });
     if (!input)
         return null;
