@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-case-declarations */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import YamlViewer from './YamlViewer';
 import { getWorkflowFile, saveWorkflowFile } from '@/api/github';
 import * as yaml from 'js-yaml';
@@ -162,14 +162,182 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
 
   // 초기 로드 여부 플래그
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  // 초기 컨텐츠 로드 완료 여부 추적 (자동 재생성 방지용)
+  const hasLoadedInitialContent = useRef(false);
+  // 초기 로드 직후 첫 번째 자동 생성 건너뛰기 플래그
+  const skipNextGeneration = useRef(false);
+  // 파싱 중인지 여부 (파싱 중에는 자동 재생성하지 않음)
+  const isParsing = useRef(false);
+
+  // YAML 문법 자동 수정 함수
+  const fixYamlSyntax = (yamlContent: string): { fixed: string; hasChanges: boolean } => {
+    console.log('🔧 [fixYamlSyntax] 시작, YAML 길이:', yamlContent.length);
+    console.log('🔧 [fixYamlSyntax] YAML 내용:', yamlContent);
+    
+    let fixed = yamlContent;
+    let hasChanges = false;
+    const fixes: string[] = [];
+
+    // 1. jobs: 키워드 누락 체크 (on: 다음에 jobs:가 없고 바로 job 이름이 나오는 경우)
+    console.log('🔧 [fixYamlSyntax] jobs 키워드 누락 체크...');
+    
+    // 간단한 방법: 라인별로 처리
+    const lines = fixed.split('\n');
+    let foundJobsKeyword = false;
+    let foundOnSection = false;
+    let jobStartIndex = -1;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line === 'on:') {
+        foundOnSection = true;
+      } else if (line === 'jobs:') {
+        foundJobsKeyword = true;
+        break;
+      } else if (foundOnSection && line && !line.startsWith('#') && line.match(/^[a-zA-Z_][a-zA-Z0-9_-]*:$/)) {
+        // on: 섹션 이후에 jobs: 없이 바로 job 이름이 나타남
+        const nextLine = lines[i + 1]?.trim();
+        if (nextLine && nextLine.startsWith('runs-on:')) {
+          jobStartIndex = i;
+          console.log('✅ [fixYamlSyntax] jobs 키워드 누락 감지! job 이름:', line);
+          break;
+        }
+      }
+    }
+    
+    if (!foundJobsKeyword && jobStartIndex >= 0) {
+      console.log('✅ [fixYamlSyntax] jobs 키워드 추가 중...');
+      // jobs: 키워드를 추가하고 이후 모든 라인의 들여쓰기를 2칸 증가
+      const newLines = [...lines];
+      // inline 주석으로 추가
+      newLines.splice(jobStartIndex, 0, 'jobs:  # 🔧 Fixed: Added missing jobs keyword');
+      
+      // jobStartIndex 이후의 모든 라인에 2칸 들여쓰기 추가
+      for (let i = jobStartIndex + 1; i < newLines.length; i++) {
+        if (newLines[i].trim()) {  // 빈 줄이 아니면
+          newLines[i] = '  ' + newLines[i];
+        }
+      }
+      
+      fixed = newLines.join('\n');
+      fixes.push('jobs 키워드 추가');
+      hasChanges = true;
+      console.log('✅ [fixYamlSyntax] jobs 키워드 추가 완료');
+    } else {
+      console.log('⚠️ [fixYamlSyntax] jobs 키워드 누락 없음');
+    }
+
+    // 2. multiline run 명령 수정 (run: 다음에 여러 줄이 오는데 | 나 > 가 없는 경우)
+    console.log('🔧 [fixYamlSyntax] multiline run 명령 체크 시작...');
+    const linesForMultiline = fixed.split('\n');
+    const newLinesForMultiline: string[] = [];
+    let i = 0;
+    let multilineCount = 0;
+    
+    while (i < linesForMultiline.length) {
+      const line = linesForMultiline[i];
+      const trimmed = line.trim();
+      
+      // run: 으로 시작하고 | 나 > 가 없는 경우
+      if (trimmed.startsWith('run:') && !trimmed.match(/run:\s*[|>]/)) {
+        console.log(`🔧 [fixYamlSyntax] run: 발견 (라인 ${i}):`, trimmed);
+        const indent = line.match(/^(\s*)/)?.[1] || '';
+        const runCommand = trimmed.substring(4).trim();
+        
+        // 다음 줄들을 체크해서 명령어 계속되는지 확인
+        const continuationLines: string[] = [];
+        let j = i + 1;
+        
+        while (j < linesForMultiline.length) {
+          const nextLine = linesForMultiline[j];
+          const nextTrimmed = nextLine.trim();
+          
+          // 빈 줄이면 일단 건너뛰지만 계속 체크
+          if (!nextTrimmed) {
+            break;
+          }
+          
+          // 새로운 step(- 로 시작)이 나타나면 중단
+          if (nextTrimmed.startsWith('-')) {
+            break;
+          }
+          
+          const nextIndent = nextLine.match(/^(\s*)/)?.[1] || '';
+          
+          // YAML 키워드(name:, uses:, run: 등)가 나타나면 중단
+          if (nextTrimmed.match(/^(name|uses|run|with|if|env|id|continue-on-error|timeout-minutes|working-directory|shell):/)) {
+            break;
+          }
+          
+          // 들여쓰기가 run:보다 작거나 같으면, 이건 run의 continuation이 아님
+          // 하지만 들여쓰기가 없거나 적은 경우도 multiline 명령일 수 있음!
+          // 예: run: cmd1\ncmd2 (cmd2의 들여쓰기가 0)
+          if (nextIndent.length <= indent.length) {
+            // 하지만 내용이 명령어처럼 보이면 continuation으로 간주
+            // 명령어는 보통 알파벳으로 시작하거나 특수문자
+            if (nextTrimmed && !nextTrimmed.startsWith('#')) {
+              continuationLines.push(nextTrimmed);
+              j++;
+            } else {
+              break;
+            }
+          } else {
+            // 들여쓰기가 더 많으면 continuation
+            continuationLines.push(nextTrimmed);
+            j++;
+          }
+        }
+        
+        if (continuationLines.length > 0) {
+          // multiline 명령어 발견!
+          console.log(`✅ [fixYamlSyntax] multiline 명령 발견! continuation 라인 수: ${continuationLines.length}`);
+          console.log('🔧 [fixYamlSyntax] continuation 라인들:', continuationLines);
+          fixes.push('multiline run 명령 형식 수정');
+          hasChanges = true;
+          multilineCount++;
+          // inline 주석으로 추가
+          newLinesForMultiline.push(`${indent}run: |  # 🔧 Fixed: Corrected multiline command format`);
+          newLinesForMultiline.push(`${indent}  ${runCommand}`);
+          continuationLines.forEach(cmd => {
+            newLinesForMultiline.push(`${indent}  ${cmd}`);
+          });
+          i = j;
+          continue;
+        } else {
+          console.log(`⚠️ [fixYamlSyntax] continuation 없음, 단일 라인 run 명령`);
+        }
+      }
+      
+      newLinesForMultiline.push(line);
+      i++;
+    }
+    
+    console.log(`🔧 [fixYamlSyntax] multiline 수정 완료, 수정된 개수: ${multilineCount}`);
+    
+    // multiline 처리 결과를 fixed에 반영 (수정이 있든 없든)
+    if (multilineCount > 0) {
+      fixed = newLinesForMultiline.join('\n');
+    }
+    
+    if (fixes.length > 0) {
+      console.log('✅ [fixYamlSyntax] 최종 수정 사항:', fixes);
+      console.log('🔧 [fixYamlSyntax] 수정된 YAML:', fixed);
+    } else {
+      console.log('⚠️ [fixYamlSyntax] 수정 사항 없음');
+    }
+
+    return { fixed, hasChanges };
+  };
 
   // YAML 파싱 함수
   const parseYamlToState = (yamlContent: string) => {
+    console.log('🔵 [parseYamlToState] 시작');
     try {
       const parsed = yaml.load(yamlContent) as any;
       
       // Workflow name 파싱
       if (parsed.name) {
+        console.log('🔵 [parseYamlToState] workflowName 설정:', parsed.name);
         setWorkflowName(parsed.name);
       }
       
@@ -187,6 +355,7 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
             enabled: !!parsed.on.pull_request 
           }
         };
+        console.log('🔵 [parseYamlToState] triggers 설정:', triggers);
         setWorkflowTriggers(triggers);
       }
       
@@ -204,25 +373,79 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
             }))
           };
         });
+        console.log('🔵 [parseYamlToState] jobs 설정:', parsedJobs);
         setJobs(parsedJobs);
       }
     } catch (error) {
-      console.error('YAML 파싱 오류:', error);
+      console.error('🔴 [parseYamlToState] YAML 파싱 오류:', error);
+      // 파싱 오류 발생 시 YAML 자동 수정 시도
+      console.log('🔧 [parseYamlToState] YAML 자동 수정 시도...');
+      return false; // 파싱 실패 반환
     }
+    console.log('🔵 [parseYamlToState] 완료');
+    return true; // 파싱 성공 반환
   };
 
   // --- Effects ---
   useEffect(() => {
     if (actionId) {
+      console.log('🟢 [useEffect-actionId] 시작, actionId:', actionId);
       setIsLoading(true);
       setIsInitialLoad(true); // 초기 로드 시작
+      hasLoadedInitialContent.current = false; // 초기 컨텐츠 로드 시작
+      isParsing.current = false; // 초기화
+      skipNextGeneration.current = false; // 초기화
+      
       getWorkflowFile(actionId)
         .then(content => {
-          setWorkflowContent(content);
-          // YAML 파싱해서 상태 업데이트
-          parseYamlToState(content);
+          console.log('🟢 [useEffect-actionId] YAML 로드 완료, 길이:', content.length);
+          console.log('🟢 [useEffect-actionId] 원본 YAML 시작 부분:', content.substring(0, 100));
+          
+          // YAML 파싱 시도
+          isParsing.current = true;
+          const parseSuccess = parseYamlToState(content);
+          
+          if (!parseSuccess) {
+            // 파싱 실패 시 자동 수정 시도
+            console.log('🔧 [useEffect-actionId] YAML 파싱 실패, 자동 수정 시도');
+            const { fixed, hasChanges } = fixYamlSyntax(content);
+            
+            if (hasChanges) {
+              console.log('✅ [useEffect-actionId] YAML 자동 수정 완료');
+              console.log('🔧 [useEffect-actionId] 수정된 YAML 전체:', fixed);
+              
+              // 수정된 YAML 표시 (파싱 실패해도 수정된 버전 유지)
+              setWorkflowContent(fixed);
+              
+              // 수정된 YAML 다시 파싱 시도
+              const retryParseSuccess = parseYamlToState(fixed);
+              if (retryParseSuccess) {
+                console.log('✅ [useEffect-actionId] 수정된 YAML 파싱 성공! 상태 업데이트 완료');
+              } else {
+                console.log('⚠️ [useEffect-actionId] 수정된 YAML도 파싱 실패');
+                console.log('⚠️ [useEffect-actionId] 하지만 수정된 YAML은 유지 (Advanced Mode에서 확인 가능)');
+                // 재파싱 실패해도 수정된 YAML은 유지 (사용자가 수동으로 확인/수정 가능)
+              }
+            } else {
+              console.log('⚠️ [useEffect-actionId] 자동 수정 불가, 원본 유지');
+              setWorkflowContent(content);
+            }
+          } else {
+            // 파싱 성공 시 원본 YAML 그대로 사용
+            console.log('✅ [useEffect-actionId] YAML 파싱 성공, 원본 유지');
+            setWorkflowContent(content);
+          }
+          
           // 파싱 완료 후 초기 로드 완료 표시
-          setTimeout(() => setIsInitialLoad(false), 100);
+          hasLoadedInitialContent.current = true;
+          
+          // ⚠️ 중요: 자동 생성을 완전히 막음 (원본/수정본 모두 보존)
+          setTimeout(() => {
+            skipNextGeneration.current = true;
+            setIsInitialLoad(false);
+            isParsing.current = false;
+            console.log('🟢 [useEffect-actionId] 초기 로드 완료, skipNextGeneration=true');
+          }, 150);
         })
         .catch(console.error)
         .finally(() => setIsLoading(false));
@@ -231,8 +454,26 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
   }, [actionId]);
 
   // YAML 내용을 workflowContent에 반영 (초기 로드가 아닐 때만)
+  // 초기 컨텐츠 로드 직후에는 자동 재생성하지 않음 (원본 보존)
   useEffect(() => {
-    if (!isInitialLoad) {
+    console.log('🟡 [useEffect-autoGenerate] 트리거됨, isInitialLoad:', isInitialLoad, 
+                'isParsing:', isParsing.current, 'skipNext:', skipNextGeneration.current);
+    
+    if (!isInitialLoad && hasLoadedInitialContent.current) {
+      // 파싱 중에는 자동 재생성하지 않음 (원본 보존)
+      if (isParsing.current) {
+        console.log('🟡 [useEffect-autoGenerate] isParsing=true, 건너뜀');
+        return;
+      }
+      
+      // 초기 로드 직후 첫 실행은 건너뛰기 (원본 YAML 보존)
+      if (skipNextGeneration.current) {
+        console.log('🟡 [useEffect-autoGenerate] skipNextGeneration=true, 건너뜀 및 플래그 해제');
+        skipNextGeneration.current = false;
+        return;
+      }
+      
+      console.log('🔴 [useEffect-autoGenerate] YAML 재생성 실행!');
       const generatedYaml = generateYaml();
       setWorkflowContent(generatedYaml);
     }
@@ -841,6 +1082,9 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
   const updateWorkflowTrigger = (trigger: 'push' | 'pull_request', field: string, value: any) => {
     console.log('🔄 updateWorkflowTrigger 호출됨:', { trigger, field, value });
     console.log('🔄 업데이트 전 workflowTriggers:', workflowTriggers);
+    console.log('🔄 업데이트 전 workflowName:', workflowName);
+    console.log('🔄 업데이트 전 jobs:', jobs);
+    console.log('🔄 현재 workflowContent 시작 부분:', workflowContent.substring(0, 200));
     
     setWorkflowTriggers(prev => {
       const newTriggers = {
@@ -856,7 +1100,7 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
 
     // YAML 업데이트 - 무한 루프 방지를 위해 직접 generateYaml 호출
     const generatedYaml = generateYaml();
-    console.log('🔄 생성된 YAML:', generatedYaml);
+    console.log('🔄 생성된 YAML 전체:', generatedYaml);
     setWorkflowContent(generatedYaml);
   };
 
@@ -1186,20 +1430,43 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
       }
       
       if (sectionId === 'jobs') {
-        // Jobs
+        // Jobs - jobs: 키워드 추가!
+        // 원본에 수정 주석이 있었는지 확인
+        const hasJobsFixComment = workflowContent.includes('# 🔧 Fixed: Added missing jobs keyword');
+        
+        if (hasJobsFixComment) {
+          yaml += 'jobs:  # 🔧 Fixed: Added missing jobs keyword\n';
+        } else {
+          yaml += 'jobs:\n';
+        }
+        
         jobs.forEach(job => {
-          yaml += `${job.name}:\n`;
-          yaml += `  runs-on: ${job.runsOn.join(', ')}\n`;
-          yaml += '  steps:\n';
+          yaml += `  ${job.name}:\n`;
+          yaml += `    runs-on: ${job.runsOn.join(', ')}\n`;
+          yaml += '    steps:\n';
           job.steps.forEach(step => {
-            yaml += '    - ';
+            yaml += '      - ';
             if (step.name) {
-              yaml += `name: ${step.name}\n      `;
+              yaml += `name: ${step.name}\n        `;
             }
             if (step.uses) {
               yaml += `uses: ${step.uses}\n`;
             } else if (step.run) {
-              yaml += `run: ${step.run}\n`;
+              // multiline 체크: 줄바꿈이 있으면 | 형식 사용
+              if (step.run.includes('\n')) {
+                // 원본에 multiline 수정 주석이 있었는지 확인
+                const hasMultilineFixComment = workflowContent.includes('# 🔧 Fixed: Corrected multiline command format');
+                if (hasMultilineFixComment) {
+                  yaml += 'run: |  # 🔧 Fixed: Corrected multiline command format\n';
+                } else {
+                  yaml += 'run: |\n';
+                }
+                step.run.split('\n').forEach(line => {
+                  yaml += `          ${line}\n`;
+                });
+              } else {
+                yaml += `run: ${step.run}\n`;
+              }
             }
           });
           yaml += '\n';
