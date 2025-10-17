@@ -210,7 +210,7 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
       // jobs: 키워드를 추가하고 이후 모든 라인의 들여쓰기를 2칸 증가
       const newLines = [...lines];
       // inline 주석으로 추가
-      newLines.splice(jobStartIndex, 0, 'jobs:  # 🔧 수정됨: jobs 키워드가 누락되어 추가했습니다');
+      newLines.splice(jobStartIndex, 0, 'jobs:  # 🔧 Fixed: Added missing jobs keyword');
       
       // jobStartIndex 이후의 모든 라인에 2칸 들여쓰기 추가
       for (let i = jobStartIndex + 1; i < newLines.length; i++) {
@@ -296,7 +296,7 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
           hasChanges = true;
           multilineCount++;
           // inline 주석으로 추가
-          newLinesForMultiline.push(`${indent}run: |  # 🔧 수정됨: multiline 명령어를 올바른 형식으로 수정했습니다`);
+          newLinesForMultiline.push(`${indent}run: |  # 🔧 Fixed: Corrected multiline command format`);
           newLinesForMultiline.push(`${indent}  ${runCommand}`);
           continuationLines.forEach(cmd => {
             newLinesForMultiline.push(`${indent}  ${cmd}`);
@@ -1432,10 +1432,10 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
       if (sectionId === 'jobs') {
         // Jobs - jobs: 키워드 추가!
         // 원본에 수정 주석이 있었는지 확인
-        const hasJobsFixComment = workflowContent.includes('# 🔧 수정됨: jobs 키워드가 누락되어 추가했습니다');
+        const hasJobsFixComment = workflowContent.includes('# 🔧 Fixed: Added missing jobs keyword');
         
         if (hasJobsFixComment) {
-          yaml += 'jobs:  # 🔧 수정됨: jobs 키워드가 누락되어 추가했습니다\n';
+          yaml += 'jobs:  # 🔧 Fixed: Added missing jobs keyword\n';
         } else {
           yaml += 'jobs:\n';
         }
@@ -1455,9 +1455,9 @@ const Editor: React.FC<EditorProps> = ({ actionId, isSidebarOpen = true }) => {
               // multiline 체크: 줄바꿈이 있으면 | 형식 사용
               if (step.run.includes('\n')) {
                 // 원본에 multiline 수정 주석이 있었는지 확인
-                const hasMultilineFixComment = workflowContent.includes('# 🔧 수정됨: multiline 명령어를 올바른 형식으로 수정했습니다');
+                const hasMultilineFixComment = workflowContent.includes('# 🔧 Fixed: Corrected multiline command format');
                 if (hasMultilineFixComment) {
-                  yaml += 'run: |  # 🔧 수정됨: multiline 명령어를 올바른 형식으로 수정했습니다\n';
+                  yaml += 'run: |  # 🔧 Fixed: Corrected multiline command format\n';
                 } else {
                   yaml += 'run: |\n';
                 }
