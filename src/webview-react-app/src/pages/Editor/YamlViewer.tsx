@@ -20,9 +20,16 @@ const YamlViewer: React.FC<YamlViewerProps> = ({ yamlContent, highlightedLines =
 
   // YAML 구문 하이라이팅 함수
   const highlightYaml = (yaml: string) => {
-    return yaml
-      // 주석 (먼저 처리하여 주석 내용이 하이라이팅되지 않도록)
-      .replace(/(#.*)$/gm, '<span class="yaml-comment">$1</span>')
+    // 주석을 먼저 추출하여 보호
+    const comments: string[] = [];
+    const yamlWithPlaceholders = yaml.replace(/(#.*)$/gm, (match) => {
+      const index = comments.length;
+      comments.push(match);
+      return `___COMMENT_${index}___`;
+    });
+
+    // 나머지 YAML 구문 하이라이팅
+    let highlighted = yamlWithPlaceholders
       // GitHub 표현식
       .replace(/\$\{\{([^}]+)\}\}/g, '<span class="yaml-expression">${{$1}}</span>')
       // 문자열 값 (쌍따옴표와 작은따옴표 모두 인식)
@@ -36,6 +43,16 @@ const YamlViewer: React.FC<YamlViewerProps> = ({ yamlContent, highlightedLines =
       .replace(/:\s*(\d+)\b/g, ': <span class="yaml-number">$1</span>')
       // 들여쓰기 (공백을 &nbsp;로 변환)
       .replace(/^(\s+)/gm, (match) => '&nbsp;'.repeat(match.length));
+
+    // 주석을 다시 복원 (이제 주석만 하이라이팅)
+    comments.forEach((comment, index) => {
+      highlighted = highlighted.replace(
+        `___COMMENT_${index}___`,
+        `<span class="yaml-comment">${comment}</span>`
+      );
+    });
+
+    return highlighted;
   };
 
   // 줄별로 분리하여 줄 번호와 함께 렌더링
